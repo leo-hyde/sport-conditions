@@ -1,7 +1,8 @@
 # Instructions for Claude
 
 Claude reads this file automatically at the start of every session in this
-project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building.
+project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
+[DESIGN.md](DESIGN.md) says how it looks.
 
 ## About this project
 - A web page showing when conditions are good for Leo's sports at each site.
@@ -13,8 +14,12 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building.
 - **Build from SPEC.md.** If something isn't in the spec, or the spec is
   unclear, ask before building it. If the spec needs to change, propose the
   edit to SPEC.md first.
-- **One build step at a time.** Finish a step, show it working, explain it,
-  then stop and wait for Leo before starting the next.
+- **One build step at a time**, unless Leo asks for several agreed steps in one
+  go. Then build them all, commit after each stage, and stop for review at
+  the end.
+- **Follow DESIGN.md** for anything visual. New components get added to it.
+- **Keep it opening by double-click:** plain `<script>` tags (no ES modules),
+  and libraries loaded from a CDN.
 - **Small, readable code over clever code.** Plain HTML/CSS/JS, no frameworks
   or build tools unless the spec says so.
 - **Commit to git after each working step**, with a plain-English message.
