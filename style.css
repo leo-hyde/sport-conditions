@@ -79,7 +79,7 @@ p { margin: 0; }
 .tabs {
   position: sticky;
   top: 0;
-  z-index: 1000;  /* above the map */
+  z-index: 1100;  /* above the map and its buttons */
   display: flex;
   gap: 4px;
   padding: 4px;
@@ -436,6 +436,10 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
   border: 1px solid var(--border);
   overflow: hidden;
   background: var(--surface-2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
 }
 
 .timeline { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }

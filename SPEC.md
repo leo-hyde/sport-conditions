@@ -77,8 +77,8 @@ the best one (or two).
   that each do one job. It still opens by double-clicking index.html.
 - **Weather and place search from [Open-Meteo](https://open-meteo.com):**
   free, with no account needed.
-- **Map from [Leaflet](https://leafletjs.com)**, with CARTO map tiles
-  (a light or dark style to match the phone).
+- **Map from [Leaflet](https://leafletjs.com)**, with OpenTopoMap tiles
+  (hills and contours; dimmed in dark mode).
 - **Sites and settings are saved in the browser**, so they live on that
   device only.
 - **Git:** a commit after each stage.

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Sport Conditions</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,14 +20,45 @@
     </div>
   </header>
 
+  <nav id="tabs" class="tabs">
+    <button data-view="overview">Overview</button>
+    <button data-view="sites">Sites</button>
+    <button data-view="map">Map</button>
+  </nav>
+
   <main>
-    <!-- app.js fills these in -->
-    <section id="summary" class="card summary"></section>
-    <div class="view-head">
-      <h2>Sites</h2>
-      <button id="add-site" class="btn primary small">+ Add site</button>
-    </div>
-    <div id="site-cards"></div>
+    <!-- The JavaScript files fill these in -->
+    <section id="view-overview">
+      <div class="view-head">
+        <h2>Where &amp; when</h2>
+        <div id="overview-switch" class="segmented">
+          <button data-layout="days">By day</button>
+          <button data-layout="hours">By hour</button>
+          <button data-layout="best">Best times</button>
+        </div>
+      </div>
+      <div id="overview" class="card"></div>
+    </section>
+
+    <section id="view-sites" hidden>
+      <div class="view-head">
+        <h2>Sites</h2>
+        <button id="add-site" class="btn primary small">+ Add site</button>
+      </div>
+      <div id="site-cards"></div>
+    </section>
+
+    <section id="view-map" hidden>
+      <div id="map"></div>
+      <div class="timeline card">
+        <div class="timeline-top">
+          <span id="map-time" class="timeline-time"></span>
+          <div id="map-days" class="segmented"></div>
+        </div>
+        <input id="map-slider" type="range" min="0" max="0" step="1" aria-label="Forecast time">
+        <p class="hint">Drag to move through the forecast. Tap a pin for details.</p>
+      </div>
+    </section>
   </main>
 
   <!-- Hour details (details.js) -->
@@ -118,6 +150,9 @@
   <script src="details.js"></script>
   <script src="settings.js"></script>
   <script src="sitesForm.js"></script>
+  <script src="overview.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="map.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

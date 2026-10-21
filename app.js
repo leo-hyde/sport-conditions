@@ -1,7 +1,7 @@
 // The main file: holds the app's state, fetches forecasts and draws the page.
 // Other files: sites.js (starter sites), weather.js (forecasts and ratings),
 // storage.js (saving), details.js (hour details), settings.js (settings),
-// sitesForm.js (add / edit sites).
+// sitesForm.js (add / edit sites), overview.js (Overview tab), map.js (Map tab).
 
 // Everything the app knows, in one place.
 const state = {
@@ -10,6 +10,9 @@ const state = {
   forecasts: {},  // site id → list of hours (from weather.js)
   updatedAt: null,
   failedSites: [],
+  view: loadSaved("sc.view", "overview"),  // which tab is showing
+  layout: loadSaved("sc.layout", "days"),  // which Overview layout
+  mapTime: null,  // the hour the map is showing, e.g. "2026-10-21T14"
 };
 
 // ---------- Fetching ----------
@@ -87,45 +90,37 @@ function arrow(degrees) {
   return `<span class="arrow" style="transform: rotate(${degrees}deg)">↓</span>`;
 }
 
-// One tappable block for one hour.
-function hourBlock(site, hour) {
+// One tappable block for one hour. The compact version (for the
+// By hour heatmap) shows just the speed.
+function hourBlock(site, hour, { compact = false } = {}) {
   const label = `${hour.hourOfDay}:00, ${hour.speed} mph from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
+  const inside = compact
+    ? `<span class="speed">${hour.speed}</span>`
+    : `<span class="time">${hour.hourOfDay}</span>${arrow(hour.degrees)}<span class="speed">${hour.speed}</span>`;
   return `<button class="hour ${hour.rating} ${hour.past ? "past" : ""}"
-      data-site="${site.id}" data-key="${hour.key}" aria-label="${label}">
-    <span class="time">${hour.hourOfDay}</span>
-    ${arrow(hour.degrees)}
-    <span class="speed">${hour.speed}</span>
-  </button>`;
+      data-site="${site.id}" data-key="${hour.key}" aria-label="${label}">${inside}</button>`;
 }
 
 // ---------- Drawing the page ----------
 
 function render() {
   setStatus(statusText());
-  renderSummary();
+  renderOverview();
   renderSiteCards();
+  renderMap();
 }
 
-// For today and tomorrow, list the sites with any good hours still to come.
-function renderSummary() {
-  if (!state.updatedAt) return;
-  const dates = Object.keys(siteDays(state.sites[0] || {}));
-  let html = "";
-  dates.slice(0, 2).forEach(date => {
-    const goodSites = state.sites
-      .map(site => {
-        const hours = siteDays(site)[date] || [];
-        const goodCount = hours.filter(hour => hour.rating === "good" && !hour.past).length;
-        return { name: site.name, goodCount };
-      })
-      .filter(site => site.goodCount > 0);
-
-    const text = goodSites.length > 0
-      ? "🟢 " + goodSites.map(site => `${esc(site.name)} (${site.goodCount}h)`).join(", ")
-      : '<span class="muted">No good hours anywhere</span>';
-    html += `<p><strong>${dayLabel(date)}:</strong> ${text}</p>`;
+// Show one tab and hide the others.
+function showView(view) {
+  state.view = view;
+  save("sc.view", view);
+  document.querySelectorAll("#tabs button").forEach(button => {
+    button.classList.toggle("active", button.dataset.view === view);
   });
-  document.getElementById("summary").innerHTML = html;
+  for (const name of ["overview", "sites", "map"]) {
+    document.getElementById(`view-${name}`).hidden = name !== view;
+  }
+  render();
 }
 
 // One card per site, with one strip of hour blocks per day.
@@ -160,6 +155,23 @@ document.addEventListener("click", event => {
   const editButton = event.target.closest("[data-edit-site]");
   if (editButton) openSiteForm(editButton.dataset.editSite);
 
+  // Site names in the Overview jump to that site's card in the Sites tab.
+  const siteLink = event.target.closest("[data-goto-site]");
+  if (siteLink && !block) {
+    showView("sites");
+    document.getElementById(`site-${siteLink.dataset.gotoSite}`).scrollIntoView({ behavior: "smooth" });
+  }
+
+  const tab = event.target.closest("#tabs [data-view]");
+  if (tab) showView(tab.dataset.view);
+
+  const layoutButton = event.target.closest("#overview-switch [data-layout]");
+  if (layoutButton) {
+    state.layout = layoutButton.dataset.layout;
+    save("sc.layout", state.layout);
+    renderOverview();
+  }
+
   // Any button marked data-close closes the dialog it's in.
   if (event.target.closest("[data-close]")) event.target.closest("dialog").close();
 });
@@ -175,5 +187,5 @@ document.getElementById("refresh").addEventListener("click", refresh);
 document.getElementById("open-settings").addEventListener("click", openSettings);
 document.getElementById("add-site").addEventListener("click", () => openSiteForm());
 
-render();
+showView(state.view);
 refresh();
