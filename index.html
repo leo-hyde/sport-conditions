@@ -3,18 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>Sport Conditions</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Sport Conditions</h1>
-  <p id="status">Loading forecast…</p>
+  <header class="topbar">
+    <div>
+      <h1>Sport Conditions</h1>
+      <p id="status" class="muted">Loading forecast…</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="refresh" class="icon-btn" aria-label="Refresh forecast" title="Refresh">↻</button>
+      <button id="open-settings" class="icon-btn" aria-label="Settings" title="Settings">⚙︎</button>
+    </div>
+  </header>
 
-  <!-- app.js fills these in -->
-  <div id="summary"></div>
-  <div id="forecast"></div>
+  <main>
+    <!-- app.js fills these in -->
+    <section id="summary" class="card summary"></section>
+    <div id="site-cards"></div>
+  </main>
+
+  <!-- Hour details (details.js) -->
+  <dialog id="hour-dialog">
+    <div class="dialog-inner">
+      <div class="dialog-content"></div>
+      <div class="dialog-actions">
+        <button class="btn" data-close>Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Settings (settings.js) -->
+  <dialog id="settings-dialog">
+    <form id="settings-form" class="dialog-inner">
+      <h2>Paragliding settings</h2>
+      <fieldset>
+        <legend>Good wind speed (mph)</legend>
+        <div class="range-inputs">
+          <input name="goodMin" type="number" min="0" max="99" required aria-label="Good minimum">
+          <span>to</span>
+          <input name="goodMax" type="number" min="0" max="99" required aria-label="Good maximum">
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>OK wind speed (mph)</legend>
+        <div class="range-inputs">
+          <input name="okMin" type="number" min="0" max="99" required aria-label="OK minimum">
+          <span>to</span>
+          <input name="okMax" type="number" min="0" max="99" required aria-label="OK maximum">
+        </div>
+      </fieldset>
+      <label class="field">
+        Rain cutoff (mm per hour)
+        <input name="rainCutoff" type="number" min="0" step="0.1" required>
+      </label>
+      <p class="hint">Hours with this much rain or more are rated No.</p>
+      <p id="settings-error" class="error" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" id="reset-settings" class="btn ghost">Reset to defaults</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
 
   <script src="sites.js"></script>
+  <script src="weather.js"></script>
+  <script src="storage.js"></script>
+  <script src="details.js"></script>
+  <script src="settings.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,166 +1,171 @@
-// Show every site's hourly forecast as a strip of coloured blocks,
-// with a summary of which sites look good today and tomorrow.
+// The main file: holds the app's state, fetches forecasts and draws the page.
+// Other files: sites.js (starter sites), weather.js (forecasts and ratings),
+// storage.js (saving), details.js (hour details), settings.js (settings).
 
-// Speed rules belong to the sport, so they apply to every paragliding site.
-const PARAGLIDING = {
-  speedGood: { min: 14, max: 16 },  // mph
-  speedOk:   { min: 12, max: 18 },  // mph
+// Everything the app knows, in one place.
+const state = {
+  sites: loadSites(),
+  settings: loadSettings(),
+  forecasts: {},  // site id → list of hours (from weather.js)
+  updatedAt: null,
+  failedSites: [],
 };
 
-// The sites come from sites.js, which is loaded before this file.
-const sites = STARTER_SITES;
+// ---------- Fetching ----------
 
-// The 16 compass points, in order clockwise from North.
-const COMPASS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-
-// Turn a direction in degrees (0–360) into a compass point, e.g. 290 → "WNW".
-// Each compass point covers 22.5 degrees (360 / 16).
-function degreesToCompass(degrees) {
-  const index = Math.round(degrees / 22.5) % 16;
-  return COMPASS[index];
-}
-
-// Build the Open-Meteo web address asking for the data we need.
-function forecastUrl(site) {
-  const params = new URLSearchParams({
-    latitude: site.lat,
-    longitude: site.lon,
-    hourly: "wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day",
-    wind_speed_unit: "mph",
-    timezone: "Europe/London",
-    forecast_days: 3,
+// Fetch every site's forecast at the same time. "allSettled" means one
+// site failing doesn't stop the others from showing.
+async function refresh() {
+  setStatus("Loading forecast…");
+  const results = await Promise.allSettled(state.sites.map(fetchForecast));
+  state.failedSites = [];
+  results.forEach((result, i) => {
+    const site = state.sites[i];
+    if (result.status === "fulfilled") state.forecasts[site.id] = result.value;
+    else state.failedSites.push(site.name);
   });
-  return "https://api.open-meteo.com/v1/forecast?" + params;
+  state.updatedAt = new Date();
+  render();
 }
 
-// Open-Meteo sends each value as a separate list (all the times, all the
-// speeds, …). This joins them into one object per hour, which is easier to use.
-function toHours(data) {
-  const h = data.hourly;
-  return h.time.map((time, i) => ({
-    date: time.slice(0, 10),  // "2026-10-21"
-    hourOfDay: time.slice(11, 13),  // "14"
-    speed: Math.round(h.wind_speed_10m[i]),
-    gusts: Math.round(h.wind_gusts_10m[i]),
-    degrees: h.wind_direction_10m[i],
-    direction: degreesToCompass(h.wind_direction_10m[i]),
-    rain: h.precipitation[i],
-    isDaylight: h.is_day[i] === 1,
-  }));
+function setStatus(text) {
+  document.getElementById("status").textContent = text;
 }
 
-// Each check gives "good", "ok" or "no".
-function rateDirection(direction, site) {
-  if (site.goodDirections.includes(direction)) return "good";
-  if (site.okDirections.includes(direction)) return "ok";
-  return "no";
+function statusText() {
+  if (!state.updatedAt) return "Loading forecast…";
+  const time = state.updatedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  let text = `Paragliding · updated ${time}`;
+  if (state.failedSites.length > 0) text += ` · couldn't load ${state.failedSites.join(", ")}`;
+  return text;
 }
 
-function rateSpeed(speed, sport) {
-  if (speed >= sport.speedGood.min && speed <= sport.speedGood.max) return "good";
-  if (speed >= sport.speedOk.min && speed <= sport.speedOk.max) return "ok";
-  return "no";
-}
+// ---------- Preparing the data ----------
 
-function rateRain(rain) {
-  return rain > 0 ? "no" : "good";
-}
-
-// The hour's overall rating is the worst of the three checks.
-function rateHour(hour, site, sport) {
-  const ratings = [
-    rateDirection(hour.direction, site),
-    rateSpeed(hour.speed, sport),
-    rateRain(hour.rain),
-  ];
-  if (ratings.includes("no")) return "no";
-  if (ratings.includes("ok")) return "ok";
-  return "good";
-}
-
-// Group a site's daylight hours by day: { "2026-10-21": [hour, hour, …], … }
-function groupByDay(hours) {
+// A site's daylight hours, rated and grouped by day:
+// { "2026-10-21": [hour, hour, …], … }
+// Ratings are worked out here (not when fetching), so changing a setting
+// re-colours everything instantly without fetching again.
+function siteDays(site) {
   const days = {};
-  for (const hour of hours.filter(hour => hour.isDaylight)) {
+  const now = londonNowKey();
+  for (const hour of state.forecasts[site.id] || []) {
+    if (!hour.isDaylight) continue;
     if (!days[hour.date]) days[hour.date] = [];
-    days[hour.date].push(hour);
+    days[hour.date].push({
+      ...hour,
+      rating: rateHour(hour, site, state.settings),
+      past: hour.key < now,
+    });
   }
   return days;
 }
 
 // "Today", "Tomorrow", or e.g. "Fri 23".
-function dayLabel(date, index) {
-  if (index === 0) return "Today";
-  if (index === 1) return "Tomorrow";
+function dayLabel(date) {
+  const today = londonNowKey().slice(0, 10);
+  const daysAway = Math.round((Date.parse(date) - Date.parse(today)) / 86400000);
+  if (daysAway === 0) return "Today";
+  if (daysAway === 1) return "Tomorrow";
   return new Date(date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric" });
 }
 
-// One coloured block for one hour. The arrow shows which way the wind blows,
-// and hovering shows the numbers (tap-for-details comes in step 4).
-function hourBlock(hour) {
-  const details = `${hour.hourOfDay}:00 · ${hour.speed} mph (gusts ${hour.gusts}) from ${hour.direction} · rain ${hour.rain} mm`;
-  return `<div class="hour ${hour.rating}" title="${details}">
+// ---------- Small HTML helpers ----------
+
+// Site names are typed in by people, so we "escape" them before putting
+// them in the page. Otherwise a name like "<b>" would be treated as HTML.
+function esc(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// An arrow pointing the way the wind blows. Wind "from" 0° (north)
+// blows south, so a down arrow rotated by the direction is right.
+function arrow(degrees) {
+  return `<span class="arrow" style="transform: rotate(${degrees}deg)">↓</span>`;
+}
+
+// One tappable block for one hour.
+function hourBlock(site, hour) {
+  const label = `${hour.hourOfDay}:00, ${hour.speed} mph from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
+  return `<button class="hour ${hour.rating} ${hour.past ? "past" : ""}"
+      data-site="${site.id}" data-key="${hour.key}" aria-label="${label}">
     <span class="time">${hour.hourOfDay}</span>
-    <span class="arrow" style="transform: rotate(${hour.degrees}deg)">↓</span>
+    ${arrow(hour.degrees)}
     <span class="speed">${hour.speed}</span>
-  </div>`;
+  </button>`;
 }
 
-// A card for one site: its name, then one strip of hours per day.
-function siteCard(site) {
-  let html = `<section class="site"><h2>${site.name}</h2>`;
-  Object.entries(site.days).forEach(([date, hours], index) => {
-    html += `<div class="day">
-      <div class="day-label">${dayLabel(date, index)}</div>
-      <div class="hours">${hours.map(hourBlock).join("")}</div>
-    </div>`;
-  });
-  return html + "</section>";
+// ---------- Drawing the page ----------
+
+function render() {
+  setStatus(statusText());
+  renderSummary();
+  renderSiteCards();
 }
 
-// For today and tomorrow, list the sites that have any good hours.
-function summary(sites) {
+// For today and tomorrow, list the sites with any good hours still to come.
+function renderSummary() {
+  if (!state.updatedAt) return;
+  const dates = Object.keys(siteDays(state.sites[0] || {}));
   let html = "";
-  ["Today", "Tomorrow"].forEach((label, index) => {
-    const goodSites = sites
+  dates.slice(0, 2).forEach(date => {
+    const goodSites = state.sites
       .map(site => {
-        const hours = Object.values(site.days)[index] || [];
-        const goodCount = hours.filter(hour => hour.rating === "good").length;
+        const hours = siteDays(site)[date] || [];
+        const goodCount = hours.filter(hour => hour.rating === "good" && !hour.past).length;
         return { name: site.name, goodCount };
       })
       .filter(site => site.goodCount > 0);
 
     const text = goodSites.length > 0
-      ? "🟢 " + goodSites.map(site => `${site.name} (${site.goodCount}h)`).join(", ")
-      : "No good hours anywhere";
-    html += `<p><strong>${label}:</strong> ${text}</p>`;
+      ? "🟢 " + goodSites.map(site => `${esc(site.name)} (${site.goodCount}h)`).join(", ")
+      : '<span class="muted">No good hours anywhere</span>';
+    html += `<p><strong>${dayLabel(date)}:</strong> ${text}</p>`;
   });
   document.getElementById("summary").innerHTML = html;
 }
 
-// Fetch every site's forecast at the same time, then show them all.
-// "async" lets us wait for the internet without freezing the page.
-async function main() {
-  const status = document.getElementById("status");
-  try {
-    const results = await Promise.all(
-      sites.map(site => fetch(forecastUrl(site)).then(response => response.json()))
-    );
-
-    // Rate every hour and attach the days to each site.
-    sites.forEach((site, i) => {
-      const hours = toHours(results[i]);
-      hours.forEach(hour => hour.rating = rateHour(hour, site, PARAGLIDING));
-      site.days = groupByDay(hours);
-    });
-
-    status.textContent = "Paragliding · daylight hours · wind in mph";
-    summary(sites);
-    document.getElementById("forecast").innerHTML = sites.map(siteCard).join("");
-  } catch (error) {
-    status.textContent = "Couldn't load the forecast: " + error.message;
-  }
+// One card per site, with one strip of hour blocks per day.
+function renderSiteCards() {
+  document.getElementById("site-cards").innerHTML = state.sites.map(site => {
+    const days = Object.entries(siteDays(site));
+    const strips = days.length === 0
+      ? '<p class="muted">No forecast yet</p>'
+      : days.map(([date, hours]) => `
+          <div class="day">
+            <div class="day-label">${dayLabel(date)}</div>
+            <div class="hours">${hours.map(hour => hourBlock(site, hour)).join("")}</div>
+          </div>`).join("");
+    return `<article class="card site" id="site-${site.id}">
+      <header class="card-head"><h3>${esc(site.name)}</h3></header>
+      ${strips}
+    </article>`;
+  }).join("");
 }
 
-main();
+// ---------- Buttons and taps ----------
+
+// One listener for the whole page handles taps on any hour block,
+// including ones drawn later. This is called "event delegation".
+document.addEventListener("click", event => {
+  const block = event.target.closest("[data-key]");
+  if (block) showHourDetails(block.dataset.site, block.dataset.key);
+
+  // Any button marked data-close closes the dialog it's in.
+  if (event.target.closest("[data-close]")) event.target.closest("dialog").close();
+});
+
+// Tapping the dark area outside a dialog closes it.
+document.querySelectorAll("dialog").forEach(dialog => {
+  dialog.addEventListener("click", event => {
+    if (event.target === dialog) dialog.close();
+  });
+});
+
+document.getElementById("refresh").addEventListener("click", refresh);
+document.getElementById("open-settings").addEventListener("click", openSettings);
+
+render();
+refresh();
