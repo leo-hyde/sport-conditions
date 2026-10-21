@@ -628,3 +628,20 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 .hour-steps { display: flex; justify-content: space-between; gap: 8px; }
 .hour-steps .btn { min-width: 84px; }
 .hour-steps .btn:disabled { opacity: 0.35; cursor: default; }
+
+/* Live airport wind (stations.js) */
+.station-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+.station-pin small { font-size: 10px; opacity: 0.75; margin-left: 2px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+.leaflet-popup-content code { font-size: 11px; white-space: normal; }

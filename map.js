@@ -33,6 +33,7 @@ function setupMap() {
     map.setView([50.4, -5.1], 9);
   }
   drawLibrary();
+  setupStations();
 }
 
 // Every hour shown anywhere, in order, e.g. ["2026-10-21T08", …].

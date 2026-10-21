@@ -23,6 +23,9 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
 - **Small, readable code over clever code.** Plain HTML/CSS/JS, no frameworks
   or build tools unless the spec says so.
 - **Commit to git after each working step**, with a plain-English message.
+- **Pushing to `main` publishes the live site** (GitHub Pages:
+  https://leo-hyde.github.io/sport-conditions/). Push once a stage is tested.
+  Pull before starting work, in case Leo changed things from another device.
 
 ## How to teach
 - After each step, explain in plain language what was added and why. Point to

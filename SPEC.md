@@ -114,8 +114,11 @@ the best one (or two).
   coloured by the best rating at any of your sites; a bubble shows the
   chosen time. Drag, tap, use ‹ › or the arrow keys.
 - **Hour details step ‹ ›** to the previous or next hour (across days).
-- **Live airport reports (METARs):** `worker/weather-proxy.js` is ready to
-  deploy as a free Cloudflare Worker. The app part comes once it's live.
+- **Live airport wind (METARs)** on the map, via a free Cloudflare Worker
+  (`worker/weather-proxy.js`, deployed at
+  sport-conditions-weather.leo-h-hyde.workers.dev).
+- **Live site:** https://leo-hyde.github.io/sport-conditions/ (GitHub Pages,
+  updates a minute or two after each push to `main`).
 
 ### Flagged as hard, skipped for now
 - **Live weather stations:** airport METARs (e.g. Newquay, EGHQ) are free
