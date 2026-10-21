@@ -21,6 +21,8 @@
   </header>
 
   <div class="model-bar">
+    <label for="sport-select">Sport</label>
+    <select id="sport-select" class="pill-select"></select>
     <label for="model-select">Forecast</label>
     <select id="model-select" class="pill-select"></select>
     <span id="model-detail" class="model-detail"></span>
@@ -97,10 +99,20 @@
     </div>
   </dialog>
 
+  <!-- Live wind history chart (windChart.js) -->
+  <dialog id="station-dialog" class="wide">
+    <div class="dialog-inner">
+      <div class="dialog-content"></div>
+      <div class="dialog-actions">
+        <button class="btn" data-close>Close</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Settings (settings.js) -->
   <dialog id="settings-dialog">
     <form id="settings-form" class="dialog-inner">
-      <h2>Paragliding settings</h2>
+      <h2 id="settings-title">Settings</h2>
       <fieldset>
         <legend>Good wind speed (mph)</legend>
         <div class="range-inputs">
@@ -193,6 +205,7 @@
   </dialog>
 
   <script src="sites.js"></script>
+  <script src="sports.js"></script>
   <script src="weather.js"></script>
   <script src="sun.js"></script>
   <script src="tides.js"></script>
@@ -205,6 +218,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="map.js"></script>
   <script src="stations.js"></script>
+  <script src="windChart.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

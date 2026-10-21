@@ -8,6 +8,7 @@
 const state = {
   sites: loadSites(),
   settings: loadSettings(),
+  sport: loadSaved("sc.sport", "parakiting"),  // which sport (see sports.js)
   model: loadSaved("sc.model", MODELS[0].id),  // which forecast model
   forecastCache: {},  // model id → { site id → list of hours }
   tides: {},  // site id → tides (coastal sites only)
@@ -70,7 +71,7 @@ function setStatus(text) {
 function statusText() {
   if (!state.updatedAt) return "Loading forecast…";
   const time = state.updatedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  let text = `Updated ${time}`;
+  let text = `${currentSport().icon} ${currentSport().name} · updated ${time}`;
   if (state.failedSites.length > 0) text += ` · couldn't load ${state.failedSites.join(", ")}`;
   return text;
 }
@@ -248,6 +249,18 @@ document.querySelectorAll("dialog").forEach(dialog => {
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
+});
+
+// The sport picker. Sports that aren't set up yet show as "coming soon".
+const sportSelect = document.getElementById("sport-select");
+sportSelect.innerHTML = SPORTS.map(sport =>
+  `<option value="${sport.id}" ${sport.ready ? "" : "disabled"}>${sport.icon} ${sport.name}${sport.ready ? "" : " (coming soon)"}</option>`
+).join("");
+sportSelect.value = state.sport;
+sportSelect.addEventListener("change", () => {
+  state.sport = sportSelect.value;
+  save("sc.sport", state.sport);
+  render();
 });
 
 // The forecast model picker.

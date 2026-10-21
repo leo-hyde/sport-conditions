@@ -66,7 +66,12 @@ feature. Change it here first, then in the code.
   wind map.
 - **Mini compass:** a small 16-wedge ring with "N" in the middle, next to
   each site's name.
-- **Forecast picker:** a pill-shaped dropdown under the header.
+- **Sport and forecast pickers:** pill-shaped dropdowns under the header;
+  the sport shows its emoji (🪁 Parakiting).
+- **Wind history chart:** one mph axis; wind is a 2px `--accent` line, gusts
+  are orange dots with a surface ring; good/OK ranges are faint bands behind;
+  direction arrows run underneath. A readout above follows your finger, and
+  there's always a table view.
 - **Tide line:** small muted text under each day's strip ("🌊 HW … · LW … ·
   Springs").
 

@@ -45,6 +45,7 @@ function loadSites() {
   // copy that from the site library (matching names, ignoring spaces).
   const simple = name => name.toLowerCase().replace(/\s/g, "");
   for (const site of saved) {
+    if (!site.sport) site.sport = "parakiting";  // sites saved before sports existed
     if (site.coastal !== undefined) continue;
     const match = SITE_LIBRARY.find(lib => simple(lib.name) === simple(site.name));
     site.coastal = Boolean(match && match.coastal);
@@ -72,6 +73,7 @@ function librarySiteCopy(site) {
     okDirections: [...site.okDirections],
     coastal: Boolean(site.coastal),
     notHighTide: Boolean(site.notHighTide),
+    sport: "parakiting",
   };
 }
 

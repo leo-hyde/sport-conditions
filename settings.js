@@ -1,9 +1,10 @@
-// The settings panel: paragliding speed ranges, rain cutoff, flying day
+// The settings panel for the current sport: speed ranges, rain cutoff, flying day
 // (sunrise/sunset or twilight) and the high tide buffer.
 
 const settingsForm = document.getElementById("settings-form");
 
 function openSettings() {
+  document.getElementById("settings-title").textContent = `${currentSport().icon} ${currentSport().name} settings`;
   fillSettingsForm(state.settings);
   document.getElementById("settings-error").hidden = true;
   document.getElementById("settings-dialog").showModal();

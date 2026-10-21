@@ -117,6 +117,12 @@ the best one (or two).
 - **Live airport wind (METARs)** on the map, via a free Cloudflare Worker
   (`worker/weather-proxy.js`, deployed at
   sport-conditions-weather.leo-h-hyde.workers.dev).
+- **Sports:** a sport picker. **Parakiting** is the current sport;
+  Paragliding and Surfing are listed as "coming soon". Sites are tagged
+  with their sport.
+- **Live wind history:** tap a live airport label, then "📈 Last 24 hours",
+  for a chart of wind and gusts against your good/OK bands, with direction
+  arrows, a table view and a link to the full reports.
 - **Live site:** https://leo-hyde.github.io/sport-conditions/ (GitHub Pages,
   updates a minute or two after each push to `main`).
 

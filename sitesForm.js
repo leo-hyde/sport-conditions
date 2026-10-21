@@ -144,6 +144,7 @@ siteForm.addEventListener("submit", async event => {
     okDirections,
     coastal: siteForm.coastal.checked,
     notHighTide: siteForm.notHighTide.checked,
+    sport: state.sport,
   };
 
   if (editingId) {

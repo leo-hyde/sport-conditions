@@ -8,6 +8,8 @@ const KNOTS_TO_MPH = 1.15078;
 
 let stationLayer = null;
 let stationTimer = null;
+const stationNames = {};  // airport code → tidy name, e.g. EGHQ → "Newquay/Cornwall Arpt"
+
 
 // Called once the map exists (from setupMap in map.js).
 function setupStations() {
@@ -40,6 +42,8 @@ function drawStations(reports) {
   if (!document.getElementById("show-stations").checked) return;
 
   for (const report of reports) {
+    // Names come like "Newquay/Cornwall Arpt, EN, GB"; keep the first part.
+    stationNames[report.icaoId] = (report.name || report.icaoId).split(",")[0].replace(/[()]/g, "").trim();
     const speed = Math.round(report.wspd * KNOTS_TO_MPH);
     const gust = report.wgst ? Math.round(report.wgst * KNOTS_TO_MPH) : null;
     const variable = report.wdir === "VRB" || typeof report.wdir !== "number";
@@ -52,10 +56,11 @@ function drawStations(reports) {
       ${variable ? "VRB" : arrow(report.wdir)}
       <strong>${speed}${gust ? `<small>g${gust}</small>` : ""}</strong>
     </div>`;
-    const details = `<strong>${esc(report.name || report.icaoId)}</strong><br>
+    const details = `<strong>${esc(stationNames[report.icaoId])}</strong><br>
       Live: ${variable ? "variable" : `from ${degreesToCompass(report.wdir)}`} ${speed} mph${gust ? `, gusting ${gust}` : ""}<br>
       <span class="muted">Observed ${observed} (${minutesAgo} min ago)</span><br>
-      <code>${esc(report.rawOb || "")}</code>`;
+      <code>${esc(report.rawOb || "")}</code><br>
+      <button class="btn small primary" data-station-history="${report.icaoId}">📈 Last 24 hours</button>`;
 
     L.marker([report.lat, report.lon], {
       icon: L.divIcon({ html, className: "", iconSize: [64, 28], iconAnchor: [32, 14] }),

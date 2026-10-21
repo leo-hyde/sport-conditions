@@ -23,9 +23,12 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
 - **Small, readable code over clever code.** Plain HTML/CSS/JS, no frameworks
   or build tools unless the spec says so.
 - **Commit to git after each working step**, with a plain-English message.
-- **Pushing to `main` publishes the live site** (GitHub Pages:
-  https://leo-hyde.github.io/sport-conditions/). Push once a stage is tested.
-  Pull before starting work, in case Leo changed things from another device.
+- **Push to GitHub after every commit**, so the work is never stuck on one
+  computer and Leo can carry on from a phone. Pushing to `main` publishes the
+  live site (https://leo-hyde.github.io/sport-conditions/), so only commit
+  working, tested steps.
+- **Pull before starting work** (`git pull`), in case something changed from
+  another device or a cloud session.
 
 ## How to teach
 - After each step, explain in plain language what was added and why. Point to
@@ -43,6 +46,9 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
 - Weather data comes from Open-Meteo (free, no API key).
 - **Site data lives in `data/sites.csv`.** Never edit `sites.js` by hand: edit
   the CSV, then run `python3 tools/build_sites.py`, which validates it.
-- **Previewing:** macOS blocks the preview server from the Documents folder, so
-  copy the site files to the scratchpad `site/` folder before checking the
-  browser preview.
+- **Previewing on Leo's Mac:** macOS blocks the preview server from the Documents
+  folder, so copy the site files to the scratchpad `site/` folder before
+  checking the browser preview. (In a cloud session, check the live site after
+  pushing instead.)
+- **Sports:** the current sport is Parakiting (see sports.js). Speed rules and
+  settings belong to the sport; sites are tagged with their sport.
