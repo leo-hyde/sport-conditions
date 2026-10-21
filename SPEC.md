@@ -101,7 +101,7 @@ the best one (or two).
   The site form's search finds guide sites too.
 - **A mini compass** on each site card and map popup, showing that site's
   good and OK directions.
-- **Animated wind flow on our own map** (leaflet-velocity, fed a 12 × 12
+- **Animated wind flow on our own map** (leaflet-velocity, fed a 10 × 10
   grid of Open-Meteo wind for 7 days in one request; follows the time
   slider). Windy's embedded map is still there as a second view.
 - **Tides** for coastal sites: high and low water times, rising or falling,

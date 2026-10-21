@@ -48,6 +48,22 @@ async function refresh() {
   await Promise.all(state.sites.map(site => loadSite(site)));
   state.updatedAt = new Date();
   render();
+  retryFailedSoon();
+}
+
+// If some sites failed (usually the free weather service saying "too many
+// requests, slow down"), try just those again a minute later.
+let retryTimer = null;
+function retryFailedSoon() {
+  clearTimeout(retryTimer);
+  if (state.failedSites.length === 0) return;
+  retryTimer = setTimeout(async () => {
+    const failed = state.sites.filter(site => state.failedSites.includes(site.name));
+    state.failedSites = [];
+    await Promise.all(failed.map(site => loadSite(site)));
+    render();
+    retryFailedSoon();
+  }, 60000);
 }
 
 // Switching model only fetches that model's forecasts (tides don't change),

@@ -1,10 +1,10 @@
 // Animated wind flow on our own map, like Windy's, drawn by the
 // leaflet-velocity library (loaded in index.html). It needs the wind on a
-// regular grid, so we ask Open-Meteo for a 12 × 12 grid of points covering the
+// regular grid, so we ask Open-Meteo for a 10 × 10 grid of points covering the
 // map, all 7 days, in one request. Moving through time then just picks a
 // different hour from that data, without fetching again.
 
-const FLOW_GRID = 12;
+const FLOW_GRID = 10;  // 10 × 10 = 100 points: smooth enough, and gentle on the free service
 let flowLayer = null;
 let flowData = null;  // { model, bounds, times, points: [{ speed: [...], degrees: [...] }] }
 let flowTimer = null;
