@@ -42,6 +42,9 @@
 
 * { box-sizing: border-box; }
 
+/* Anything marked hidden stays hidden, even if it has its own display style. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0 auto;
   max-width: 960px;
@@ -533,17 +536,20 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 
 .map-toggles { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
 
-.wind-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font: 700 11px/1 -apple-system, BlinkMacSystemFont, sans-serif;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8), 0 0 1px #000;
-}
-.wind-arrow .arrow { font-size: 20px; }
 
 .lib-popup { display: flex; gap: 10px; align-items: center; font-family: inherit; }
 .lib-popup p { margin: 4px 0 8px; font-size: 12px; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
 .timeline-top .segmented { max-width: 100%; overflow-x: auto; }
 .timeline-top .segmented button { flex-shrink: 0; }
+
+.model-detail { font-weight: 400; font-size: 12px; }
+.compare td small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
+#windy-box iframe {
+  width: 100%;
+  height: min(70vh, 620px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: block;
+}
+#windy-box .hint { margin-top: 8px; }

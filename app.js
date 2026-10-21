@@ -151,6 +151,7 @@ function hourBlock(site, hour, { compact = false } = {}) {
 function render() {
   setStatus(statusText());
   document.getElementById("model-select").value = state.model;
+  document.getElementById("model-detail").textContent = MODELS.find(model => model.id === state.model).detail;
   renderOverview();
   renderSiteCards();
   renderMap();

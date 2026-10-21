@@ -23,6 +23,7 @@
   <div class="model-bar">
     <label for="model-select">Forecast</label>
     <select id="model-select" class="pill-select"></select>
+    <span id="model-detail" class="model-detail"></span>
   </div>
 
   <nav id="tabs" class="tabs">
@@ -54,15 +55,25 @@
     </section>
 
     <section id="view-map" hidden>
+      <div class="view-head">
+        <div id="map-mode" class="segmented">
+          <button data-mode="sites" class="active">My sites</button>
+          <button data-mode="windy">Animated wind (Windy)</button>
+        </div>
+      </div>
       <div id="map"></div>
-      <div class="timeline card">
+      <div id="windy-box" hidden>
+        <iframe id="windy-frame" title="Windy animated wind map" loading="lazy"></iframe>
+        <p class="hint">Windy's own map, using the same forecast model. Use its play button
+          to animate through time. It doesn't show your site ratings.</p>
+      </div>
+      <div id="map-timeline" class="timeline card">
         <div class="timeline-top">
           <span id="map-time" class="timeline-time"></span>
           <div id="map-days" class="segmented"></div>
         </div>
         <input id="map-slider" type="range" min="0" max="0" step="1" aria-label="Forecast time">
         <div class="map-toggles">
-          <label><input id="show-wind" type="checkbox" checked> Wind arrows</label>
           <label><input id="show-library" type="checkbox" checked> All sites from the guide</label>
         </div>
         <p class="hint">Drag to move through the forecast. Tap a coloured pin for details,

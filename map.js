@@ -1,13 +1,11 @@
 // The Map tab: your sites as coloured pins, every site in the site guide as
-// small dots, an optional wind-arrow layer, and a time slider to move through
-// the forecast (like Windy). Uses the Leaflet map library, loaded in index.html.
+// small dots, and a time slider to move through the forecast. Uses the
+// Leaflet map library, loaded in index.html. It can also switch to Windy's
+// animated wind map, which Windy lets anyone embed for free.
 
 let map = null;
 let pinLayer = null;
 let libraryLayer = null;
-let windLayer = null;
-let windGrid = null;  // the latest wind-arrow forecast: { model, points }
-let windTimer = null;
 
 // The map is only created the first time the Map tab is opened, because
 // Leaflet needs to be able to see how big its box is.
@@ -26,7 +24,6 @@ function setupMap() {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, SRTM · Style &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
     maxZoom: 17,
   }).addTo(map);
-  windLayer = L.layerGroup().addTo(map);
   libraryLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
 
@@ -35,13 +32,7 @@ function setupMap() {
   } else {
     map.setView([50.4, -5.1], 9);
   }
-  map.on("moveend", () => {
-    // Wait until the map stops moving before fetching new wind arrows.
-    clearTimeout(windTimer);
-    windTimer = setTimeout(loadWindGrid, 600);
-  });
   drawLibrary();
-  loadWindGrid();
 }
 
 // Every hour shown anywhere, in order, e.g. ["2026-10-21T08", …].
@@ -57,11 +48,14 @@ function mapHourKeys() {
 
 function renderMap() {
   if (state.view !== "map") return;
+  if (!document.getElementById("windy-box").hidden) {
+    showMapMode("windy");  // keeps Windy in step with the chosen model
+    return;
+  }
   setupMap();
   if (!map) return;
   map.invalidateSize();  // the map's box may have changed size while hidden
   drawLibrary();
-  if (windGrid && windGrid.model !== state.model) loadWindGrid();
   drawTime();
 }
 
@@ -84,7 +78,6 @@ function drawTime() {
   ).join("");
 
   drawPins();
-  drawWind();
 }
 
 function drawPins() {
@@ -150,76 +143,61 @@ document.addEventListener("click", async event => {
 
 document.getElementById("show-library").addEventListener("change", drawLibrary);
 
-// ---------- Wind arrows across the map ----------
+// ---------- Windy's animated wind map ----------
 
-// Fetches the wind at a 7 × 7 grid of points covering the map, all in one
-// request, for the chosen model.
-async function loadWindGrid() {
-  if (!map || !document.getElementById("show-wind").checked) return;
-  const bounds = map.getBounds();
-  const lats = [], lons = [];
-  for (let row = 0; row < 7; row++) {
-    for (let col = 0; col < 7; col++) {
-      lats.push((bounds.getSouth() + (row + 0.5) * (bounds.getNorth() - bounds.getSouth()) / 7).toFixed(3));
-      lons.push((bounds.getWest() + (col + 0.5) * (bounds.getEast() - bounds.getWest()) / 7).toFixed(3));
-    }
-  }
+// Windy's model names for ours, so the animation matches the chosen model.
+const WINDY_PRODUCTS = {
+  ukmo_seamless: "ukv",
+  ecmwf_ifs025: "ecmwf",
+  icon_seamless: "iconEu",
+  gfs_seamless: "gfs",
+  meteofrance_seamless: "arome",
+};
+
+function windyEmbedUrl() {
+  // Centre it on the middle of your sites (or Cornwall if there are none).
+  const lats = state.sites.map(site => site.lat);
+  const lons = state.sites.map(site => site.lon);
+  const middle = values => values.length ? (Math.min(...values) + Math.max(...values)) / 2 : null;
   const params = new URLSearchParams({
-    latitude: lats.join(","),
-    longitude: lons.join(","),
-    hourly: "wind_speed_10m,wind_direction_10m",
-    wind_speed_unit: "mph",
-    timezone: "Europe/London",
-    forecast_days: FORECAST_DAYS,
-    models: state.model,
+    lat: (middle(lats) ?? 50.4).toFixed(3),
+    lon: (middle(lons) ?? -5.1).toFixed(3),
+    zoom: 9,
+    level: "surface",
+    overlay: "wind",
+    product: WINDY_PRODUCTS[state.model],
+    marker: "true",
+    calendar: "now",
+    type: "map",
+    location: "coordinates",
+    metricWind: "mph",
+    metricTemp: "°C",
   });
-  try {
-    const data = await fetchJson("https://api.open-meteo.com/v1/forecast?" + params);
-    const points = (Array.isArray(data) ? data : [data]).map((point, i) => ({
-      lat: Number(lats[i]),
-      lon: Number(lons[i]),
-      hourly: point.hourly,
-    }));
-    windGrid = { model: state.model, points };
-    drawWind();
-  } catch {
-    windGrid = null;
+  return "https://embed.windy.com/embed2.html?" + params;
+}
+
+// Switches between your sites map and Windy's animation.
+function showMapMode(mode) {
+  const windy = mode === "windy";
+  document.querySelectorAll("#map-mode button").forEach(button => {
+    button.classList.toggle("active", button.dataset.mode === mode);
+  });
+  document.getElementById("map").hidden = windy;
+  document.getElementById("map-timeline").hidden = windy;
+  document.getElementById("windy-box").hidden = !windy;
+  if (windy) {
+    // Only reload Windy if the model or sites have changed.
+    const frame = document.getElementById("windy-frame");
+    const url = windyEmbedUrl();
+    if (frame.src !== url) frame.src = url;
+  } else {
+    renderMap();
   }
 }
 
-// Arrow colour by speed, from calm blue to stormy red.
-function windColour(speed) {
-  if (speed < 8) return "#60a5fa";
-  if (speed < 14) return "#34d399";
-  if (speed < 20) return "#facc15";
-  if (speed < 28) return "#fb923c";
-  return "#ef4444";
-}
-
-function drawWind() {
-  windLayer.clearLayers();
-  if (!windGrid || !document.getElementById("show-wind").checked) return;
-  for (const point of windGrid.points) {
-    const i = point.hourly.time.findIndex(time => time.startsWith(state.mapTime));
-    const speed = point.hourly.wind_speed_10m[i];
-    const degrees = point.hourly.wind_direction_10m[i];
-    if (speed === null || speed === undefined) continue;
-    L.marker([point.lat, point.lon], {
-      icon: L.divIcon({
-        className: "",
-        html: `<div class="wind-arrow" style="color: ${windColour(speed)}">${arrow(degrees)}<span>${Math.round(speed)}</span></div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-      }),
-      interactive: false,
-      zIndexOffset: -1000,
-    }).addTo(windLayer);
-  }
-}
-
-document.getElementById("show-wind").addEventListener("change", () => {
-  if (document.getElementById("show-wind").checked && !windGrid) loadWindGrid();
-  drawWind();
+document.getElementById("map-mode").addEventListener("click", event => {
+  const button = event.target.closest("[data-mode]");
+  if (button) showMapMode(button.dataset.mode);
 });
 
 // ---------- Moving through time ----------

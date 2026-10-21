@@ -92,7 +92,8 @@ the best one (or two).
   (Open-Meteo's own default for the UK *is* the Met Office model.)
 - **7-day forecast** (AROME only goes about 4 days).
 - **Checking a forecast:** the hour details show all 5 models side by side,
-  plus a link to the same spot on Windy.
+  each with its name and resolution, plus a link to Windy's point forecast
+  for that exact spot.
 - **The Flybubble site guide (962 sites)** lives in `data/sites.csv`.
   `tools/build_sites.py` checks it for mistakes and builds `sites.js`.
   `tools/import_flybubble.py` pulls in new sites without overwriting edits.
@@ -100,8 +101,8 @@ the best one (or two).
   The site form's search finds guide sites too.
 - **A mini compass** on each site card and map popup, showing that site's
   good and OK directions.
-- **Wind arrows on the map:** a 7 × 7 grid, coloured by speed, following
-  the time slider.
+- **Animated wind map:** the Map tab can switch to Windy's free embeddable
+  map (flowing wind particles), using the same model as the app.
 - **Tides** for coastal sites: high and low water times, rising or falling,
   approximate height, and springs / neaps / mid (from the moon's phase).
   Sites can be marked "doesn't work near high tide", with a buffer setting
@@ -110,12 +111,11 @@ the best one (or two).
   last light, which changes with the season), plus extra minutes either side.
 
 ### Flagged as hard, skipped for now
-- **Animated wind particles like Windy's:** needs a wind data grid in a
-  special format and a particle-drawing library. The arrow grid gives most
-  of the value.
-- **Checking against live weather stations:** this needs a source of
-  observations (e.g. Met Office WOW, airport METARs) that allows
-  browser access. Worth a proper look later.
+- **Live weather stations:** airport METARs (e.g. Newquay, EGHQ) are free
+  and good, but block requests from web pages, so they need a tiny "proxy"
+  server (e.g. a free Cloudflare Worker). OpenWindMap allows it but has
+  almost no UK stations. Holfuy (popular with paragliding sites) needs
+  an API key per station.
 - **Exact tide heights:** the free tide model smooths out the range. A
   proper UK tide source (e.g. Admiralty) needs an API key and a small
   server to keep it secret.

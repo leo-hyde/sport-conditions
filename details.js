@@ -44,7 +44,7 @@ function showHourDetails(siteId, key) {
       <div id="compare-models"><p class="hint">Loading…</p></div>
     </div>
     <p class="links">
-      <a href="https://www.windy.com/?${site.lat},${site.lon},11" target="_blank" rel="noopener">Check this spot on Windy ↗</a>
+      <a href="${windyPointUrl(site)}" target="_blank" rel="noopener">Open this spot's forecast on Windy ↗</a>
     </p>`;
   dialog.showModal();
   showModelComparison(site, hour);
@@ -52,6 +52,18 @@ function showHourDetails(siteId, key) {
 
 function stat(label, value) {
   return `<div class="stat"><span>${label}</span><strong>${value}</strong></div>`;
+}
+
+// A model's name with its details underneath, e.g. "ECMWF / European centre, 25 km".
+function modelLabel(model) {
+  return `${model.name}<small>${model.detail}</small>`;
+}
+
+// Windy's own forecast for this exact spot (its "point forecast" page).
+function windyPointUrl(site) {
+  const lat = site.lat.toFixed(3);
+  const lon = site.lon.toFixed(3);
+  return `https://www.windy.com/${lat}/${lon}?wind,${lat},${lon},11`;
 }
 
 function modelName(id) {
@@ -73,13 +85,13 @@ async function showModelComparison(site, hour) {
     const rows = MODELS.map(model => {
       const speed = data[`wind_speed_10m_${model.id}`]?.[i];
       if (speed === null || speed === undefined) {
-        return `<tr><td>${model.name}</td><td colspan="3" class="muted">no forecast this far ahead</td></tr>`;
+        return `<tr><td>${modelLabel(model)}</td><td colspan="3" class="muted">no forecast this far ahead</td></tr>`;
       }
       const gusts = data[`wind_gusts_10m_${model.id}`][i];
       const degrees = data[`wind_direction_10m_${model.id}`][i];
       const current = model.id === state.model ? ' class="current"' : "";
       return `<tr${current}>
-        <td title="${model.detail}">${model.name}</td>
+        <td>${modelLabel(model)}</td>
         <td><strong>${Math.round(speed)}</strong> mph</td>
         <td>${Math.round(gusts)} gust</td>
         <td>${arrow(degrees)} ${degreesToCompass(degrees)}</td>

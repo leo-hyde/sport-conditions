@@ -62,8 +62,8 @@ feature. Change it here first, then in the code.
   (speed only); "Best times" uses ranked window cards on `--surface-2`.
 - **Map:** OpenTopoMap tiles (dimmed in dark mode), with a timeline card
   underneath: the big time label, day pills and a slider. Guide sites are
-  small grey dots; wind arrows are coloured blue → green → yellow →
-  orange → red as speed rises.
+  small grey dots. A pill switcher swaps to Windy's embedded animated
+  wind map.
 - **Mini compass:** a small 16-wedge ring with "N" in the middle, next to
   each site's name.
 - **Forecast picker:** a pill-shaped dropdown under the header.
