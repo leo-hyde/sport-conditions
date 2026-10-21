@@ -670,3 +670,42 @@ dialog.wide { width: min(720px, calc(100vw - 32px)); }
 details summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px; }
 details .compare { margin-top: 8px; }
 .map-pin small { font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 1px; }
+
+/* Removing sites: the star and the undo message */
+.card-actions { display: flex; align-items: center; gap: 6px; }
+.star {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #f5b400;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.star:hover { background: var(--surface-2); }
+.name-cell { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.name-cell .star { width: 28px; height: 28px; font-size: 16px; }
+.name-cell .site-link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.details-site-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  font-size: 15px;
+  max-width: calc(100vw - 32px);
+}
+.toast .btn { background: transparent; color: #8fb4ff; border-color: #374151; }

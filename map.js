@@ -186,7 +186,7 @@ function librarySitePopup(site, index) {
     <div>
       <strong>${esc(site.name)}</strong>
       <p class="muted">Good: ${site.goodDirections.join(" ") || "–"}<br>OK: ${site.okDirections.join(" ") || "–"}</p>
-      <button class="btn small primary" data-add-library="${index}">+ Add to my sites</button>
+      <button class="btn small primary" data-add-library="${index}">☆ Add to my sites</button>
     </div>
   </div>`;
 }

@@ -147,6 +147,51 @@ function hourBlock(site, hour, { compact = false } = {}) {
       data-site="${site.id}" data-key="${hour.key}" aria-label="${label}">${inside}</button>`;
 }
 
+// A filled star on each of your sites: tap it to remove the site.
+function starButton(site) {
+  return `<button class="star" data-remove-site="${site.id}" aria-label="Remove ${esc(site.name)} from my sites" title="Remove from my sites">★</button>`;
+}
+
+// ---------- Removing sites (with undo) ----------
+
+let lastRemoved = null;  // { site, index }, so Undo can put it back
+let toastTimer = null;
+
+function removeSite(siteId) {
+  const index = state.sites.findIndex(site => site.id === siteId);
+  if (index === -1) return;
+  lastRemoved = { site: state.sites[index], index };
+  state.sites.splice(index, 1);
+  saveSites(state.sites);
+  document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+  render();
+  showToast(`Removed ${esc(lastRemoved.site.name)}`, "Undo", undoRemove);
+}
+
+function undoRemove() {
+  if (!lastRemoved) return;
+  state.sites.splice(lastRemoved.index, 0, lastRemoved.site);
+  saveSites(state.sites);
+  lastRemoved = null;
+  render();
+}
+
+// A small message at the bottom of the screen, with an optional button.
+// It disappears by itself after 6 seconds.
+function showToast(message, buttonText, onClick) {
+  const toast = document.getElementById("toast");
+  toast.innerHTML = `<span>${message}</span>${buttonText ? `<button class="btn small">${buttonText}</button>` : ""}`;
+  toast.hidden = false;
+  if (buttonText) {
+    toast.querySelector("button").onclick = () => {
+      toast.hidden = true;
+      onClick();
+    };
+  }
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 6000);
+}
+
 // ---------- Drawing the page ----------
 
 function render() {
@@ -205,7 +250,10 @@ function renderSiteCards() {
           ${compassSvg(directionRatings(site), { size: 36 })}
           <div><h3>${esc(site.name)}</h3><div class="tags">${tags}</div></div>
         </div>
-        <button class="btn small" data-edit-site="${site.id}">Edit</button>
+        <div class="card-actions">
+          ${starButton(site)}
+          <button class="btn small" data-edit-site="${site.id}">Edit</button>
+        </div>
       </header>
       ${strips}
     </article>`;
@@ -219,6 +267,12 @@ function renderSiteCards() {
 document.addEventListener("click", event => {
   const block = event.target.closest("[data-key]");
   if (block) showHourDetails(block.dataset.site, block.dataset.key);
+
+  const removeButton = event.target.closest("[data-remove-site]");
+  if (removeButton) {
+    removeSite(removeButton.dataset.removeSite);
+    return;
+  }
 
   const editButton = event.target.closest("[data-edit-site]");
   if (editButton) openSiteForm(editButton.dataset.editSite);

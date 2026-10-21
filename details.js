@@ -59,7 +59,11 @@ function showHourDetails(siteId, key) {
     </div>
     <p class="links">
       <a href="${windyPointUrl(site)}" target="_blank" rel="noopener">Open this spot's forecast on Windy ↗</a>
-    </p>`;
+    </p>
+    <div class="details-site-actions">
+      <button class="btn small" data-remove-site="${site.id}">★ Remove from my sites</button>
+      <button class="btn small" data-edit-site="${site.id}">Edit site</button>
+    </div>`;
   if (!dialog.open) dialog.showModal();
   showModelComparison(site, hour);
 }

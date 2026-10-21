@@ -56,7 +56,7 @@ function overviewByDay() {
       return `<td class="cell ${best}" data-goto-site="${site.id}">${text}${when}</td>`;
     }).join("");
     return `<tr>
-      <td class="site-name"><button class="site-link" data-goto-site="${site.id}">${esc(site.name)}</button></td>
+      <td class="site-name"><div class="name-cell">${starButton(site)}<button class="site-link" data-goto-site="${site.id}">${esc(site.name)}</button></div></td>
       ${cells}
     </tr>`;
   }).join("");
@@ -82,7 +82,7 @@ function overviewByHour() {
 
     let cells = "<div></div>" + hourLabels.map(label => `<div class="hm-head">${label}</div>`).join("");
     for (const { site, days } of sites) {
-      cells += `<button class="hm-site site-link" data-goto-site="${site.id}">${esc(site.name)}</button>`;
+      cells += `<div class="hm-site name-cell">${starButton(site)}<button class="site-link" data-goto-site="${site.id}">${esc(site.name)}</button></div>`;
       for (const label of hourLabels) {
         const hour = (days[date] || []).find(hour => hour.hourOfDay === label);
         cells += hour ? hourBlock(site, hour, { compact: true }) : "<div></div>";
