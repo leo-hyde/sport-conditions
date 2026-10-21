@@ -45,12 +45,19 @@
           <button data-layout="hours">By hour</button>
         </div>
       </div>
+      <div id="next-good"></div>
+      <div class="rating-key" aria-label="Colour key">
+        <span><i class="good"></i>Good</span>
+        <span><i class="ok"></i>OK</span>
+        <span><i class="no"></i>No</span>
+        <span class="muted">Tap a site for its hours</span>
+      </div>
       <div id="overview" class="card"></div>
     </section>
 
     <section id="view-sites" hidden>
       <div class="view-head">
-        <h2>Sites</h2>
+        <h2>My sites</h2>
         <button id="add-site" class="btn primary small">+ Add site</button>
       </div>
       <div id="site-cards"></div>
@@ -121,69 +128,92 @@
 
   <!-- Settings (settings.js) -->
   <dialog id="settings-dialog">
-    <form id="settings-form" class="dialog-inner">
+    <form id="settings-form" class="dialog-inner settings">
       <h2 id="settings-title">Settings</h2>
-      <label class="field">
-        Wind speed unit
-        <select name="units" class="pill-select">
-          <option value="mph">mph</option>
-          <option value="kmh">km/h</option>
-          <option value="knots">knots</option>
-          <option value="ms">m/s</option>
-        </select>
-      </label>
-      <fieldset>
-        <legend>Good wind speed (<span class="unit-label">mph</span>)</legend>
-        <div class="range-inputs">
-          <input name="goodMin" type="number" min="0" max="99" required aria-label="Good minimum">
-          <span>to</span>
-          <input name="goodMax" type="number" min="0" max="99" required aria-label="Good maximum">
+
+      <section class="settings-section">
+        <h3>Wind</h3>
+        <label class="field">
+          Speed unit
+          <select name="units" class="pill-select">
+            <option value="mph">mph</option>
+            <option value="kmh">km/h</option>
+            <option value="knots">knots</option>
+            <option value="ms">m/s</option>
+          </select>
+        </label>
+        <div class="two-cols">
+          <fieldset>
+            <legend><i class="dot good"></i>Good (<span class="unit-label">mph</span>)</legend>
+            <div class="range-inputs">
+              <input name="goodMin" type="number" min="0" max="99" required aria-label="Good minimum">
+              <span>to</span>
+              <input name="goodMax" type="number" min="0" max="99" required aria-label="Good maximum">
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend><i class="dot ok"></i>OK (<span class="unit-label">mph</span>)</legend>
+            <div class="range-inputs">
+              <input name="okMin" type="number" min="0" max="99" required aria-label="OK minimum">
+              <span>to</span>
+              <input name="okMax" type="number" min="0" max="99" required aria-label="OK maximum">
+            </div>
+          </fieldset>
         </div>
-      </fieldset>
-      <fieldset>
-        <legend>OK wind speed (<span class="unit-label">mph</span>)</legend>
-        <div class="range-inputs">
-          <input name="okMin" type="number" min="0" max="99" required aria-label="OK minimum">
-          <span>to</span>
-          <input name="okMax" type="number" min="0" max="99" required aria-label="OK maximum">
+      </section>
+
+      <section class="settings-section">
+        <h3>Rain</h3>
+        <label class="field">
+          Rain cutoff (mm per hour)
+          <input name="rainCutoff" type="number" min="0" step="0.1" required>
+        </label>
+        <p class="hint">Hours with this much rain or more are rated No.</p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Flying day</h3>
+        <label class="field">
+          From and to
+          <select name="daylight" class="pill-select">
+            <option value="sun">Sunrise to sunset</option>
+            <option value="twilight">First to last light (civil twilight)</option>
+          </select>
+        </label>
+        <label class="field">
+          Extra minutes either side
+          <input name="extraMinutes" type="number" min="0" max="180" step="5" required>
+        </label>
+        <p class="hint">Civil twilight is when the sun is less than 6° below the horizon:
+          about 30–45 minutes either side, longer in summer.</p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Tides</h3>
+        <label class="field">
+          High tide buffer (hours either side of high water)
+          <input name="highTideWindow" type="number" min="0" max="6" step="0.5" required>
+        </label>
+        <p class="hint">For beach sites marked "doesn't work near high tide".</p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Sync between devices</h3>
+        <div id="sync-box" class="sync-box"></div>
+      </section>
+
+      <section class="settings-section">
+        <h3>Start again</h3>
+        <div class="dialog-actions start">
+          <button type="button" id="reset-settings" class="btn small">Reset settings to defaults</button>
+          <button type="button" id="reset-sites" class="btn small ghost danger">Reset my sites to the starter list</button>
         </div>
-      </fieldset>
-      <label class="field">
-        Rain cutoff (mm per hour)
-        <input name="rainCutoff" type="number" min="0" step="0.1" required>
-      </label>
-      <p class="hint">Hours with this much rain or more are rated No.</p>
-      <label class="field">
-        Flying day
-        <select name="daylight" class="pill-select">
-          <option value="sun">Sunrise to sunset</option>
-          <option value="twilight">First to last light (civil twilight)</option>
-        </select>
-      </label>
-      <label class="field">
-        Extra minutes either side
-        <input name="extraMinutes" type="number" min="0" max="180" step="5" required>
-      </label>
-      <p class="hint">Civil twilight is when the sun is less than 6° below the horizon:
-        about 30–45 minutes either side, longer in summer.</p>
-      <label class="field">
-        High tide buffer (hours either side of high water)
-        <input name="highTideWindow" type="number" min="0" max="6" step="0.5" required>
-      </label>
-      <p class="hint">Only for sites marked "doesn't work near high tide".</p>
+      </section>
+
       <p id="settings-error" class="error" hidden></p>
-      <div class="dialog-actions">
-        <button type="button" id="reset-settings" class="btn ghost">Reset to defaults</button>
-        <span class="spacer"></span>
+      <div class="dialog-actions sticky-actions">
         <button type="button" class="btn" data-close>Cancel</button>
         <button type="submit" class="btn primary">Save</button>
-      </div>
-      <hr>
-      <h3>Sync between devices</h3>
-      <div id="sync-box" class="sync-box"></div>
-      <hr>
-      <div class="dialog-actions">
-        <button type="button" id="reset-sites" class="btn ghost danger">Reset sites to starter list</button>
       </div>
     </form>
   </dialog>

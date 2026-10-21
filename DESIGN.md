@@ -37,7 +37,7 @@ feature. Change it here first, then in the code.
 | `--accent` | #2563eb | #5b8cff | buttons, active tab, links |
 | `--good` | #22c55e | #2fd36b | 🟢 good |
 | `--ok` | #fbbf24 | #f5c04a | 🟡 OK |
-| `--no` | #f3e3e3 | #33262a | 🔴 no (deliberately faint) |
+| `--no` | #eceff3 | #222833 | no: a calm grey, so good and OK hours stand out |
 
 - **Font:** the device's system font (SF Pro on Apple). Numbers use
   `tabular-nums` so they line up.
@@ -82,6 +82,23 @@ feature. Change it here first, then in the code.
 - A smaller header; the Sport and Forecast pickers take half the width each.
 - On site cards the day name sits above its strip, so hours get the full width.
 - The map fills most of the screen.
+
+## UX review (21 October 2026)
+
+What we checked: glanceability, hierarchy, colour carrying meaning,
+contrast, phone ergonomics and progressive disclosure.
+
+| Finding | Change |
+|---|---|
+| No headline answer: you had to scan a grid to find when to go | **"Next good session"** card at the top of the Overview (tap → that site) |
+| Red "No" cells dominated, so good/OK didn't pop; "No" text failed contrast | **"No" is now calm grey** with darker text (≈5:1 contrast) |
+| No colour key on the Overview | A **Good / OK / No key** under the headline |
+| Site cards showed 7 days, so one site per screen | Cards show **today and tomorrow**; "Show all 7 days" (with "3h good later" hint) |
+| Phone Overview: names cut off, tide labels on every day, ":00" wasted space | Names wrap; tide labels removed from the Overview; compact times ("8–11h") |
+| Live airport wind looked like site pins | **Dark square LIVE tags** with a pointer; a **map key** |
+| Settings was one long list, with Save at the very bottom | **Grouped sections**; Save/Cancel always visible at the bottom |
+| Phone dialogs had no affordance | Bottom sheets with a **grab handle**; they scroll inside |
+| No feedback while refreshing | The ↻ button **spins** while loading (still if "reduce motion" is on) |
 
 ## References
 - Apple Human Interface Guidelines: tap targets, hierarchy, legibility

@@ -43,10 +43,12 @@ async function loadSite(site, { tides = true } = {}) {
 // Fetch everything again, for every site at the same time.
 async function refresh() {
   setStatus("Loading forecast…");
+  document.getElementById("refresh").classList.add("spinning");
   state.failedSites = [];
   state.forecastCache = {};
   await Promise.all(state.sites.map(site => loadSite(site)));
   state.updatedAt = new Date();
+  document.getElementById("refresh").classList.remove("spinning");
   render();
   retryFailedSoon();
 }
@@ -87,7 +89,7 @@ function setStatus(text) {
 function statusText() {
   if (!state.updatedAt) return "Loading forecast…";
   const time = state.updatedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  let text = `${currentSport().icon} ${currentSport().name} · wind in ${unit().label} · updated ${time}`;
+  let text = `${currentSport().icon} ${currentSport().name} · ${unit().label} · updated ${time}`;
   if (state.failedSites.length > 0) text += ` · couldn't load ${state.failedSites.join(", ")}`;
   return text;
 }
@@ -232,6 +234,10 @@ function showView(view) {
   render();
 }
 
+// Cards show today and tomorrow; tapping "Show all 7 days" opens the rest.
+const SHOWN_DAYS = 2;
+const expandedSites = new Set();  // ids of cards showing all days
+
 // One card per site, with one strip of hour blocks per day.
 function renderSiteCards() {
   const cards = document.getElementById("site-cards");
@@ -241,7 +247,17 @@ function renderSiteCards() {
   }
   cards.innerHTML = state.sites.map(site => {
     const tides = state.tides[site.id];
-    const days = Object.entries(siteDays(site));
+    const allDays = Object.entries(siteDays(site));
+    const expanded = expandedSites.has(site.id);
+    const days = expanded ? allDays : allDays.slice(0, SHOWN_DAYS);
+    // A hint of what's hidden: how many good hours the later days have.
+    const laterGood = allDays.slice(SHOWN_DAYS).flatMap(([, hours]) => hours).filter(hour => hour.rating === "good").length;
+    const toggle = allDays.length > SHOWN_DAYS
+      ? `<button class="show-more" data-expand-site="${site.id}" aria-expanded="${expanded}">
+          ${expanded ? "Show fewer days ▴" : `Show all ${allDays.length} days ▾`}
+          ${!expanded && laterGood ? `<span class="badge good">${laterGood}h good later</span>` : ""}
+        </button>`
+      : "";
     const strips = days.length === 0
       ? '<p class="muted">No forecast yet</p>'
       : days.map(([date, hours]) => {
@@ -275,6 +291,7 @@ function renderSiteCards() {
         </div>
       </header>
       ${strips}
+      ${toggle}
     </article>`;
   }).join("");
 }
@@ -286,6 +303,15 @@ function renderSiteCards() {
 document.addEventListener("click", event => {
   const block = event.target.closest("[data-key]");
   if (block) showHourDetails(block.dataset.site, block.dataset.key);
+
+  const expandButton = event.target.closest("[data-expand-site]");
+  if (expandButton) {
+    const id = expandButton.dataset.expandSite;
+    if (expandedSites.has(id)) expandedSites.delete(id);
+    else expandedSites.add(id);
+    renderSiteCards();
+    return;
+  }
 
   const removeButton = event.target.closest("[data-remove-site]");
   if (removeButton) {

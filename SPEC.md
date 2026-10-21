@@ -127,6 +127,18 @@ the best one (or two).
 - **Live site:** https://leo-hyde.github.io/sport-conditions/ (GitHub Pages,
   updates a minute or two after each push to `main`).
 
+- **Sync between devices:** a private sync code (Settings → Sync), stored
+  by the Worker in Cloudflare KV (`SYNC` binding). One-tap sync links.
+- **Sites you create** are marked "Added by you" (`custom`).
+- **Tides only for beach sites** (`beach` column / site option), with a
+  **tide view**: tap a site's tide line for the day's curve.
+- **Site guide automation:** editing `data/sites.csv` on GitHub checks it,
+  rebuilds `sites.js` and republishes the site.
+- **Forecasts kept for 30 minutes** on the device to stay within the free
+  forecast service's daily limit.
+- **UX review** (see DESIGN.md): next-good-session headline, calm "No",
+  shorter site cards, grouped settings.
+
 ### Flagged as hard, skipped for now
 - **Live weather stations:** airport METARs (e.g. Newquay, EGHQ) are free
   and good, but block requests from web pages, so they need a tiny "proxy"

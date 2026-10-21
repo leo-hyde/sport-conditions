@@ -15,7 +15,56 @@ function renderOverview() {
     return;
   }
   const layouts = { days: overviewByDay, hours: overviewByHour };
+  document.getElementById("next-good").innerHTML = nextGoodSession();
   box.innerHTML = (layouts[state.layout] || overviewByDay)();
+}
+
+// The headline: the next stretch of good (or failing that, OK) hours at
+// any of your sites, so the first thing you see answers "when can I go?".
+function nextGoodSession() {
+  const sessions = [];
+  for (const { site, days } of ratedSites()) {
+    for (const hours of Object.values(days)) {
+      // Runs of back-to-back hours that are still to come and flyable.
+      let run = [];
+      for (const hour of [...hours, null]) {
+        if (hour && !hour.past && hour.rating !== "no") {
+          run.push(hour);
+        } else if (run.length > 0) {
+          sessions.push({ site, hours: run, good: count(run, "good") });
+          run = [];
+        }
+      }
+    }
+  }
+  if (sessions.length === 0) {
+    return `<div class="next-good none"><strong>Nothing flyable in the next 7 days</strong>
+      <span class="muted">at your sites. Check the map for other sites nearby.</span></div>`;
+  }
+  // The earliest session with good hours; if there are none, the earliest OK one.
+  const pick = list => list.sort((a, b) => a.hours[0].key.localeCompare(b.hours[0].key))[0];
+  const best = pick(sessions.filter(s => s.good > 0)) || pick(sessions);
+  const rating = best.good > 0 ? "good" : "ok";
+  const amount = best.good > 0 ? `${best.good}h good` : `${best.hours.length}h OK`;
+  return `<button class="next-good ${rating}" data-goto-site="${best.site.id}">
+    <span class="next-label">Next ${rating === "good" ? "good" : "flyable"} session</span>
+    <strong>${dayLabel(best.hours[0].date)} ${shortSpan(best.hours)} · ${esc(best.site.name)}</strong>
+    <span>${amount} · ${[...new Set(best.hours.map(hour => hour.direction))].join("/")} · ${speedRange(best.hours)} ${unit().label}</span>
+  </button>`;
+}
+
+// "12–16": the lowest to highest wind speed over some hours.
+function speedRange(hours) {
+  const speeds = hours.map(hour => hour.speed);
+  const low = Math.min(...speeds);
+  const high = Math.max(...speeds);
+  return low === high ? `${low}` : `${low}–${high}`;
+}
+
+// "16–19": a compact time span for small spaces.
+function shortSpan(hours) {
+  const end = Number(hours[hours.length - 1].hourOfDay) + 1;
+  return `${Number(hours[0].hourOfDay)}–${end}`;
 }
 
 // Every site with its rated days, worked out once per drawing.
@@ -52,7 +101,7 @@ function overviewByDay() {
       const ok = count(hours, "ok");
       const best = good > 0 ? "good" : ok > 0 ? "ok" : "no";
       const text = [good && `${good}h good`, ok && `${ok}h OK`].filter(Boolean).join("<br>") || "–";
-      const when = flyable.length > 0 ? `<small>${timeSpan(flyable)}</small>` : "";
+      const when = flyable.length > 0 ? `<small>${shortSpan(flyable)}h</small>` : "";
       return `<td class="cell ${best}" data-goto-site="${site.id}">${text}${when}</td>`;
     }).join("");
     return `<tr>
@@ -65,7 +114,7 @@ function overviewByDay() {
   // with the site names staying put.
   return `<div class="table-scroll"><table class="by-day">
     <thead><tr><th></th>${dates.map(date =>
-      `<th>${dayLabel(date)}<small>${tideRange(date)}</small></th>`).join("")}</tr></thead>
+      `<th>${dayLabel(date)}</th>`).join("")}</tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -91,7 +140,7 @@ function overviewByHour() {
 
     const columns = `minmax(76px, 140px) repeat(${hourLabels.length}, 1fr)`;
     return `<div class="heatmap-day">
-      <h3>${dayLabel(date)} <small class="muted">${tideRange(date)} tides · wind in ${unit().label}</small></h3>
+      <h3>${dayLabel(date)} <small class="muted">wind in ${unit().label}</small></h3>
       <div class="heatmap" style="grid-template-columns: ${columns}">${cells}</div>
     </div>`;
   }).join("");
