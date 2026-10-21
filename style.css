@@ -841,3 +841,35 @@ details .compare { margin-top: 8px; }
 .key-guide { width: 14px; height: 10px; border-radius: 999px; background: #d9c4c6; border: 1px solid #fff; box-shadow: 0 0 0 1px #94a3b8; }
 .key-live { background: #0f172a; color: #86efac; font-size: 8px; font-weight: 700; padding: 2px 4px; border-radius: 3px; }
 .key-ratings i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+/* Tide view (tideChart.js) */
+button.tide-line {
+  display: block;
+  width: 100%;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+button.tide-line .more { color: var(--accent); font-weight: 600; white-space: nowrap; }
+button.tide-line:hover { color: var(--text); }
+.tide-chart .tide-line { fill: none; stroke: #0ea5e9; stroke-width: 2.5; stroke-linejoin: round; }
+.tide-chart .band.fly { fill: var(--good); opacity: 0.12; }
+.tide-chart .band.avoid { fill: var(--danger); opacity: 0.14; }
+.tide-chart .turn { stroke: var(--surface); stroke-width: 2; }
+.tide-chart .turn.high { fill: #0369a1; }
+.tide-chart .turn.low { fill: #7dd3fc; }
+.tide-chart .turn-label { fill: var(--text); font-size: 11px; font-weight: 700; }
+.tide-chart .now-line { stroke: var(--accent); stroke-width: 1.5; }
+.tide-chart .now-label { fill: var(--accent); font-size: 11px; font-weight: 700; }
+.key-line.tide { background: #0ea5e9; }
+.key-band.fly { background: var(--good); opacity: 0.35; }
+.key-band.avoid { background: var(--danger); opacity: 0.35; }
+.tide-events { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; }
+.tide-events li::before { content: "● "; }
+.tide-events li.high::before { color: #0369a1; }
+.tide-events li.low::before { color: #7dd3fc; }

@@ -247,7 +247,8 @@ function renderSiteCards() {
       : days.map(([date, hours]) => {
           const sun = flyingWindow(site, date, state.settings);
           const tideLine = tides
-            ? `<div class="tide-line">🌊 ${tideSummary(tides, date)} · ${tideRange(date)}</div>`
+            ? `<button class="tide-line" data-tide-site="${site.id}" data-tide-date="${date}">
+                🌊 ${tideSummary(tides, date)} · ${tideRange(date)} <span class="more">Tides ›</span></button>`
             : "";
           return `<div class="day">
             <div class="day-label">${dayLabel(date)}<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)}</small></div>
@@ -258,7 +259,9 @@ function renderSiteCards() {
           </div>`;
         }).join("");
 
-    const tags = [site.custom && "Added by you", site.beach && "Beach", site.notHighTide && "Not at high tide"].filter(Boolean)
+    // Right now, for beach sites: e.g. "🌊 Rising · HW 17:10".
+    const tideTag = tides && tideNow(tides) ? `🌊 ${tideNow(tides)}` : "";
+    const tags = [site.custom && "Added by you", tideTag, site.notHighTide && "Not at high tide"].filter(Boolean)
       .map(tag => `<span class="tag">${tag}</span>`).join("");
     return `<article class="card site" id="site-${site.id}">
       <header class="card-head">
@@ -339,7 +342,12 @@ modelSelect.innerHTML = MODELS.map(model =>
   `<option value="${model.id}">${model.name}</option>`).join("");
 modelSelect.addEventListener("change", () => changeModel(modelSelect.value));
 
-document.getElementById("refresh").addEventListener("click", refresh);
+// ↻ fetches fresh forecasts, rather than ones saved in the last 30 minutes.
+document.getElementById("refresh").addEventListener("click", async () => {
+  skipSavedForecasts = true;
+  await refresh();
+  skipSavedForecasts = false;
+});
 document.getElementById("open-settings").addEventListener("click", openSettings);
 document.getElementById("add-site").addEventListener("click", () => openSiteForm());
 

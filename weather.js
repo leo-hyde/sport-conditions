@@ -57,16 +57,58 @@ function toHours(data) {
     .filter(hour => !hour.missing);
 }
 
+// Forecasts are kept on this device for 30 minutes (they only update about
+// hourly), so reloading the page doesn't fetch them all again. The free
+// weather service has a daily limit per internet connection, and this keeps
+// us well under it. The ↻ button sets skipSavedForecasts to fetch fresh ones.
+const SAVED_FORECAST_MINUTES = 30;
+let skipSavedForecasts = false;
+
 // Fetches JSON from a web address. If the server says "too many requests"
-// (status 429), it waits a moment and tries again, up to 3 times.
+// (status 429), it waits a moment and tries again, up to 3 times. For the
+// weather service, it uses a recent saved copy if there is one, and if the
+// service won't answer at all, an older saved copy rather than nothing.
 async function fetchJson(url, attempts = 3) {
-  const response = await fetch(url);
-  if (response.status === 429 && attempts > 1) {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return fetchJson(url, attempts - 1);
+  const saveable = url.includes("open-meteo.com");
+  const saved = saveable ? await savedJson(url) : null;
+  if (saved && saved.fresh && !skipSavedForecasts) return saved.data;
+
+  try {
+    const response = await fetch(url);
+    if (response.status === 429 && attempts > 1) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return fetchJson(url, attempts - 1);
+    }
+    if (!response.ok) throw new Error(`Request failed (${response.status})`);
+    const data = await response.json();
+    if (saveable) saveJson(url, data);
+    return data;
+  } catch (error) {
+    if (saved) return saved.data;  // old, but better than nothing
+    throw error;
   }
-  if (!response.ok) throw new Error(`Request failed (${response.status})`);
-  return response.json();
+}
+
+// The browser's "Cache Storage" keeps whole responses. It isn't available
+// when the page is opened by double-clicking the file, so errors are ignored.
+async function savedJson(url) {
+  try {
+    const hit = await (await caches.open("forecasts")).match(url);
+    if (!hit) return null;
+    const ageMinutes = (Date.now() - Number(hit.headers.get("x-saved-at"))) / 60000;
+    return { data: await hit.json(), fresh: ageMinutes < SAVED_FORECAST_MINUTES };
+  } catch {
+    return null;
+  }
+}
+
+async function saveJson(url, data) {
+  try {
+    const response = new Response(JSON.stringify(data), { headers: { "x-saved-at": String(Date.now()) } });
+    await (await caches.open("forecasts")).put(url, response);
+  } catch {
+    // No cache available: fine, we just fetch next time.
+  }
 }
 
 async function fetchForecast(site, model) {
