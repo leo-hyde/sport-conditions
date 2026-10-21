@@ -1,10 +1,19 @@
-// Step 1: show the hourly forecast for one site (Fistral), numbers only.
+// Show the hourly forecast for one site (Fistral), coloured good / OK / no.
+
+// Speed rules belong to the sport, so they apply to every paragliding site.
+const PARAGLIDING = {
+  speedGood: { min: 14, max: 16 },  // mph
+  speedOk:   { min: 12, max: 18 },  // mph
+};
 
 // The site we're showing. Later this will become a list of sites.
+// Direction rules belong to the site.
 const site = {
   name: "Fistral",
   lat: 50.4167,
   lon: -5.1003,
+  goodDirections: ["W", "WNW", "NW"],
+  okDirections: ["WSW", "NNW"],
 };
 
 // The 16 compass points, in order clockwise from North.
@@ -45,6 +54,37 @@ function toHours(data) {
   }));
 }
 
+// Each check gives "good", "ok" or "no".
+function rateDirection(direction, site) {
+  if (site.goodDirections.includes(direction)) return "good";
+  if (site.okDirections.includes(direction)) return "ok";
+  return "no";
+}
+
+function rateSpeed(speed, sport) {
+  if (speed >= sport.speedGood.min && speed <= sport.speedGood.max) return "good";
+  if (speed >= sport.speedOk.min && speed <= sport.speedOk.max) return "ok";
+  return "no";
+}
+
+function rateRain(rain) {
+  return rain > 0 ? "no" : "good";
+}
+
+// The hour's overall rating is the worst of the three checks.
+function rateHour(hour, site, sport) {
+  const ratings = [
+    rateDirection(hour.direction, site),
+    rateSpeed(hour.speed, sport),
+    rateRain(hour.rain),
+  ];
+  if (ratings.includes("no")) return "no";
+  if (ratings.includes("ok")) return "ok";
+  return "good";
+}
+
+const RATING_LABELS = { good: "🟢 Good", ok: "🟡 OK", no: "🔴 No" };
+
 // Draw one table per day, showing daylight hours only.
 function showForecast(hours) {
   const daylight = hours.filter(hour => hour.isDaylight);
@@ -59,13 +99,15 @@ function showForecast(hours) {
       if (currentDay !== "") html += "</table>";
       html += `<h3>${day}</h3>
         <table>
-          <tr><th>Time</th><th>Wind (mph)</th><th>Gusts (mph)</th><th>Direction</th><th>Rain (mm)</th></tr>`;
+          <tr><th>Time</th><th>Rating</th><th>Wind (mph)</th><th>Gusts (mph)</th><th>Direction</th><th>Rain (mm)</th></tr>`;
       currentDay = day;
     }
 
     const time = hour.time.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    html += `<tr>
+    const rating = rateHour(hour, site, PARAGLIDING);
+    html += `<tr class="${rating}">
       <td>${time}</td>
+      <td>${RATING_LABELS[rating]}</td>
       <td>${hour.speed}</td>
       <td>${hour.gusts}</td>
       <td>${hour.direction}</td>

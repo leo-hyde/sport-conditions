@@ -31,3 +31,8 @@ th {
   font-size: 0.85em;
   color: #666;
 }
+
+/* Row colours for each rating */
+tr.good { background: #dff5e1; }
+tr.ok   { background: #fdf3d0; }
+tr.no   { background: #fbe1e1; }
