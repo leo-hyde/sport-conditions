@@ -101,8 +101,9 @@ the best one (or two).
   The site form's search finds guide sites too.
 - **A mini compass** on each site card and map popup, showing that site's
   good and OK directions.
-- **Animated wind map:** the Map tab can switch to Windy's free embeddable
-  map (flowing wind particles), using the same model as the app.
+- **Animated wind flow on our own map** (leaflet-velocity, fed a 12 × 12
+  grid of Open-Meteo wind for 7 days in one request; follows the time
+  slider). Windy's embedded map is still there as a second view.
 - **Tides** for coastal sites: high and low water times, rising or falling,
   approximate height, and springs / neaps / mid (from the moon's phase).
   Sites can be marked "doesn't work near high tide", with a buffer setting

@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="light dark">
   <title>Sport Conditions</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -82,6 +83,7 @@
         <div class="map-toggles">
           <label><input id="show-library" type="checkbox" checked> All sites from the guide</label>
           <label><input id="show-stations" type="checkbox" checked> Live airport wind (now)</label>
+          <label><input id="show-flow" type="checkbox" checked> Animated wind flow</label>
         </div>
         <p id="library-note" class="hint"></p>
         <p class="hint">Drag along the bars to move through time; their colour is the best
@@ -231,9 +233,11 @@
   <script src="sitesForm.js"></script>
   <script src="overview.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
   <script src="map.js"></script>
   <script src="stations.js"></script>
   <script src="windChart.js"></script>
+  <script src="windFlow.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -45,6 +45,7 @@ function setupMap() {
   }
   drawLibrary();
   setupStations();
+  setupWindFlow();
 
   // When the map stops moving, fetch forecasts for the guide sites in view.
   map.on("moveend", () => {
@@ -91,6 +92,7 @@ function renderMap() {
   drawLibrary();
   drawTime();
   loadLibraryForecasts();  // e.g. after switching model
+  loadWindFlow();
 }
 
 // Redraws just the parts that change with the time: quicker than renderMap.
@@ -105,6 +107,7 @@ function drawTime() {
   drawTimeline(keys);
   drawPins();
   drawRatedLibrary();
+  drawWindFlow();
 }
 
 // ---------- The timeline (like Windy's) ----------
