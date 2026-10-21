@@ -13,8 +13,10 @@ let placingPin = false;  // true after tapping "Add site on map"
 // Forecasts for guide sites near where you're looking: model → { site index → hours }.
 const libraryForecasts = {};
 // Only fetch guide-site forecasts when this many or fewer are on screen,
-// so we don't ask the weather service for hundreds at once.
-const MAX_RATED_GUIDE_SITES = 40;
+// so we don't ask the weather service for hundreds at once. They're fetched
+// in batches of 40 places per request.
+const MAX_RATED_GUIDE_SITES = 120;
+const GUIDE_BATCH = 40;
 
 // The map is only created the first time the Map tab is opened, because
 // Leaflet needs to be able to see how big its box is.
@@ -290,15 +292,23 @@ async function loadLibraryForecasts() {
   const missing = visible.filter(({ index }) => !libraryForecasts[model][index]);
   if (missing.length === 0) return;
 
-  try {
-    const results = await fetchForecasts(missing.map(({ site }) => site), model);
-    missing.forEach(({ index }, i) => { libraryForecasts[model][index] = results[i]; });
-  } catch {
-    note.textContent = "Couldn't load forecasts for the guide sites.";
-    return;
+  note.textContent = `Loading forecasts for ${missing.length} sites…`;
+  for (let start = 0; start < missing.length; start += GUIDE_BATCH) {
+    const batch = missing.slice(start, start + GUIDE_BATCH);
+    try {
+      const results = await fetchForecasts(batch.map(({ site }) => site), model);
+      batch.forEach(({ index }, i) => { libraryForecasts[model][index] = results[i]; });
+    } catch {
+      // Usually the free weather service asking us to slow down: try again soon.
+      note.textContent = "Some sites are still grey: trying again in a minute.";
+      clearTimeout(libraryTimer);
+      libraryTimer = setTimeout(loadLibraryForecasts, 60000);
+      break;
+    }
+    drawLibrary();
+    drawRatedLibrary();
   }
-  drawLibrary();
-  drawRatedLibrary();
+  if (note.textContent.startsWith("Loading")) note.textContent = "";
 }
 
 // The popup for a guide site: its directions and (if we have a forecast) how

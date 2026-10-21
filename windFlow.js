@@ -4,6 +4,7 @@
 // map, all 7 days, in one request. Moving through time then just picks a
 // different hour from that data, without fetching again.
 
+const FLOW_MIN_ZOOM = 7;  // further out than this, the flow is too coarse to look right
 const FLOW_GRID = 10;  // 10 × 10 = 100 points: smooth enough, and gentle on the free service
 let flowLayer = null;
 let flowData = null;  // { model, bounds, times, points: [{ speed: [...], degrees: [...] }] }
@@ -13,6 +14,12 @@ let flowTimer = null;
 function setupWindFlow() {
   if (typeof L.velocityLayer !== "function") return;  // the library didn't load
   map.on("moveend", () => {
+    // If the flow we have doesn't cover the new view, hide it straight away
+    // rather than leave a patch of particles while the new area loads.
+    if (flowLayer && flowNeedsReload()) {
+      flowLayer.remove();
+      flowLayer = null;
+    }
     clearTimeout(flowTimer);
     flowTimer = setTimeout(loadWindFlow, 700);
   });
@@ -34,10 +41,16 @@ function flowNeedsReload() {
 async function loadWindFlow() {
   if (!map || typeof L.velocityLayer !== "function") return;
   if (!document.getElementById("show-flow").checked) return drawWindFlow();
+  if (map.getZoom() < FLOW_MIN_ZOOM) {
+    document.getElementById("flow-note").textContent = "Zoom in to see the wind flow.";
+    return drawWindFlow();
+  }
+  document.getElementById("flow-note").textContent = "";
   if (!flowNeedsReload()) return drawWindFlow();
 
-  // A bit bigger than the screen, so small moves don't need a new fetch.
-  const view = map.getBounds().pad(0.3);
+  // Half as big again as the screen on every side, so moving around a bit
+  // doesn't need a new fetch.
+  const view = map.getBounds().pad(0.5);
   const bounds = { north: view.getNorth(), south: view.getSouth(), east: view.getEast(), west: view.getWest() };
   // Points go row by row from north to south, west to east: the order
   // leaflet-velocity expects.
@@ -77,7 +90,7 @@ async function loadWindFlow() {
 // leaflet-velocity wants the wind split into two grids: how fast it's going
 // east (u) and how fast it's going north (v).
 function drawWindFlow() {
-  const wanted = document.getElementById("show-flow").checked;
+  const wanted = document.getElementById("show-flow").checked && map.getZoom() >= FLOW_MIN_ZOOM;
   if (!wanted || !flowData || typeof L.velocityLayer !== "function") {
     if (flowLayer) flowLayer.remove();
     flowLayer = null;
