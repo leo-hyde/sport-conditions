@@ -7,8 +7,9 @@ let editingId = null;  // the id of the site being edited, or null when adding
 let pickedDirections = {};  // compass point → "good", "ok" or "no"
 let foundPlaces = [];  // the latest place search results
 
-// Pass a site id to edit that site, or nothing to add a new one.
-function openSiteForm(siteId) {
+// Pass a site id to edit that site, or nothing to add a new one. `place`
+// can give a starting location, e.g. from a pin dropped on the map.
+function openSiteForm(siteId, place = null) {
   const site = state.sites.find(site => site.id === siteId);
   editingId = site ? site.id : null;
 
@@ -20,6 +21,10 @@ function openSiteForm(siteId) {
   siteForm.name.value = site ? site.name : "";
   siteForm.lat.value = site ? site.lat : "";
   siteForm.lon.value = site ? site.lon : "";
+  if (place) {
+    siteForm.lat.value = place.lat.toFixed(4);
+    siteForm.lon.value = place.lon.toFixed(4);
+  }
 
   siteForm.coastal.checked = Boolean(site && site.coastal);
   siteForm.notHighTide.checked = Boolean(site && site.notHighTide);

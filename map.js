@@ -1,11 +1,21 @@
-// The Map tab: your sites as coloured pins, every site in the site guide as
-// small dots, and a time slider to move through the forecast. Uses the
+// The Map tab: your sites as big coloured pins (with a gold star), sites from
+// the site guide as small dots (rated too, once you zoom in), and a time slider
+// to move through the forecast. You can drop a pin to add a new site. Uses the
 // Leaflet map library, loaded in index.html. It can also switch to Windy's
 // animated wind map, which Windy lets anyone embed for free.
 
 let map = null;
 let pinLayer = null;
-let libraryLayer = null;
+let libraryLayer = null;  // grey dots: guide sites without a forecast yet
+let ratedLibraryLayer = null;  // guide sites with a forecast, coloured by rating
+let libraryTimer = null;
+let placingPin = false;  // true after tapping "Add site on map"
+
+// Forecasts for guide sites near where you're looking: model → { site index → hours }.
+const libraryForecasts = {};
+// Only fetch guide-site forecasts when this many or fewer are on screen,
+// so we don't ask the weather service for hundreds at once.
+const MAX_RATED_GUIDE_SITES = 40;
 
 // The map is only created the first time the Map tab is opened, because
 // Leaflet needs to be able to see how big its box is.
@@ -25,6 +35,7 @@ function setupMap() {
     maxZoom: 17,
   }).addTo(map);
   libraryLayer = L.layerGroup().addTo(map);
+  ratedLibraryLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
 
   if (state.sites.length > 0) {
@@ -34,6 +45,27 @@ function setupMap() {
   }
   drawLibrary();
   setupStations();
+
+  // When the map stops moving, fetch forecasts for the guide sites in view.
+  map.on("moveend", () => {
+    clearTimeout(libraryTimer);
+    libraryTimer = setTimeout(loadLibraryForecasts, 600);
+  });
+  loadLibraryForecasts();
+
+  // Tapping the map while placing a pin, or a long press / right-click at any
+  // time, starts adding a site there.
+  map.on("click", event => {
+    if (!placingPin) return;
+    stopPlacingPin();
+    addSiteAt(event.latlng);
+  });
+  map.on("contextmenu", event => {
+    L.popup()
+      .setLatLng(event.latlng)
+      .setContent(`<button class="btn small primary" data-add-here="${event.latlng.lat},${event.latlng.lng}">📍 Add a site here</button>`)
+      .openOn(map);
+  });
 }
 
 // Every hour shown anywhere, in order, e.g. ["2026-10-21T08", …].
@@ -58,6 +90,7 @@ function renderMap() {
   map.invalidateSize();  // the map's box may have changed size while hidden
   drawLibrary();
   drawTime();
+  loadLibraryForecasts();  // e.g. after switching model
 }
 
 // Redraws just the parts that change with the time: quicker than renderMap.
@@ -71,6 +104,7 @@ function drawTime() {
 
   drawTimeline(keys);
   drawPins();
+  drawRatedLibrary();
 }
 
 // ---------- The timeline (like Windy's) ----------
@@ -148,9 +182,10 @@ function drawPins() {
   pinLayer.clearLayers();
   for (const site of state.sites) {
     const hour = (state.forecasts[site.id] || []).find(hour => hour.key === state.mapTime);
+    // Your sites are big pins with a gold ring and star, so they stand out.
     const html = hour
-      ? `<div class="map-pin ${rateHour(hour, site, state.settings, state.tides[site.id])}">${arrow(hour.degrees)}<span>${hour.speed}</span><small>${unit().label}</small></div>`
-      : '<div class="map-pin night">–</div>';
+      ? `<div class="map-pin mine ${rateHour(hour, site, state.settings, state.tides[site.id])}">${arrow(hour.degrees)}<span>${hour.speed}</span><small>${unit().label}</small><i class="pin-star">★</i></div>`
+      : '<div class="map-pin mine night">–<i class="pin-star">★</i></div>';
 
     L.marker([site.lat, site.lon], {
       icon: L.divIcon({ html, className: "", iconSize: [44, 44], iconAnchor: [22, 22] }),
@@ -163,33 +198,148 @@ function drawPins() {
   }
 }
 
-// ---------- The site guide: every other site as a small dot ----------
+// ---------- The site guide: every other site ----------
 
+// Guide sites that aren't already yours and aren't closed, with their place
+// in SITE_LIBRARY (the "index").
+function guideSites() {
+  const simple = name => name.toLowerCase().replace(/\s/g, "");
+  const mine = new Set(state.sites.map(site => simple(site.name)));
+  return SITE_LIBRARY
+    .map((site, index) => ({ site, index }))
+    .filter(({ site }) => !site.closed && !mine.has(simple(site.name)));
+}
+
+function guideForecast(index) {
+  return (libraryForecasts[state.model] || {})[index];
+}
+
+// Grey dots for guide sites we don't have a forecast for (yet).
 function drawLibrary() {
   libraryLayer.clearLayers();
   if (!document.getElementById("show-library").checked) return;
-
-  const mine = new Set(state.sites.map(site => site.name.toLowerCase().replace(/\s/g, "")));
-  SITE_LIBRARY.forEach((site, index) => {
-    if (site.closed || mine.has(site.name.toLowerCase().replace(/\s/g, ""))) return;
+  for (const { site, index } of guideSites()) {
+    if (guideForecast(index)) continue;  // drawn by drawRatedLibrary instead
     L.circleMarker([site.lat, site.lon], {
       radius: 6, weight: 2, color: "#ffffff", fillColor: "#64748b", fillOpacity: 0.9,
     })
       .bindPopup(() => librarySitePopup(site, index))
       .addTo(libraryLayer);
-  });
+  }
 }
 
+// Small coloured pins (rating and wind speed at the map's time) for guide
+// sites we have a forecast for. Redrawn as you move through time.
+function drawRatedLibrary() {
+  if (!ratedLibraryLayer) return;
+  ratedLibraryLayer.clearLayers();
+  if (!document.getElementById("show-library").checked) return;
+  for (const { site, index } of guideSites()) {
+    const hour = (guideForecast(index) || []).find(hour => hour.key === state.mapTime);
+    if (!hour) continue;
+    const rating = rateHour(hour, site, state.settings);
+    L.marker([site.lat, site.lon], {
+      icon: L.divIcon({
+        className: "",
+        html: `<div class="lib-pin ${rating}">${arrow(hour.degrees)}${hour.speed}</div>`,
+        iconSize: [40, 22],
+        iconAnchor: [20, 11],
+      }),
+      title: site.name,
+    })
+      .bindPopup(() => librarySitePopup(site, index))
+      .addTo(ratedLibraryLayer);
+  }
+}
+
+// Fetches forecasts for the guide sites on screen (if there aren't too many),
+// all in one request, then redraws them.
+async function loadLibraryForecasts() {
+  const note = document.getElementById("library-note");
+  if (!map || !document.getElementById("show-library").checked) {
+    note.textContent = "";
+    return;
+  }
+  const bounds = map.getBounds();
+  const visible = guideSites().filter(({ site }) => bounds.contains([site.lat, site.lon]));
+  if (visible.length > MAX_RATED_GUIDE_SITES) {
+    note.textContent = `Zoom in to see forecasts for the ${visible.length} guide sites in view.`;
+    return;
+  }
+  note.textContent = "";
+  const model = state.model;
+  if (!libraryForecasts[model]) libraryForecasts[model] = {};
+  const missing = visible.filter(({ index }) => !libraryForecasts[model][index]);
+  if (missing.length === 0) return;
+
+  try {
+    const results = await fetchForecasts(missing.map(({ site }) => site), model);
+    missing.forEach(({ index }, i) => { libraryForecasts[model][index] = results[i]; });
+  } catch {
+    note.textContent = "Couldn't load forecasts for the guide sites.";
+    return;
+  }
+  drawLibrary();
+  drawRatedLibrary();
+}
+
+// The popup for a guide site: its directions and (if we have a forecast) how
+// it looks at the map's time, with a button to add it to your sites.
 function librarySitePopup(site, index) {
+  const hour = (guideForecast(index) || []).find(hour => hour.key === state.mapTime);
+  let forecast = "";
+  if (hour) {
+    const checks = checkHour(hour, site, state.settings);
+    const rating = worstRating(checks.map(check => check.rating));
+    forecast = `<p class="popup-forecast">
+        <span class="badge ${rating}">${RATING_TEXT[rating]}</span>
+        ${dayLabel(hour.date)} ${hour.hourOfDay}:00 · ${arrow(hour.degrees)} ${hour.direction}
+        ${hour.speed} ${unit().label}, gusts ${hour.gusts}
+      </p>
+      <ul class="checks small">${checks.map(check =>
+        `<li class="${check.rating}"><span class="check-icon">${CHECK_ICONS[check.rating]}</span>${check.text}</li>`).join("")}</ul>`;
+  }
   return `<div class="lib-popup">
     ${compassSvg(directionRatings(site), { size: 64 })}
     <div>
       <strong>${esc(site.name)}</strong>
       <p class="muted">Good: ${site.goodDirections.join(" ") || "–"}<br>OK: ${site.okDirections.join(" ") || "–"}</p>
+      ${forecast}
       <button class="btn small primary" data-add-library="${index}">☆ Add to my sites</button>
     </div>
   </div>`;
 }
+
+// ---------- Dropping a pin to add a new site ----------
+
+function startPlacingPin() {
+  placingPin = true;
+  document.getElementById("map").classList.add("placing");
+  showToast("Tap the map where your site is", "Cancel", stopPlacingPin);
+}
+
+function stopPlacingPin() {
+  placingPin = false;
+  document.getElementById("map").classList.remove("placing");
+  document.getElementById("toast").hidden = true;
+}
+
+function addSiteAt(latlng) {
+  map.closePopup();
+  openSiteForm(null, { lat: latlng.lat, lon: latlng.lng });
+}
+
+document.getElementById("drop-pin").addEventListener("click", () => {
+  if (placingPin) stopPlacingPin();
+  else startPlacingPin();
+});
+
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-add-here]");
+  if (!button) return;
+  const [lat, lng] = button.dataset.addHere.split(",").map(Number);
+  addSiteAt({ lat, lng });
+});
 
 document.addEventListener("click", async event => {
   const button = event.target.closest("[data-add-library]");
@@ -202,7 +352,11 @@ document.addEventListener("click", async event => {
   render();
 });
 
-document.getElementById("show-library").addEventListener("change", drawLibrary);
+document.getElementById("show-library").addEventListener("change", () => {
+  drawLibrary();
+  drawRatedLibrary();
+  loadLibraryForecasts();
+});
 
 // ---------- Windy's animated wind map ----------
 

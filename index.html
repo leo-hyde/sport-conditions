@@ -61,6 +61,7 @@
           <button data-mode="sites" class="active">My sites</button>
           <button data-mode="windy">Animated wind (Windy)</button>
         </div>
+        <button id="drop-pin" class="btn small">📍 Add site on map</button>
       </div>
       <div id="map"></div>
       <div id="windy-box" hidden>
@@ -82,8 +83,10 @@
           <label><input id="show-library" type="checkbox" checked> All sites from the guide</label>
           <label><input id="show-stations" type="checkbox" checked> Live airport wind (now)</label>
         </div>
+        <p id="library-note" class="hint"></p>
         <p class="hint">Drag along the bars to move through time; their colour is the best
-          rating at any of your sites. Tap a coloured pin for details, or a grey dot to add that site.</p>
+          rating at any of your sites. ★ pins are your sites; small pins and dots are other sites from
+          the guide (tap one to add it). Long-press the map to add a site anywhere.</p>
       </div>
     </section>
   </main>

@@ -73,6 +73,17 @@ async function fetchForecast(site, model) {
   return toHours(await fetchJson(forecastUrl(site, model)));
 }
 
+// Forecasts for several places in one request (Open-Meteo accepts lists of
+// latitudes and longitudes). Returns a list of hours for each place, in order.
+async function fetchForecasts(places, model) {
+  const combined = {
+    lat: places.map(place => place.lat).join(","),
+    lon: places.map(place => place.lon).join(","),
+  };
+  const data = await fetchJson(forecastUrl(combined, model));
+  return (Array.isArray(data) ? data : [data]).map(toHours);
+}
+
 // The current hour in UK time, in the same form as hour.key, so we can
 // tell which hours are in the past.
 function londonNowKey() {
