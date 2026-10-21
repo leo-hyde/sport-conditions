@@ -1,4 +1,5 @@
-// Show the hourly forecast for one site (Fistral), coloured good / OK / no.
+// Show every site's hourly forecast as a strip of coloured blocks,
+// with a summary of which sites look good today and tomorrow.
 
 // Speed rules belong to the sport, so they apply to every paragliding site.
 const PARAGLIDING = {
@@ -6,15 +7,8 @@ const PARAGLIDING = {
   speedOk:   { min: 12, max: 18 },  // mph
 };
 
-// The site we're showing. Later this will become a list of sites.
-// Direction rules belong to the site.
-const site = {
-  name: "Fistral",
-  lat: 50.4167,
-  lon: -5.1003,
-  goodDirections: ["W", "WNW", "NW"],
-  okDirections: ["WSW", "NNW"],
-};
+// The sites come from sites.js, which is loaded before this file.
+const sites = STARTER_SITES;
 
 // The 16 compass points, in order clockwise from North.
 const COMPASS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
@@ -45,9 +39,11 @@ function forecastUrl(site) {
 function toHours(data) {
   const h = data.hourly;
   return h.time.map((time, i) => ({
-    time: new Date(time),
+    date: time.slice(0, 10),  // "2026-10-21"
+    hourOfDay: time.slice(11, 13),  // "14"
     speed: Math.round(h.wind_speed_10m[i]),
     gusts: Math.round(h.wind_gusts_10m[i]),
+    degrees: h.wind_direction_10m[i],
     direction: degreesToCompass(h.wind_direction_10m[i]),
     rain: h.precipitation[i],
     isDaylight: h.is_day[i] === 1,
@@ -83,51 +79,85 @@ function rateHour(hour, site, sport) {
   return "good";
 }
 
-const RATING_LABELS = { good: "🟢 Good", ok: "🟡 OK", no: "🔴 No" };
-
-// Draw one table per day, showing daylight hours only.
-function showForecast(hours) {
-  const daylight = hours.filter(hour => hour.isDaylight);
-  let html = "";
-  let currentDay = "";
-
-  for (const hour of daylight) {
-    const day = hour.time.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
-
-    // A new day starts a new table.
-    if (day !== currentDay) {
-      if (currentDay !== "") html += "</table>";
-      html += `<h3>${day}</h3>
-        <table>
-          <tr><th>Time</th><th>Rating</th><th>Wind (mph)</th><th>Gusts (mph)</th><th>Direction</th><th>Rain (mm)</th></tr>`;
-      currentDay = day;
-    }
-
-    const time = hour.time.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    const rating = rateHour(hour, site, PARAGLIDING);
-    html += `<tr class="${rating}">
-      <td>${time}</td>
-      <td>${RATING_LABELS[rating]}</td>
-      <td>${hour.speed}</td>
-      <td>${hour.gusts}</td>
-      <td>${hour.direction}</td>
-      <td>${hour.rain}</td>
-    </tr>`;
+// Group a site's daylight hours by day: { "2026-10-21": [hour, hour, …], … }
+function groupByDay(hours) {
+  const days = {};
+  for (const hour of hours.filter(hour => hour.isDaylight)) {
+    if (!days[hour.date]) days[hour.date] = [];
+    days[hour.date].push(hour);
   }
-  html += "</table>";
-
-  document.getElementById("forecast").innerHTML = html;
+  return days;
 }
 
-// Fetch the forecast, then show it. "async" lets us wait for the internet
-// without freezing the page.
+// "Today", "Tomorrow", or e.g. "Fri 23".
+function dayLabel(date, index) {
+  if (index === 0) return "Today";
+  if (index === 1) return "Tomorrow";
+  return new Date(date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric" });
+}
+
+// One coloured block for one hour. The arrow shows which way the wind blows,
+// and hovering shows the numbers (tap-for-details comes in step 4).
+function hourBlock(hour) {
+  const details = `${hour.hourOfDay}:00 · ${hour.speed} mph (gusts ${hour.gusts}) from ${hour.direction} · rain ${hour.rain} mm`;
+  return `<div class="hour ${hour.rating}" title="${details}">
+    <span class="time">${hour.hourOfDay}</span>
+    <span class="arrow" style="transform: rotate(${hour.degrees}deg)">↓</span>
+    <span class="speed">${hour.speed}</span>
+  </div>`;
+}
+
+// A card for one site: its name, then one strip of hours per day.
+function siteCard(site) {
+  let html = `<section class="site"><h2>${site.name}</h2>`;
+  Object.entries(site.days).forEach(([date, hours], index) => {
+    html += `<div class="day">
+      <div class="day-label">${dayLabel(date, index)}</div>
+      <div class="hours">${hours.map(hourBlock).join("")}</div>
+    </div>`;
+  });
+  return html + "</section>";
+}
+
+// For today and tomorrow, list the sites that have any good hours.
+function summary(sites) {
+  let html = "";
+  ["Today", "Tomorrow"].forEach((label, index) => {
+    const goodSites = sites
+      .map(site => {
+        const hours = Object.values(site.days)[index] || [];
+        const goodCount = hours.filter(hour => hour.rating === "good").length;
+        return { name: site.name, goodCount };
+      })
+      .filter(site => site.goodCount > 0);
+
+    const text = goodSites.length > 0
+      ? "🟢 " + goodSites.map(site => `${site.name} (${site.goodCount}h)`).join(", ")
+      : "No good hours anywhere";
+    html += `<p><strong>${label}:</strong> ${text}</p>`;
+  });
+  document.getElementById("summary").innerHTML = html;
+}
+
+// Fetch every site's forecast at the same time, then show them all.
+// "async" lets us wait for the internet without freezing the page.
 async function main() {
   const status = document.getElementById("status");
   try {
-    const response = await fetch(forecastUrl(site));
-    const data = await response.json();
-    status.textContent = `Hourly forecast for ${site.name} (daylight hours)`;
-    showForecast(toHours(data));
+    const results = await Promise.all(
+      sites.map(site => fetch(forecastUrl(site)).then(response => response.json()))
+    );
+
+    // Rate every hour and attach the days to each site.
+    sites.forEach((site, i) => {
+      const hours = toHours(results[i]);
+      hours.forEach(hour => hour.rating = rateHour(hour, site, PARAGLIDING));
+      site.days = groupByDay(hours);
+    });
+
+    status.textContent = "Paragliding · daylight hours · wind in mph";
+    summary(sites);
+    document.getElementById("forecast").innerHTML = sites.map(siteCard).join("");
   } catch (error) {
     status.textContent = "Couldn't load the forecast: " + error.message;
   }

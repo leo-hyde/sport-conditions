@@ -11,28 +11,70 @@ h1 {
   margin-bottom: 4px;
 }
 
-h3 {
-  margin: 24px 0 8px;
+#status {
+  color: #666;
+  margin-top: 0;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+/* Summary box at the top */
+#summary {
   background: white;
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin-bottom: 16px;
 }
 
-th, td {
-  padding: 6px 8px;
-  text-align: left;
-  border-bottom: 1px solid #e3e5e8;
+/* One card per site */
+.site {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
-th {
+.site h2 {
+  font-size: 1.1em;
+  margin: 0 0 8px;
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.day-label {
+  width: 70px;
+  flex-shrink: 0;
   font-size: 0.85em;
   color: #666;
 }
 
-/* Row colours for each rating */
-tr.good { background: #dff5e1; }
-tr.ok   { background: #fdf3d0; }
-tr.no   { background: #fbe1e1; }
+/* The strip of hour blocks */
+.hours {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+
+.hour {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 0;
+  border-radius: 4px;
+  font-size: 0.75em;
+  cursor: default;
+}
+
+.hour .time  { color: #555; }
+.hour .arrow { display: inline-block; font-weight: bold; }
+.hour .speed { font-weight: 600; }
+
+/* Colours for each rating */
+.hour.good { background: #8fd694; }
+.hour.ok   { background: #f7d774; }
+.hour.no   { background: #f2b8b5; }
