@@ -6,12 +6,14 @@ const siteDialog = document.getElementById("site-dialog");
 let editingId = null;  // the id of the site being edited, or null when adding
 let pickedDirections = {};  // compass point → "good", "ok" or "no"
 let foundPlaces = [];  // the latest place search results
+let fromGuide = false;  // true if the site was picked from the site guide
 
 // Pass a site id to edit that site, or nothing to add a new one. `place`
 // can give a starting location, e.g. from a pin dropped on the map.
 function openSiteForm(siteId, place = null) {
   const site = state.sites.find(site => site.id === siteId);
   editingId = site ? site.id : null;
+  fromGuide = false;
 
   document.getElementById("site-form-title").textContent = site ? "Edit site" : "Add site";
   document.getElementById("delete-site").hidden = !site;
@@ -26,7 +28,7 @@ function openSiteForm(siteId, place = null) {
     siteForm.lon.value = place.lon.toFixed(4);
   }
 
-  siteForm.coastal.checked = Boolean(site && site.coastal);
+  siteForm.beach.checked = Boolean(site && site.beach);
   siteForm.notHighTide.checked = Boolean(site && site.notHighTide);
   pickedDirections = directionRatings(site || { goodDirections: [], okDirections: [] });
   drawCompass();
@@ -111,10 +113,11 @@ document.getElementById("search-results").addEventListener("click", event => {
   if (!button) return;
   const { site, place } = foundPlaces[button.dataset.place];
   if (site) {
+    fromGuide = true;
     siteForm.name.value = site.name;
     siteForm.lat.value = site.lat;
     siteForm.lon.value = site.lon;
-    siteForm.coastal.checked = Boolean(site.coastal);
+    siteForm.beach.checked = Boolean(site.beach);
     siteForm.notHighTide.checked = Boolean(site.notHighTide);
     pickedDirections = directionRatings(site);
     drawCompass();
@@ -147,7 +150,10 @@ siteForm.addEventListener("submit", async event => {
     lon: Number(siteForm.lon.value),
     goodDirections,
     okDirections,
-    coastal: siteForm.coastal.checked,
+    beach: siteForm.beach.checked,
+    // "Added by you" unless it came from the site guide, so your own sites
+    // are easy to find (and tidy up) later.
+    custom: editingId ? Boolean(state.sites.find(other => other.id === editingId).custom) : !fromGuide,
     notHighTide: siteForm.notHighTide.checked,
     sport: state.sport,
   };

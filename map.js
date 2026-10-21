@@ -1,8 +1,7 @@
 // The Map tab: your sites as big coloured pins (with a gold star), sites from
 // the site guide as small dots (rated too, once you zoom in), and a time slider
 // to move through the forecast. You can drop a pin to add a new site. Uses the
-// Leaflet map library, loaded in index.html. It can also switch to Windy's
-// animated wind map, which Windy lets anyone embed for free.
+// Leaflet map library, loaded in index.html.
 
 let map = null;
 let pinLayer = null;
@@ -43,6 +42,7 @@ function setupMap() {
   } else {
     map.setView([50.4, -5.1], 9);
   }
+  addMapKey();
   drawLibrary();
   setupStations();
   setupWindFlow();
@@ -69,6 +69,25 @@ function setupMap() {
   });
 }
 
+// A small key in the corner explaining the different markers. It starts
+// closed on phones, where space is tight.
+function addMapKey() {
+  const key = L.control({ position: "bottomleft" });
+  key.onAdd = () => {
+    const box = L.DomUtil.create("details", "map-key");
+    box.open = window.innerWidth > 600;
+    box.innerHTML = `<summary>Key</summary>
+      <div class="key-row"><span class="key-mine">★</span>Your sites</div>
+      <div class="key-row"><span class="key-guide"></span>Other sites (tap to add)</div>
+      <div class="key-row"><span class="key-live">LIVE</span>Airport wind right now</div>
+      <div class="key-row key-ratings"><i class="good"></i>Good <i class="ok"></i>OK <i class="no"></i>No</div>
+      <div class="key-row muted">Coloured streaks: forecast wind flow</div>`;
+    L.DomEvent.disableClickPropagation(box);  // tapping the key doesn't tap the map
+    return box;
+  };
+  key.addTo(map);
+}
+
 // Every hour shown anywhere, in order, e.g. ["2026-10-21T08", …].
 function mapHourKeys() {
   const keys = new Set();
@@ -82,10 +101,6 @@ function mapHourKeys() {
 
 function renderMap() {
   if (state.view !== "map") return;
-  if (!document.getElementById("windy-box").hidden) {
-    showMapMode("windy");  // keeps Windy in step with the chosen model
-    return;
-  }
   setupMap();
   if (!map) return;
   map.invalidateSize();  // the map's box may have changed size while hidden
@@ -359,63 +374,6 @@ document.getElementById("show-library").addEventListener("change", () => {
   drawLibrary();
   drawRatedLibrary();
   loadLibraryForecasts();
-});
-
-// ---------- Windy's animated wind map ----------
-
-// Windy's model names for ours, so the animation matches the chosen model.
-const WINDY_PRODUCTS = {
-  ukmo_seamless: "ukv",
-  ecmwf_ifs025: "ecmwf",
-  icon_seamless: "iconEu",
-  gfs_seamless: "gfs",
-  meteofrance_seamless: "arome",
-};
-
-function windyEmbedUrl() {
-  // Centre it on the middle of your sites (or Cornwall if there are none).
-  const lats = state.sites.map(site => site.lat);
-  const lons = state.sites.map(site => site.lon);
-  const middle = values => values.length ? (Math.min(...values) + Math.max(...values)) / 2 : null;
-  const params = new URLSearchParams({
-    lat: (middle(lats) ?? 50.4).toFixed(3),
-    lon: (middle(lons) ?? -5.1).toFixed(3),
-    zoom: 9,
-    level: "surface",
-    overlay: "wind",
-    product: WINDY_PRODUCTS[state.model],
-    marker: "true",
-    calendar: "now",
-    type: "map",
-    location: "coordinates",
-    metricWind: unit().windy,
-    metricTemp: "°C",
-  });
-  return "https://embed.windy.com/embed2.html?" + params;
-}
-
-// Switches between your sites map and Windy's animation.
-function showMapMode(mode) {
-  const windy = mode === "windy";
-  document.querySelectorAll("#map-mode button").forEach(button => {
-    button.classList.toggle("active", button.dataset.mode === mode);
-  });
-  document.getElementById("map").hidden = windy;
-  document.getElementById("map-timeline").hidden = windy;
-  document.getElementById("windy-box").hidden = !windy;
-  if (windy) {
-    // Only reload Windy if the model or sites have changed.
-    const frame = document.getElementById("windy-frame");
-    const url = windyEmbedUrl();
-    if (frame.src !== url) frame.src = url;
-  } else {
-    renderMap();
-  }
-}
-
-document.getElementById("map-mode").addEventListener("click", event => {
-  const button = event.target.closest("[data-mode]");
-  if (button) showMapMode(button.dataset.mode);
 });
 
 // ---------- Moving through time ----------

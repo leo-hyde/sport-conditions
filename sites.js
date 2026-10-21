@@ -2,7 +2,7 @@
 // edit the CSV and run the script again.
 
 const SITE_LIBRARY = [
-  {"name": "Fistral", "lat": 50.4167, "lon": -5.1003, "goodDirections": ["W", "WNW", "NW"], "okDirections": ["WSW", "NNW"], "country": "GB", "coastal": true, "starter": true},
+  {"name": "Fistral", "lat": 50.4167, "lon": -5.1003, "goodDirections": ["W", "WNW", "NW"], "okDirections": ["WSW", "NNW"], "country": "GB", "coastal": true, "beach": true, "starter": true},
   {"name": "Saint Vincent les forts", "lat": 44.4432, "lon": 6.3716, "goodDirections": ["WSW", "W"], "okDirections": ["SSW", "SW", "WNW", "NW"], "country": "FR"},
   {"name": "Laragne - le Chabre", "lat": 44.2978, "lon": 5.765, "goodDirections": ["N", "ESE", "SE", "SSE", "S", "NNW"], "okDirections": ["NNE", "NE", "SSW", "SW"], "country": "FR"},
   {"name": "Aspres", "lat": 44.543, "lon": 5.7092, "goodDirections": ["ESE", "SE", "SSE", "S", "SSW", "SW"], "okDirections": [], "country": "FR"},
@@ -692,7 +692,7 @@ const SITE_LIBRARY = [
   {"name": "Sharkham", "lat": 50.3797, "lon": -3.50906, "goodDirections": ["ESE", "SE"], "okDirections": [], "country": "GB", "coastal": true},
   {"name": "Meldon Hill", "lat": 50.6614, "lon": -3.84665, "goodDirections": ["N", "NNE", "NE", "NNW"], "okDirections": [], "country": "GB"},
   {"name": "Nattadon Hill", "lat": 50.665, "lon": -3.83347, "goodDirections": ["WNW", "NW"], "okDirections": [], "country": "GB"},
-  {"name": "Hale Towans/Black Cliff", "lat": 50.1996, "lon": -5.42688, "goodDirections": ["NW", "NNW"], "okDirections": ["WNW"], "country": "GB", "coastal": true, "starter": true},
+  {"name": "Hale Towans/Black Cliff", "lat": 50.1996, "lon": -5.42688, "goodDirections": ["NW", "NNW"], "okDirections": ["WNW"], "country": "GB", "coastal": true, "beach": true, "starter": true},
   {"name": "Sennen", "lat": 50.0782, "lon": -5.69242, "goodDirections": ["WNW", "NW"], "okDirections": [], "country": "GB", "coastal": true},
   {"name": "Gwenvor", "lat": 50.0838, "lon": -5.69017, "goodDirections": ["WSW"], "okDirections": ["SW", "W"], "country": "GB", "coastal": true},
   {"name": "Vault Bay", "lat": 50.2331, "lon": -4.79763, "goodDirections": ["ESE", "SE"], "okDirections": ["E"], "country": "GB", "coastal": true},
@@ -754,9 +754,9 @@ const SITE_LIBRARY = [
   {"name": "Morvah", "lat": 50.1669, "lon": -5.62828, "goodDirections": ["WNW", "NW", "NNW"], "okDirections": [], "country": "GB", "coastal": true},
   {"name": "Carbis Bay", "lat": 50.1933, "lon": -5.44174, "goodDirections": ["NNE", "NE"], "okDirections": [], "country": "GB", "coastal": true, "closed": true},
   {"name": "Carn Brea", "lat": 50.2216, "lon": -5.24634, "goodDirections": ["NW", "NNW"], "okDirections": [], "country": "GB", "starter": true},
-  {"name": "Chapel Porth", "lat": 50.3043, "lon": -5.23157, "goodDirections": ["SW", "WSW"], "okDirections": [], "country": "GB", "coastal": true, "starter": true},
+  {"name": "Chapel Porth", "lat": 50.3043, "lon": -5.23157, "goodDirections": ["SW", "WSW"], "okDirections": [], "country": "GB", "coastal": true, "beach": true, "starter": true},
   {"name": "St Agnes", "lat": 50.3181, "lon": -5.22908, "goodDirections": ["N", "NNW"], "okDirections": ["NNE", "NW"], "country": "GB", "coastal": true, "starter": true},
-  {"name": "Perranporth", "lat": 50.3611, "lon": -5.14831, "goodDirections": ["W", "WNW"], "okDirections": ["WSW", "NW"], "country": "GB", "coastal": true, "starter": true},
+  {"name": "Perranporth", "lat": 50.3611, "lon": -5.14831, "goodDirections": ["W", "WNW"], "okDirections": ["WSW", "NW"], "country": "GB", "coastal": true, "beach": true, "starter": true},
   {"name": "High Cliff", "lat": 50.7122, "lon": -4.65006, "goodDirections": ["NW"], "okDirections": ["WNW", "NNW"], "country": "GB", "coastal": true},
   {"name": "Bucknole", "lat": 50.7646, "lon": -3.15566, "goodDirections": ["SE"], "okDirections": ["ESE", "SSE"], "country": "GB"},
   {"name": "Long Knoll", "lat": 51.1373, "lon": -2.29339, "goodDirections": ["SSE", "S"], "okDirections": ["SE", "SSW"], "country": "GB"},

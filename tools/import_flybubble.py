@@ -15,7 +15,7 @@ SOURCE_URL = "https://api.theparaglider.com/v1/weather/sites"
 CSV_PATH = Path(__file__).parent.parent / "data" / "sites.csv"
 COMPASS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-COLUMNS = ["name", "lat", "lon", "good", "ok", "not_high_tide", "coastal",
+COLUMNS = ["name", "lat", "lon", "good", "ok", "not_high_tide", "coastal", "beach",
            "closed", "country", "club", "starter", "source", "notes"]
 
 
@@ -47,6 +47,7 @@ def main():
             "ok": directions(site["wind_dir"], 1),
             "not_high_tide": "",
             "coastal": "yes" if site.get("coastal") == "1" else "",
+            "beach": "",
             "closed": "yes" if site.get("closed") == "true" else "",
             "country": site.get("countryCode") or "",
             "club": site.get("clubName") or "",

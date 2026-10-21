@@ -50,10 +50,11 @@ function drawStations(reports) {
     const observed = new Date(report.obsTime * 1000)
       .toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit" });
 
+    // Live readings are square-cornered dark tags with a pointer and "LIVE",
+    // so they can't be mistaken for the round flying-site pins.
     const html = `<div class="station-pin">
-      <span class="live-dot"></span>
-      ${variable ? "VRB" : arrow(report.wdir)}
-      <strong>${speed}${gust ? `<small>g${gust}</small>` : ""}</strong>
+      <span class="station-label"><span class="live-dot"></span>LIVE ${esc(report.icaoId)}</span>
+      <span class="station-reading">${variable ? "VRB" : arrow(report.wdir)} <strong>${speed}</strong>${gust ? `<small>g${gust}</small>` : ""}</span>
     </div>`;
     const details = `<strong>${esc(stationNames[report.icaoId])}</strong><br>
       Live: ${variable ? "variable" : `from ${degreesToCompass(report.wdir)}`} ${speed} ${unit().label}${gust ? `, gusting ${gust}` : ""}<br>
@@ -62,7 +63,7 @@ function drawStations(reports) {
       <button class="btn small primary" data-station-history="${report.icaoId}">📈 Last 24 hours</button>`;
 
     L.marker([report.lat, report.lon], {
-      icon: L.divIcon({ html, className: "", iconSize: [64, 28], iconAnchor: [32, 14] }),
+      icon: L.divIcon({ html, className: "", iconSize: [76, 44], iconAnchor: [38, 44] }),
       zIndexOffset: 500,
     })
       .bindPopup(details)

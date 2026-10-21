@@ -23,6 +23,7 @@ settingsForm.units.addEventListener("change", () => {
 function openSettings() {
   document.getElementById("settings-title").textContent = `${currentSport().icon} ${currentSport().name} settings`;
   fillSettingsForm(state.settings);
+  renderSyncBox();
   document.getElementById("settings-error").hidden = true;
   document.getElementById("settings-dialog").showModal();
 }

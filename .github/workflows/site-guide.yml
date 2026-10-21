@@ -1,0 +1,45 @@
+# Whenever data/sites.csv changes (including edits made on github.com),
+# GitHub checks it for mistakes, rebuilds sites.js, saves it, and republishes
+# the live site. If the check finds a mistake, this run fails and GitHub emails
+# you; sites.js isn't changed.
+
+name: Build site guide
+
+on:
+  push:
+    branches: [main]
+    paths: ["data/sites.csv"]
+
+permissions:
+  contents: write  # to save the rebuilt sites.js
+  pages: write  # to republish the live site
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check data/sites.csv and build sites.js
+        run: python3 tools/build_sites.py
+
+      - name: Save sites.js if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add sites.js
+          if git diff --cached --quiet; then
+            echo "sites.js already up to date"
+          else
+            git commit -m "Rebuild sites.js from data/sites.csv"
+            git push
+          fi
+
+      - name: Republish the live site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || true

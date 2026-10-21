@@ -35,6 +35,7 @@ function loadSettings() {
 
 function saveSettings(settings) {
   save("sc.settings", settings);
+  queueSync();  // send to your other devices, if sync is on (sync.js)
 }
 
 // The first time, there are no saved sites, so we start with the starter list.
@@ -42,20 +43,22 @@ function loadSites() {
   const saved = loadSaved("sc.sites", null);
   if (!saved) return starterSites();
 
-  // Sites saved before tides existed don't know if they're coastal, so
-  // copy that from the site library (matching names, ignoring spaces).
+  // Older saved sites are missing newer details, so fill them in from the
+  // site guide (matching names, ignoring spaces).
   const simple = name => name.toLowerCase().replace(/\s/g, "");
   for (const site of saved) {
     if (!site.sport) site.sport = "parakiting";  // sites saved before sports existed
-    if (site.coastal !== undefined) continue;
     const match = SITE_LIBRARY.find(lib => simple(lib.name) === simple(site.name));
-    site.coastal = Boolean(match && match.coastal);
+    if (site.beach === undefined) site.beach = Boolean(match && match.beach);  // before "beach" replaced "coastal"
+    if (site.custom === undefined) site.custom = !match;  // not in the guide, so you made it
+    delete site.coastal;
   }
   return saved;
 }
 
 function saveSites(sites) {
   save("sc.sites", sites);
+  queueSync();  // send to your other devices, if sync is on (sync.js)
 }
 
 // Copies of the starter sites, each given an id so we can edit them later.
@@ -72,7 +75,8 @@ function librarySiteCopy(site) {
     lon: site.lon,
     goodDirections: [...site.goodDirections],
     okDirections: [...site.okDirections],
-    coastal: Boolean(site.coastal),
+    beach: Boolean(site.beach),
+    custom: false,  // from the site guide, not made by you
     notHighTide: Boolean(site.notHighTide),
     sport: "parakiting",
   };

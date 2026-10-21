@@ -58,18 +58,10 @@
 
     <section id="view-map" hidden>
       <div class="view-head">
-        <div id="map-mode" class="segmented">
-          <button data-mode="sites" class="active">My sites</button>
-          <button data-mode="windy">Animated wind (Windy)</button>
-        </div>
+        <h2>Map</h2>
         <button id="drop-pin" class="btn small">📍 Add site on map</button>
       </div>
       <div id="map"></div>
-      <div id="windy-box" hidden>
-        <iframe id="windy-frame" title="Windy animated wind map" loading="lazy"></iframe>
-        <p class="hint">Windy's own map, using the same forecast model. Use its play button
-          to animate through time. It doesn't show your site ratings.</p>
-      </div>
       <div id="map-timeline" class="timeline card">
         <div class="timeline-top">
           <button id="map-prev" class="icon-btn" aria-label="Previous hour">‹</button>
@@ -176,6 +168,9 @@
         <button type="submit" class="btn primary">Save</button>
       </div>
       <hr>
+      <h3>Sync between devices</h3>
+      <div id="sync-box" class="sync-box"></div>
+      <hr>
       <div class="dialog-actions">
         <button type="button" id="reset-sites" class="btn ghost danger">Reset sites to starter list</button>
       </div>
@@ -207,7 +202,7 @@
         <div id="compass" class="compass"></div>
       </div>
       <div class="checks-row">
-        <label><input name="coastal" type="checkbox"> Coastal (show tides)</label>
+        <label><input name="beach" type="checkbox"> On or right by a beach (show tide times)</label>
         <label><input name="notHighTide" type="checkbox"> Doesn't work near high tide</label>
       </div>
       <p id="site-error" class="error" hidden></p>
@@ -228,6 +223,7 @@
   <script src="tides.js"></script>
   <script src="compass.js"></script>
   <script src="storage.js"></script>
+  <script src="sync.js"></script>
   <script src="details.js"></script>
   <script src="settings.js"></script>
   <script src="sitesForm.js"></script>

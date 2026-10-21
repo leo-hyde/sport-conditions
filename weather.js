@@ -128,7 +128,7 @@ function checkTide(hour, site, settings, tides) {
   return { rating: "good", text: `Clear of high tide (more than ${settings.highTideWindow}h away)` };
 }
 
-// `tides` is optional: only coastal sites have them.
+// `tides` is optional: only beach sites have them.
 function checkHour(hour, site, settings, tides) {
   const checks = [checkDirection(hour, site), checkSpeed(hour, settings), checkRain(hour, settings)];
   const tide = checkTide(hour, site, settings, tides);

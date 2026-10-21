@@ -6,6 +6,9 @@
 // 2. Official UK tide times from the UK Hydrographic Office (Admiralty), which
 //    needs a secret key. The key is stored in Cloudflare as a secret called
 //    ADMIRALTY_KEY, so it's never in the app's code for anyone to copy.
+// 3. Syncing "my sites" and settings between your devices. They're saved in
+//    Cloudflare's free key-value storage (a "KV namespace" connected to this
+//    Worker as SYNC), under a long private sync code that each device uses.
 //
 // It only fetches these things, and caches answers, so it can't be used as a
 // general proxy for other websites.
@@ -15,10 +18,12 @@
 //       /metar?ids=EGHQ&hours=24          every report from airports, last few hours
 //       /tides/stations                   all 607 UK tide stations
 //       /tides/events?station=0546        high and low waters for the next 7 days
+//       /sync?code=…  (GET)               load the sites and settings saved under a code
+//       /sync?code=…  (POST)              save them
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET",
+  "Access-Control-Allow-Methods": "GET, POST",
 };
 const ADMIRALTY = "https://admiraltyapi.azure-api.net/uktidalapi/api/V1/Stations";
 
@@ -29,6 +34,7 @@ export default {
       if (url.pathname === "/metar") return await metar(request, url, ctx);
       if (url.pathname === "/tides/stations") return await tideStations(request, env, ctx);
       if (url.pathname === "/tides/events") return await tideEvents(request, url, env, ctx);
+      if (url.pathname === "/sync") return await sync(request, url, env);
       return reply("Not found", 404);
     } catch (error) {
       // Always answer with CORS, even when something breaks, so the app
@@ -109,4 +115,30 @@ async function tideEvents(request, url, env, ctx) {
   const station = url.searchParams.get("station") || "";
   if (!/^[0-9A-Za-z]{3,6}$/.test(station)) return reply("station must be a station id like 0546", 400);
   return cached(request, ctx, 3600, () => admiralty(`/${station}/TidalEvents?duration=7`, env));
+}
+
+// ---------- Syncing my sites between devices ----------
+
+const MAX_SYNC_BYTES = 200000;  // plenty for hundreds of sites
+
+async function sync(request, url, env) {
+  if (!env.SYNC) return reply("No SYNC storage connected to this Worker", 503);
+  // Codes are long and random (made by the app), e.g. "kite-4f9c2a7e1b3d5f60".
+  const code = url.searchParams.get("code") || "";
+  if (!/^[a-z]+-[0-9a-f]{16}$/.test(code)) return reply("Bad sync code", 400);
+  const key = `sync:${code}`;
+
+  if (request.method === "GET") {
+    const saved = await env.SYNC.get(key);
+    return new Response(saved || "null", { headers: { ...CORS, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+  }
+  if (request.method === "POST") {
+    // Sent as plain text, so browsers don't need an extra permission check first.
+    const body = await request.text();
+    if (body.length > MAX_SYNC_BYTES) return reply("Too much data", 413);
+    JSON.parse(body);  // throws (→ error 500) if it isn't valid JSON
+    await env.SYNC.put(key, body);
+    return reply("Saved", 200);
+  }
+  return reply("Use GET or POST", 405);
 }

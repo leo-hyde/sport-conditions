@@ -3,7 +3,13 @@
 Run from the project folder:   python3 tools/build_sites.py
 
 Edit sites in data/sites.csv (it opens in Numbers or Excel). Directions are
-16-point compass names separated by spaces, e.g. "W WNW NW".
+16-point compass names separated by spaces, e.g. "W WNW NW". Yes/no columns
+are "yes" or blank:
+  coastal  - by the sea (from Flybubble)
+  beach    - on or right next to a beach, so tide times matter
+  starter  - one of the sites a new device starts with
+On GitHub this runs automatically whenever data/sites.csv changes
+(.github/workflows/site-guide.yml).
 """
 
 import csv
@@ -36,7 +42,7 @@ def check(row, line):
             problems.append(f"'{point}' isn't a compass point")
     if set(good) & set(ok):
         problems.append(f"{' '.join(set(good) & set(ok))} is both good and OK")
-    for column in ["not_high_tide", "coastal", "closed", "starter"]:
+    for column in ["not_high_tide", "coastal", "beach", "closed", "starter"]:
         if row[column] not in ("", "yes"):
             problems.append(f"{column} should be 'yes' or blank, not '{row[column]}'")
     return [f"line {line} ({row['name'] or '?'}): {problem}" for problem in problems]
@@ -71,7 +77,7 @@ def main():
             "okDirections": row["ok"].split(),
             "country": row["country"],
         }
-        for column, key in [("not_high_tide", "notHighTide"), ("coastal", "coastal"),
+        for column, key in [("not_high_tide", "notHighTide"), ("coastal", "coastal"), ("beach", "beach"),
                             ("closed", "closed"), ("starter", "starter")]:
             if row[column] == "yes":
                 site[key] = True

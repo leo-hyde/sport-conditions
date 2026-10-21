@@ -11,7 +11,7 @@ const state = {
   sport: loadSaved("sc.sport", "parakiting"),  // which sport (see sports.js)
   model: loadSaved("sc.model", MODELS[0].id),  // which forecast model
   forecastCache: {},  // model id → { site id → list of hours }
-  tides: {},  // site id → tides (coastal sites only)
+  tides: {},  // site id → tides (beach sites only)
   updatedAt: null,
   failedSites: [],
   view: loadSaved("sc.view", "overview"),  // which tab is showing
@@ -28,12 +28,12 @@ const state = {
 
 // ---------- Fetching ----------
 
-// Fetch one site's forecast (for the chosen model) and, if it's coastal,
+// Fetch one site's forecast (for the chosen model) and, if it's on a beach,
 // its tides. Failures are noted so the status line can mention them.
 async function loadSite(site, { tides = true } = {}) {
   const [forecast, tideData] = await Promise.allSettled([
     fetchForecast(site, state.model),
-    tides && site.coastal ? fetchTides(site) : Promise.resolve(null),
+    tides && site.beach ? fetchTides(site) : Promise.resolve(null),
   ]);
   if (forecast.status === "fulfilled") state.forecasts[site.id] = forecast.value;
   else state.failedSites.push(site.name);
@@ -258,7 +258,7 @@ function renderSiteCards() {
           </div>`;
         }).join("");
 
-    const tags = [site.coastal && "Coastal", site.notHighTide && "Not at high tide"].filter(Boolean)
+    const tags = [site.custom && "Added by you", site.beach && "Beach", site.notHighTide && "Not at high tide"].filter(Boolean)
       .map(tag => `<span class="tag">${tag}</span>`).join("");
     return `<article class="card site" id="site-${site.id}">
       <header class="card-head">
@@ -343,5 +343,11 @@ document.getElementById("refresh").addEventListener("click", refresh);
 document.getElementById("open-settings").addEventListener("click", openSettings);
 document.getElementById("add-site").addEventListener("click", () => openSiteForm());
 
+// Start up: if this device syncs, load the latest sites first.
 showView(state.view);
-refresh();
+(async () => {
+  await checkSyncLink();
+  if (syncCode()) await pullSync();
+  render();
+  refresh();
+})();
