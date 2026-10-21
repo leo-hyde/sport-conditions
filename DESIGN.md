@@ -57,6 +57,11 @@ feature. Change it here first, then in the code.
 - **Map pins:** round, in the rating colour, with the wind arrow and speed
   inside and the site name underneath.
 - **Compass picker:** a 16-segment ring; tap to cycle no → OK → good.
+- **Overview layouts:** a pill switcher (By day · By hour · Best times).
+  "By day" uses rating-coloured cells; "By hour" uses compact hour blocks
+  (speed only); "Best times" uses ranked window cards on `--surface-2`.
+- **Map:** OpenTopoMap tiles (dimmed in dark mode), with a timeline card
+  underneath: the big time label, day pills and a slider.
 
 ## References
 - Apple Human Interface Guidelines: tap targets, hierarchy, legibility

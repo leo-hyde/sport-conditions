@@ -1,6 +1,6 @@
 # Sport Conditions: Product Spec
 
-Status: **version 1 agreed**. See [DESIGN.md](DESIGN.md) for how it looks.
+Status: **version 1 built**, waiting for Leo to pick an Overview layout. See [DESIGN.md](DESIGN.md) for how it looks.
 
 ## The idea
 
@@ -41,12 +41,12 @@ Each daylight hour is checked three ways. The overall rating is the
 | 1 | Hourly forecast for Fistral | ✅ done |
 | 2 | Traffic-light rating | ✅ done |
 | 3 | All starter sites, with summary | ✅ done |
-| 4 | **Hour details on tap:** speed, gusts, direction, rain, and *why* it's not green | |
-| 5 | **Add / edit / delete sites:** name, place search or coordinates, 16-point compass picker. Saved in the browser. "Reset to starter sites" option | |
-| 6 | **Settings:** good and OK speed ranges, rain cutoff | |
-| 7 | **Overview: 3 layout options to choose from** (see below) | |
-| 8 | **Map view:** sites as coloured pins with wind arrows, and a time slider to scrub through the forecast (like Windy) | |
-| 9 | **Design and polish:** apply DESIGN.md; light/dark follows the phone; "updated at" time and refresh button; loading and error messages | |
+| 4 | **Hour details on tap:** speed, gusts, direction, rain, and *why* it's not green | ✅ done |
+| 5 | **Add / edit / delete sites:** name, place search or coordinates, 16-point compass picker. Saved in the browser. "Reset to starter sites" option | ✅ done |
+| 6 | **Settings:** good and OK speed ranges, rain cutoff | ✅ done |
+| 7 | **Overview: 3 layout options to choose from** (see below) | ✅ done |
+| 8 | **Map view:** sites as coloured pins with wind arrows, and a time slider to scrub through the forecast (like Windy) | ✅ done |
+| 9 | **Design and polish:** apply DESIGN.md; light/dark follows the phone; "updated at" time and refresh button; loading and error messages | ✅ done |
 
 ### Overview options (step 7)
 Three ways to answer "where works, when?". Leo tries them, then we keep
