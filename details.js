@@ -3,20 +3,25 @@
 const RATING_TEXT = { good: "Good", ok: "OK", no: "No" };
 const CHECK_ICONS = { good: "✓", ok: "~", no: "✕" };
 
+// Every model's forecast for a site, fetched when first needed: site id → data.
+const comparisons = {};
+
 function showHourDetails(siteId, key) {
   const site = state.sites.find(site => site.id === siteId);
   const hour = (state.forecasts[siteId] || []).find(hour => hour.key === key);
   if (!site || !hour) return;
 
-  const checks = checkHour(hour, site, state.settings);
+  const tides = state.tides[siteId];
+  const checks = checkHour(hour, site, state.settings, tides);
   const rating = worstRating(checks.map(check => check.rating));
+  const tide = tides && tideAt(tides, key);
   const dialog = document.getElementById("hour-dialog");
 
   dialog.querySelector(".dialog-content").innerHTML = `
     <div class="details-head">
       <div>
         <h2>${esc(site.name)}</h2>
-        <p class="muted">${dayLabel(hour.date)} · ${hour.hourOfDay}:00</p>
+        <p class="muted">${dayLabel(hour.date)} · ${hour.hourOfDay}:00 · ${modelName(state.model)}</p>
       </div>
       <span class="badge ${rating}">${RATING_TEXT[rating]}</span>
     </div>
@@ -26,15 +31,62 @@ function showHourDetails(siteId, key) {
       ${stat("From", `${arrow(hour.degrees)} ${hour.direction}`)}
       ${stat("Rain", `${hour.rain} <small>mm</small>`)}
     </div>
+    ${tide ? `<p class="tide-detail">🌊 Tide ${tide.rising ? "rising" : "falling"} (${tide.height.toFixed(1)} m, approx.) ·
+      ${tideSummary(tides, hour.date)} · ${tideRange(hour.date)}</p>` : ""}
     <ul class="checks">
       ${checks.map(check => `
         <li class="${check.rating}">
           <span class="check-icon">${CHECK_ICONS[check.rating]}</span>${check.text}
         </li>`).join("")}
-    </ul>`;
+    </ul>
+    <div>
+      <h3 class="section-title">All forecasts for this hour</h3>
+      <div id="compare-models"><p class="hint">Loading…</p></div>
+    </div>
+    <p class="links">
+      <a href="https://www.windy.com/?${site.lat},${site.lon},11" target="_blank" rel="noopener">Check this spot on Windy ↗</a>
+    </p>`;
   dialog.showModal();
+  showModelComparison(site, hour);
 }
 
 function stat(label, value) {
   return `<div class="stat"><span>${label}</span><strong>${value}</strong></div>`;
+}
+
+function modelName(id) {
+  return MODELS.find(model => model.id === id).name;
+}
+
+// A small table of what every model says for this hour. When the models
+// agree, the forecast is more likely to be right.
+async function showModelComparison(site, hour) {
+  const box = document.getElementById("compare-models");
+  try {
+    if (!comparisons[site.id]) {
+      const url = forecastUrl(site, MODELS.map(model => model.id).join(","));
+      comparisons[site.id] = await fetchJson(url);
+    }
+    const data = comparisons[site.id].hourly;
+    const i = data.time.findIndex(time => time.startsWith(hour.key));
+
+    const rows = MODELS.map(model => {
+      const speed = data[`wind_speed_10m_${model.id}`]?.[i];
+      if (speed === null || speed === undefined) {
+        return `<tr><td>${model.name}</td><td colspan="3" class="muted">no forecast this far ahead</td></tr>`;
+      }
+      const gusts = data[`wind_gusts_10m_${model.id}`][i];
+      const degrees = data[`wind_direction_10m_${model.id}`][i];
+      const current = model.id === state.model ? ' class="current"' : "";
+      return `<tr${current}>
+        <td title="${model.detail}">${model.name}</td>
+        <td><strong>${Math.round(speed)}</strong> mph</td>
+        <td>${Math.round(gusts)} gust</td>
+        <td>${arrow(degrees)} ${degreesToCompass(degrees)}</td>
+      </tr>`;
+    }).join("");
+    box.innerHTML = `<table class="compare">${rows}</table>`;
+  } catch {
+    box.innerHTML = '<p class="error">Couldn\'t load the other forecasts.</p>';
+  }
 }

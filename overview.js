@@ -8,7 +8,7 @@ function renderOverview() {
 
   const box = document.getElementById("overview");
   if (state.sites.length === 0) {
-    box.innerHTML = '<p class="muted">No sites yet. Add one in the Sites tab.</p>';
+    box.innerHTML = '<p class="muted">No sites yet. Add one in the Sites tab, or pick from the map.</p>';
     return;
   }
   if (!state.updatedAt) {
@@ -62,10 +62,13 @@ function overviewByDay() {
     </tr>`;
   }).join("");
 
-  return `<table class="by-day">
-    <thead><tr><th></th>${dates.map(date => `<th>${dayLabel(date)}</th>`).join("")}</tr></thead>
+  // 7 days don't fit across a phone, so the table scrolls sideways
+  // with the site names staying put.
+  return `<div class="table-scroll"><table class="by-day">
+    <thead><tr><th></th>${dates.map(date =>
+      `<th>${dayLabel(date)}<small>${tideRange(date)}</small></th>`).join("")}</tr></thead>
     <tbody>${rows}</tbody>
-  </table>`;
+  </table></div>`;
 }
 
 // ---------- B. By hour: a heatmap per day, sites down the side ----------
@@ -74,7 +77,7 @@ function overviewByHour() {
   const sites = ratedSites();
 
   return forecastDates(sites).map(date => {
-    // The columns are this day's daylight hours, e.g. ["08", "09", …].
+    // The columns are this day's flyable-time hours, e.g. ["08", "09", …].
     const hourLabels = [...new Set(sites.flatMap(({ days }) =>
       (days[date] || []).map(hour => hour.hourOfDay)))].sort();
 
@@ -89,7 +92,7 @@ function overviewByHour() {
 
     const columns = `minmax(76px, 140px) repeat(${hourLabels.length}, 1fr)`;
     return `<div class="heatmap-day">
-      <h3>${dayLabel(date)}</h3>
+      <h3>${dayLabel(date)} <small class="muted">${tideRange(date)} tides</small></h3>
       <div class="heatmap" style="grid-template-columns: ${columns}">${cells}</div>
     </div>`;
   }).join("");

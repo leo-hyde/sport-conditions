@@ -38,3 +38,8 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
   (N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW).
 - Speed rules belong to the **sport**; direction rules belong to the **site**.
 - Weather data comes from Open-Meteo (free, no API key).
+- **Site data lives in `data/sites.csv`.** Never edit `sites.js` by hand: edit
+  the CSV, then run `python3 tools/build_sites.py`, which validates it.
+- **Previewing:** macOS blocks the preview server from the Documents folder, so
+  copy the site files to the scratchpad `site/` folder before checking the
+  browser preview.

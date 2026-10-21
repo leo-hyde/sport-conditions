@@ -85,7 +85,44 @@ the best one (or two).
 
 ---
 
-## Later (not in version 1)
+## Version 1.1 ✅ built
+
+- **Forecast model switcher:** Met Office (UKV), ECMWF, ICON, GFS and AROME,
+  the same models Windy offers, via Open-Meteo. Met Office is the default.
+  (Open-Meteo's own default for the UK *is* the Met Office model.)
+- **7-day forecast** (AROME only goes about 4 days).
+- **Checking a forecast:** the hour details show all 5 models side by side,
+  plus a link to the same spot on Windy.
+- **The Flybubble site guide (962 sites)** lives in `data/sites.csv`.
+  `tools/build_sites.py` checks it for mistakes and builds `sites.js`.
+  `tools/import_flybubble.py` pulls in new sites without overwriting edits.
+  The map shows every site as a grey dot; tap one to add it to your sites.
+  The site form's search finds guide sites too.
+- **A mini compass** on each site card and map popup, showing that site's
+  good and OK directions.
+- **Wind arrows on the map:** a 7 × 7 grid, coloured by speed, following
+  the time slider.
+- **Tides** for coastal sites: high and low water times, rising or falling,
+  approximate height, and springs / neaps / mid (from the moon's phase).
+  Sites can be marked "doesn't work near high tide", with a buffer setting
+  (default ±1.5 h).
+- **Flying day setting:** sunrise to sunset, or civil twilight (first to
+  last light, which changes with the season), plus extra minutes either side.
+
+### Flagged as hard, skipped for now
+- **Animated wind particles like Windy's:** needs a wind data grid in a
+  special format and a particle-drawing library. The arrow grid gives most
+  of the value.
+- **Checking against live weather stations:** this needs a source of
+  observations (e.g. Met Office WOW, airport METARs) that allows
+  browser access. Worth a proper look later.
+- **Exact tide heights:** the free tide model smooths out the range. A
+  proper UK tide source (e.g. Admiralty) needs an API key and a small
+  server to keep it secret.
+
+---
+
+## Later
 
 Roughly in suggested order. Each gets its own short spec before building.
 

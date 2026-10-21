@@ -6,6 +6,9 @@ const DEFAULT_SETTINGS = {
   speedGood: { min: 14, max: 16 },  // mph
   speedOk:   { min: 12, max: 18 },  // mph
   rainCutoff: 1,  // mm per hour; this much or more rates the hour "no"
+  daylight: "sun",  // "sun" = sunrise to sunset; "twilight" = first to last light
+  extraMinutes: 0,  // added before the start and after the end of the day
+  highTideWindow: 1.5,  // hours either side of high water, for tide-sensitive sites
 };
 
 function loadSaved(key, fallback) {
@@ -35,7 +38,18 @@ function saveSettings(settings) {
 
 // The first time, there are no saved sites, so we start with the starter list.
 function loadSites() {
-  return loadSaved("sc.sites", null) || starterSites();
+  const saved = loadSaved("sc.sites", null);
+  if (!saved) return starterSites();
+
+  // Sites saved before tides existed don't know if they're coastal, so
+  // copy that from the site library (matching names, ignoring spaces).
+  const simple = name => name.toLowerCase().replace(/\s/g, "");
+  for (const site of saved) {
+    if (site.coastal !== undefined) continue;
+    const match = SITE_LIBRARY.find(lib => simple(lib.name) === simple(site.name));
+    site.coastal = Boolean(match && match.coastal);
+  }
+  return saved;
 }
 
 function saveSites(sites) {
@@ -44,7 +58,21 @@ function saveSites(sites) {
 
 // Copies of the starter sites, each given an id so we can edit them later.
 function starterSites() {
-  return STARTER_SITES.map(site => ({ ...site, id: makeId() }));
+  return STARTER_SITES.map(site => librarySiteCopy(site));
+}
+
+// A copy of a site from the library, ready to add to your own sites.
+function librarySiteCopy(site) {
+  return {
+    id: makeId(),
+    name: site.name,
+    lat: site.lat,
+    lon: site.lon,
+    goodDirections: [...site.goodDirections],
+    okDirections: [...site.okDirections],
+    coastal: Boolean(site.coastal),
+    notHighTide: Boolean(site.notHighTide),
+  };
 }
 
 // A short random id like "k3j9x0qa".

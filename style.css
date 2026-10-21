@@ -473,3 +473,77 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
   border-radius: 999px;
 }
 .leaflet-tooltip.pin-label::before { display: none; }
+
+/* ---------- Forecast model, tides, compasses (version 1.1) ---------- */
+
+.model-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pill-select {
+  min-height: 36px;
+  padding: 0 32px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2398a2b3'/%3E%3C/svg%3E") no-repeat right 12px center;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+}
+
+.field .pill-select { align-self: flex-start; font-weight: 500; }
+
+.site-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mini-compass { flex-shrink: 0; }
+.mini-compass .wedge path { stroke: var(--surface); stroke-width: 6; }
+.mini-compass .wedge.no path { fill: var(--surface-2); }
+.mini-compass .wedge.ok path { fill: var(--ok); }
+.mini-compass .wedge.good path { fill: var(--good); }
+.compass-north { fill: var(--muted); font-size: 46px; font-weight: 700; }
+.tags { display: flex; gap: 4px; margin-top: 2px; }
+.tag { font-size: 11px; color: var(--muted); background: var(--surface-2); border-radius: 999px; padding: 1px 8px; }
+
+.day-label small { display: block; font-size: 10px; opacity: 0.8; }
+.day-main { flex: 1; min-width: 0; }
+.tide-line { font-size: 11px; color: var(--muted); margin: 2px 0 6px; }
+.tide-detail { font-size: 14px; color: var(--muted); }
+
+.by-day th small { display: block; font-weight: 500; font-size: 10px; }
+.table-scroll { overflow-x: auto; margin: -4px; }
+.by-day td.site-name { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+.by-day td.cell { min-width: 84px; width: auto; }
+
+.section-title { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+.compare { width: 100%; border-collapse: collapse; font-size: 14px; }
+.compare td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
+.compare tr.current td { font-weight: 700; color: var(--accent); }
+.links a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+.checks-row { display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+.checks-row input, .map-toggles input { width: 18px; height: 18px; vertical-align: -3px; accent-color: var(--accent); }
+
+.map-toggles { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+
+.wind-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font: 700 11px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8), 0 0 1px #000;
+}
+.wind-arrow .arrow { font-size: 20px; }
+
+.lib-popup { display: flex; gap: 10px; align-items: center; font-family: inherit; }
+.lib-popup p { margin: 4px 0 8px; font-size: 12px; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
+.timeline-top .segmented { max-width: 100%; overflow-x: auto; }
+.timeline-top .segmented button { flex-shrink: 0; }

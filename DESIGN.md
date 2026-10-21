@@ -61,7 +61,14 @@ feature. Change it here first, then in the code.
   "By day" uses rating-coloured cells; "By hour" uses compact hour blocks
   (speed only); "Best times" uses ranked window cards on `--surface-2`.
 - **Map:** OpenTopoMap tiles (dimmed in dark mode), with a timeline card
-  underneath: the big time label, day pills and a slider.
+  underneath: the big time label, day pills and a slider. Guide sites are
+  small grey dots; wind arrows are coloured blue → green → yellow →
+  orange → red as speed rises.
+- **Mini compass:** a small 16-wedge ring with "N" in the middle, next to
+  each site's name.
+- **Forecast picker:** a pill-shaped dropdown under the header.
+- **Tide line:** small muted text under each day's strip ("🌊 HW … · LW … ·
+  Springs").
 
 ## References
 - Apple Human Interface Guidelines: tap targets, hierarchy, legibility

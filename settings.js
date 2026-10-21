@@ -1,4 +1,5 @@
-// The settings panel: paragliding speed ranges and the rain cutoff.
+// The settings panel: paragliding speed ranges, rain cutoff, flying day
+// (sunrise/sunset or twilight) and the high tide buffer.
 
 const settingsForm = document.getElementById("settings-form");
 
@@ -14,6 +15,9 @@ function fillSettingsForm(settings) {
   settingsForm.okMin.value = settings.speedOk.min;
   settingsForm.okMax.value = settings.speedOk.max;
   settingsForm.rainCutoff.value = settings.rainCutoff;
+  settingsForm.daylight.value = settings.daylight;
+  settingsForm.extraMinutes.value = settings.extraMinutes;
+  settingsForm.highTideWindow.value = settings.highTideWindow;
 }
 
 settingsForm.addEventListener("submit", event => {
@@ -23,6 +27,9 @@ settingsForm.addEventListener("submit", event => {
     speedGood: { min: number("goodMin"), max: number("goodMax") },
     speedOk: { min: number("okMin"), max: number("okMax") },
     rainCutoff: number("rainCutoff"),
+    daylight: settingsForm.daylight.value,
+    extraMinutes: number("extraMinutes"),
+    highTideWindow: number("highTideWindow"),
   };
 
   const error = document.getElementById("settings-error");

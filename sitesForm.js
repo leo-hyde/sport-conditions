@@ -4,7 +4,7 @@ const siteForm = document.getElementById("site-form");
 const siteDialog = document.getElementById("site-dialog");
 
 let editingId = null;  // the id of the site being edited, or null when adding
-let directionRatings = {};  // compass point → "good", "ok" or "no"
+let pickedDirections = {};  // compass point → "good", "ok" or "no"
 let foundPlaces = [];  // the latest place search results
 
 // Pass a site id to edit that site, or nothing to add a new one.
@@ -21,50 +21,18 @@ function openSiteForm(siteId) {
   siteForm.lat.value = site ? site.lat : "";
   siteForm.lon.value = site ? site.lon : "";
 
-  directionRatings = {};
-  for (const point of COMPASS) {
-    if (site && site.goodDirections.includes(point)) directionRatings[point] = "good";
-    else if (site && site.okDirections.includes(point)) directionRatings[point] = "ok";
-    else directionRatings[point] = "no";
-  }
+  siteForm.coastal.checked = Boolean(site && site.coastal);
+  siteForm.notHighTide.checked = Boolean(site && site.notHighTide);
+  pickedDirections = directionRatings(site || { goodDirections: [], okDirections: [] });
   drawCompass();
   siteDialog.showModal();
 }
 
 // ---------- Compass picker ----------
 
-// Draws 16 wedges in a ring as an SVG (a drawing made of shapes).
-// Angles are measured clockwise from north, like a compass.
 function drawCompass() {
-  const centre = 130;
-  const outer = 120;
-  const inner = 44;
-
-  // The x, y position at a given angle and distance from the centre.
-  const point = (angle, radius) => {
-    const radians = angle * Math.PI / 180;
-    return [centre + radius * Math.sin(radians), centre - radius * Math.cos(radians)];
-  };
-
-  const wedges = COMPASS.map((name, i) => {
-    const start = i * 22.5 - 11.25;
-    const end = i * 22.5 + 11.25;
-    const [x1, y1] = point(start, inner);
-    const [x2, y2] = point(start, outer);
-    const [x3, y3] = point(end, outer);
-    const [x4, y4] = point(end, inner);
-    const [labelX, labelY] = point(i * 22.5, (inner + outer) / 2);
-    return `<g class="wedge ${directionRatings[name]}" data-dir="${name}">
-      <path d="M${x1},${y1} L${x2},${y2} A${outer},${outer} 0 0 1 ${x3},${y3} L${x4},${y4} A${inner},${inner} 0 0 0 ${x1},${y1} Z"/>
-      <text x="${labelX}" y="${labelY}" text-anchor="middle" dominant-baseline="central">${name}</text>
-    </g>`;
-  }).join("");
-
   document.getElementById("compass").innerHTML = `
-    <svg viewBox="0 0 260 260" role="group" aria-label="Wind directions">
-      ${wedges}
-      <text class="compass-centre" x="${centre}" y="${centre}" text-anchor="middle" dominant-baseline="central">Tap to set</text>
-    </svg>
+    ${compassSvg(pickedDirections, { labels: true })}
     <div class="legend">
       <span><i class="good"></i>Good</span>
       <span><i class="ok"></i>OK</span>
@@ -77,7 +45,7 @@ document.getElementById("compass").addEventListener("click", event => {
   const wedge = event.target.closest("[data-dir]");
   if (!wedge) return;
   const next = { no: "ok", ok: "good", good: "no" };
-  directionRatings[wedge.dataset.dir] = next[directionRatings[wedge.dataset.dir]];
+  pickedDirections[wedge.dataset.dir] = next[pickedDirections[wedge.dataset.dir]];
   drawCompass();
 });
 
@@ -88,21 +56,38 @@ async function searchPlaces() {
   const results = document.getElementById("search-results");
   if (!query) return;
 
+  // Flying sites from the site guide come first: choosing one fills in its
+  // wind directions too. Then towns and places from Open-Meteo.
+  const sites = SITE_LIBRARY
+    .filter(site => site.name.toLowerCase().includes(query.toLowerCase()))
+    .slice(0, 5)
+    .map(site => ({ site }));
+
   results.innerHTML = '<p class="hint">Searching…</p>';
+  let places = [];
   try {
     const url = "https://geocoding-api.open-meteo.com/v1/search?" +
       new URLSearchParams({ name: query, count: 5, language: "en" });
     const data = await fetch(url).then(response => response.json());
-    foundPlaces = data.results || [];
-    results.innerHTML = foundPlaces.length === 0
-      ? '<p class="hint">No places found. Try a nearby town.</p>'
-      : foundPlaces.map((place, i) => {
-          const area = [place.admin1, place.country].filter(Boolean).join(", ");
-          return `<button type="button" data-place="${i}">${esc(place.name)} <span class="muted">${esc(area)}</span></button>`;
-        }).join("");
+    places = (data.results || []).map(place => ({ place }));
   } catch {
-    results.innerHTML = '<p class="error">Search failed. Check your connection.</p>';
+    if (sites.length === 0) {
+      results.innerHTML = '<p class="error">Search failed. Check your connection.</p>';
+      return;
+    }
   }
+
+  foundPlaces = [...sites, ...places];
+  results.innerHTML = foundPlaces.length === 0
+    ? '<p class="hint">Nothing found. Try a nearby town.</p>'
+    : foundPlaces.map(({ site, place }, i) => {
+        if (site) {
+          return `<button type="button" data-place="${i}">🪂 ${esc(site.name)}
+            <span class="muted">site guide · good ${site.goodDirections.join(" ") || "–"}</span></button>`;
+        }
+        const area = [place.admin1, place.country].filter(Boolean).join(", ");
+        return `<button type="button" data-place="${i}">📍 ${esc(place.name)} <span class="muted">${esc(area)}</span></button>`;
+      }).join("");
 }
 
 document.getElementById("place-search-btn").addEventListener("click", searchPlaces);
@@ -119,10 +104,20 @@ document.getElementById("place-search").addEventListener("keydown", event => {
 document.getElementById("search-results").addEventListener("click", event => {
   const button = event.target.closest("[data-place]");
   if (!button) return;
-  const place = foundPlaces[button.dataset.place];
-  siteForm.lat.value = place.latitude.toFixed(4);
-  siteForm.lon.value = place.longitude.toFixed(4);
-  if (!siteForm.name.value) siteForm.name.value = place.name;
+  const { site, place } = foundPlaces[button.dataset.place];
+  if (site) {
+    siteForm.name.value = site.name;
+    siteForm.lat.value = site.lat;
+    siteForm.lon.value = site.lon;
+    siteForm.coastal.checked = Boolean(site.coastal);
+    siteForm.notHighTide.checked = Boolean(site.notHighTide);
+    pickedDirections = directionRatings(site);
+    drawCompass();
+  } else {
+    siteForm.lat.value = place.latitude.toFixed(4);
+    siteForm.lon.value = place.longitude.toFixed(4);
+    if (!siteForm.name.value) siteForm.name.value = place.name;
+  }
   document.getElementById("search-results").innerHTML = "";
 });
 
@@ -131,8 +126,8 @@ document.getElementById("search-results").addEventListener("click", event => {
 siteForm.addEventListener("submit", async event => {
   event.preventDefault();  // stop the browser reloading the page
 
-  const goodDirections = COMPASS.filter(point => directionRatings[point] === "good");
-  const okDirections = COMPASS.filter(point => directionRatings[point] === "ok");
+  const goodDirections = COMPASS.filter(point => pickedDirections[point] === "good");
+  const okDirections = COMPASS.filter(point => pickedDirections[point] === "ok");
   if (goodDirections.length + okDirections.length === 0) {
     const error = document.getElementById("site-error");
     error.textContent = "Tap the compass to pick at least one wind direction.";
@@ -147,6 +142,8 @@ siteForm.addEventListener("submit", async event => {
     lon: Number(siteForm.lon.value),
     goodDirections,
     okDirections,
+    coastal: siteForm.coastal.checked,
+    notHighTide: siteForm.notHighTide.checked,
   };
 
   if (editingId) {
@@ -160,11 +157,7 @@ siteForm.addEventListener("submit", async event => {
   render();
 
   // Fetch this site's forecast: it's new, or its location may have changed.
-  try {
-    state.forecasts[site.id] = await fetchForecast(site);
-  } catch {
-    state.failedSites.push(site.name);
-  }
+  await loadSite(site);
   render();
 });
 

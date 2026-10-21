@@ -11,40 +11,66 @@ function degreesToCompass(degrees) {
   return COMPASS[index];
 }
 
+// The forecast models you can switch between. They're the same ones
+// Windy offers, all served free by Open-Meteo.
+const MODELS = [
+  { id: "ukmo_seamless", name: "Met Office", detail: "UKV 2 km for 2 days, then global 10 km" },
+  { id: "ecmwf_ifs025", name: "ECMWF", detail: "European centre, 25 km" },
+  { id: "icon_seamless", name: "ICON", detail: "German weather service (DWD), 2–13 km" },
+  { id: "gfs_seamless", name: "GFS", detail: "US weather service (NOAA), 13–25 km" },
+  { id: "meteofrance_seamless", name: "AROME", detail: "Météo-France, 1–25 km, about 4 days" },
+];
+
+const FORECAST_DAYS = 7;
+
 // Build the Open-Meteo web address asking for the data we need.
-function forecastUrl(site) {
+function forecastUrl(site, model) {
   const params = new URLSearchParams({
     latitude: site.lat,
     longitude: site.lon,
-    hourly: "wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,is_day",
+    hourly: "wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation",
     wind_speed_unit: "mph",
     timezone: "Europe/London",
-    forecast_days: 3,
+    forecast_days: FORECAST_DAYS,
+    models: model,
   });
   return "https://api.open-meteo.com/v1/forecast?" + params;
 }
 
 // Open-Meteo sends each value as a separate list (all the times, all the
 // speeds, …). This joins them into one object per hour, which is easier to use.
+// Some models stop after a few days; those empty hours are left out.
 function toHours(data) {
   const h = data.hourly;
-  return h.time.map((time, i) => ({
-    key: time.slice(0, 13),  // "2026-10-21T14", unique for each hour
-    date: time.slice(0, 10),  // "2026-10-21"
-    hourOfDay: time.slice(11, 13),  // "14"
-    speed: Math.round(h.wind_speed_10m[i]),
-    gusts: Math.round(h.wind_gusts_10m[i]),
-    degrees: h.wind_direction_10m[i],
-    direction: degreesToCompass(h.wind_direction_10m[i]),
-    rain: h.precipitation[i],
-    isDaylight: h.is_day[i] === 1,
-  }));
+  return h.time
+    .map((time, i) => ({
+      key: time.slice(0, 13),  // "2026-10-21T14", unique for each hour
+      date: time.slice(0, 10),  // "2026-10-21"
+      hourOfDay: time.slice(11, 13),  // "14"
+      speed: Math.round(h.wind_speed_10m[i]),
+      gusts: Math.round(h.wind_gusts_10m[i]),
+      degrees: h.wind_direction_10m[i],
+      direction: degreesToCompass(h.wind_direction_10m[i]),
+      rain: h.precipitation[i],
+      missing: h.wind_speed_10m[i] === null,
+    }))
+    .filter(hour => !hour.missing);
 }
 
-async function fetchForecast(site) {
-  const response = await fetch(forecastUrl(site));
-  if (!response.ok) throw new Error(`Forecast for ${site.name} failed (${response.status})`);
-  return toHours(await response.json());
+// Fetches JSON from a web address. If the server says "too many requests"
+// (status 429), it waits a moment and tries again, up to 3 times.
+async function fetchJson(url, attempts = 3) {
+  const response = await fetch(url);
+  if (response.status === 429 && attempts > 1) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return fetchJson(url, attempts - 1);
+  }
+  if (!response.ok) throw new Error(`Request failed (${response.status})`);
+  return response.json();
+}
+
+async function fetchForecast(site, model) {
+  return toHours(await fetchJson(forecastUrl(site, model)));
 }
 
 // The current hour in UK time, in the same form as hour.key, so we can
@@ -83,8 +109,19 @@ function checkRain(hour, settings) {
   return { rating: "good", text: "Dry" };
 }
 
-function checkHour(hour, site, settings) {
-  return [checkDirection(hour, site), checkSpeed(hour, settings), checkRain(hour, settings)];
+// Only for sites marked "doesn't work near high tide".
+function checkTide(hour, site, settings, tides) {
+  if (!site.notHighTide || !tides) return null;
+  const high = nearbyHighWater(tides, hour.key, settings.highTideWindow);
+  if (high) return { rating: "no", text: `Too close to high water (${formatHours(high.hours)})` };
+  return { rating: "good", text: `Clear of high tide (more than ${settings.highTideWindow}h away)` };
+}
+
+// `tides` is optional: only coastal sites have them.
+function checkHour(hour, site, settings, tides) {
+  const checks = [checkDirection(hour, site), checkSpeed(hour, settings), checkRain(hour, settings)];
+  const tide = checkTide(hour, site, settings, tides);
+  return tide ? [...checks, tide] : checks;
 }
 
 // The overall rating is the worst of the individual ratings.
@@ -94,6 +131,6 @@ function worstRating(ratings) {
   return "good";
 }
 
-function rateHour(hour, site, settings) {
-  return worstRating(checkHour(hour, site, settings).map(check => check.rating));
+function rateHour(hour, site, settings, tides) {
+  return worstRating(checkHour(hour, site, settings, tides).map(check => check.rating));
 }
