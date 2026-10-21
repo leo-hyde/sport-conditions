@@ -75,6 +75,14 @@ feature. Change it here first, then in the code.
 - **Tide line:** small muted text under each day's strip ("🌊 HW … · LW … ·
   Springs").
 
+## Phone layout (under 600px wide)
+- Nothing may be wider than the screen, or phones zoom the whole page out.
+  Rows of controls must wrap.
+- Tabs become a bar fixed to the bottom, with icons (📊 ⭐ 🗺️).
+- A smaller header; the Sport and Forecast pickers take half the width each.
+- On site cards the day name sits above its strip, so hours get the full width.
+- The map fills most of the screen.
+
 ## References
 - Apple Human Interface Guidelines: tap targets, hierarchy, legibility
 - *Refactoring UI*: spacing, contrast, restraint

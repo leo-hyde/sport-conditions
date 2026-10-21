@@ -741,3 +741,72 @@ details .compare { margin-top: 8px; }
 .popup-forecast { margin: 6px 0 4px; font-size: 13px; }
 .checks.small li { font-size: 12px; gap: 6px; }
 .checks.small .check-icon { width: 18px; height: 18px; font-size: 10px; }
+
+/* ---------- Pickers row ---------- */
+.model-bar { flex-wrap: wrap; row-gap: 6px; }
+.tab-icon { display: none; }
+
+/* ---------- Phone layout (screens narrower than 600px) ---------- */
+@media (max-width: 600px) {
+  body { padding: 0 12px calc(84px + env(safe-area-inset-bottom)); }
+
+  /* A smaller header */
+  .topbar { padding: 12px 0 8px; }
+  h1 { font-size: 20px; }
+  .topbar #status { font-size: 12px; }
+  .icon-btn { width: 40px; min-height: 40px; font-size: 18px; }
+
+  /* Pickers: two equal halves, no details text */
+  .model-bar label { display: none; }
+  .model-bar .pill-select { flex: 1; min-width: 0; font-size: 14px; }
+  .model-detail { display: none; }
+
+  /* Tabs become an app-style bar fixed to the bottom of the screen */
+  .tabs {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border: none;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  }
+  .tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-height: 52px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  .tabs button.active { background: var(--surface-2); box-shadow: none; color: var(--accent); }
+  .tab-icon { display: block; font-size: 20px; line-height: 1; }
+
+  /* Site cards: the day name sits above its strip, so the hours get the full width */
+  .card { padding: 12px; }
+  .day { flex-direction: column; align-items: stretch; gap: 2px; margin-bottom: 8px; }
+  .day-label { width: auto; display: flex; gap: 8px; align-items: baseline; font-weight: 600; color: var(--text); }
+  .day-label small { display: inline; font-weight: 400; color: var(--muted); }
+  .hour { padding: 5px 0; font-size: 12px; }
+
+  /* Overview */
+  .view-head h2 { font-size: 18px; }
+  .by-day td.cell { min-width: 76px; padding: 6px 8px; font-size: 13px; }
+  .by-day td.site-name { font-size: 13px; max-width: 110px; }
+  .heatmap .hm-site { font-size: 12px; }
+
+  /* Map: as big as the screen allows */
+  #map { height: 56vh; }
+  .timeline { padding: 10px; }
+  .timeline-time { font-size: 17px; }
+  #windy-box iframe { height: 62vh; }
+
+  /* The undo message sits above the tab bar */
+  .toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
