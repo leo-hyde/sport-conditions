@@ -965,3 +965,13 @@ dialog { overflow: auto; overscroll-behavior: contain; }
   .name-cell .star { width: 24px; height: 24px; font-size: 14px; }
   .sticky-actions { margin: 0 -20px -20px; }
 }
+
+/* Shown when the forecast service has stopped answering for today */
+.service-notice {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #f5c04a;
+  background: rgba(245, 192, 74, 0.15);
+  font-size: 14px;
+}

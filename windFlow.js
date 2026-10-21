@@ -1,11 +1,11 @@
 // Animated wind flow on our own map, like Windy's, drawn by the
 // leaflet-velocity library (loaded in index.html). It needs the wind on a
-// regular grid, so we ask Open-Meteo for a 10 × 10 grid of points covering the
+// regular grid, so we ask Open-Meteo for an 8 × 8 grid of points covering the
 // map, all 7 days, in one request. Moving through time then just picks a
 // different hour from that data, without fetching again.
 
-const FLOW_MIN_ZOOM = 7;  // further out than this, the flow is too coarse to look right
-const FLOW_GRID = 10;  // 10 × 10 = 100 points: smooth enough, and gentle on the free service
+const FLOW_MIN_ZOOM = 8;  // further out than this, the flow is too coarse to look right
+const FLOW_GRID = 8;  // 8 × 8 = 64 points: smooth enough, and gentle on the free service
 let flowLayer = null;
 let flowData = null;  // { model, bounds, times, points: [{ speed: [...], degrees: [...] }] }
 let flowTimer = null;
@@ -47,6 +47,7 @@ async function loadWindFlow() {
   }
   document.getElementById("flow-note").textContent = "";
   if (!flowNeedsReload()) return drawWindFlow();
+  if (forecastLimitReached) return drawWindFlow();
 
   // Half as big again as the screen on every side, so moving around a bit
   // doesn't need a new fetch.

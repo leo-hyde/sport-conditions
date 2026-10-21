@@ -63,6 +63,7 @@ function toHours(data) {
 // us well under it. The ↻ button sets skipSavedForecasts to fetch fresh ones.
 const SAVED_FORECAST_MINUTES = 30;
 let skipSavedForecasts = false;
+let forecastLimitReached = false;  // set when the service says we've used today's allowance
 
 // Fetches JSON from a web address. If the server says "too many requests"
 // (status 429), it waits a moment and tries again, up to 3 times. For the
@@ -72,14 +73,27 @@ async function fetchJson(url, attempts = 3) {
   const saveable = url.includes("open-meteo.com");
   const saved = saveable ? await savedJson(url) : null;
   if (saved && saved.fresh && !skipSavedForecasts) return saved.data;
+  // Once the forecast service has said "limit reached", don't keep asking
+  // (until you press ↻): use saved copies, or give up straight away.
+  if (saveable && forecastLimitReached) {
+    if (saved) return saved.data;
+    throw new Error("Daily forecast limit reached");
+  }
 
   try {
     const response = await fetch(url);
-    if (response.status === 429 && attempts > 1) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return fetchJson(url, attempts - 1);
+    if (!response.ok) {
+      // Open-Meteo explains refusals, e.g. "Daily API request limit exceeded".
+      const reason = await response.json().then(body => body.reason).catch(() => "");
+      if (/daily|hourly/i.test(reason)) {
+        forecastLimitReached = true;  // waiting a few seconds won't help
+      } else if (response.status === 429 && attempts > 1) {
+        // "Slow down" (a per-minute limit): wait a moment and try again.
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return fetchJson(url, attempts - 1);
+      }
+      throw new Error(reason || `Request failed (${response.status})`);
     }
-    if (!response.ok) throw new Error(`Request failed (${response.status})`);
     const data = await response.json();
     if (saveable) saveJson(url, data);
     return data;

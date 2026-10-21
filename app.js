@@ -94,6 +94,16 @@ function statusText() {
   return text;
 }
 
+// A clear message when the free forecast service has stopped answering for
+// today, instead of a page full of grey.
+function renderServiceNotice() {
+  const notice = document.getElementById("service-notice");
+  notice.hidden = !forecastLimitReached;
+  notice.innerHTML = `<strong>No new forecasts right now.</strong> The free forecast service has
+    reached its daily limit for this internet connection. It resets tomorrow, or try another
+    network (e.g. mobile data). Anything saved in the last day is still shown.`;
+}
+
 // ---------- Preparing the data ----------
 
 // A site's flyable-time hours, rated and grouped by day:
@@ -214,6 +224,7 @@ function showToast(message, buttonText, onClick) {
 
 function render() {
   setStatus(statusText());
+  renderServiceNotice();
   document.getElementById("model-select").value = state.model;
   document.getElementById("model-detail").textContent = MODELS.find(model => model.id === state.model).detail;
   renderOverview();
@@ -371,6 +382,7 @@ modelSelect.addEventListener("change", () => changeModel(modelSelect.value));
 // ↻ fetches fresh forecasts, rather than ones saved in the last 30 minutes.
 document.getElementById("refresh").addEventListener("click", async () => {
   skipSavedForecasts = true;
+  forecastLimitReached = false;  // try the forecast service again
   await refresh();
   skipSavedForecasts = false;
 });

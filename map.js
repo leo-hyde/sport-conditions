@@ -15,7 +15,8 @@ const libraryForecasts = {};
 // Only fetch guide-site forecasts when this many or fewer are on screen,
 // so we don't ask the weather service for hundreds at once. They're fetched
 // in batches of 40 places per request.
-const MAX_RATED_GUIDE_SITES = 120;
+const MAX_RATED_GUIDE_SITES = 60;
+const GUIDE_MIN_ZOOM = 9;  // only fetch guide-site forecasts once zoomed in this far
 const GUIDE_BATCH = 40;
 
 // The map is only created the first time the Map tab is opened, because
@@ -80,7 +81,7 @@ function addMapKey() {
     box.open = window.innerWidth > 600;
     box.innerHTML = `<summary>Key</summary>
       <div class="key-row"><span class="key-mine">★</span>Your sites</div>
-      <div class="key-row"><span class="key-guide"></span>Other sites (tap to add)</div>
+      <div class="key-row"><span class="key-guide"></span>Other sites (tap to add; grey until you zoom in)</div>
       <div class="key-row"><span class="key-live">LIVE</span>Airport wind right now</div>
       <div class="key-row key-ratings"><i class="good"></i>Good <i class="ok"></i>OK <i class="no"></i>No</div>
       <div class="key-row muted">Coloured streaks: forecast wind flow</div>`;
@@ -115,7 +116,13 @@ function renderMap() {
 // Redraws just the parts that change with the time: quicker than renderMap.
 function drawTime() {
   const keys = mapHourKeys();
-  if (keys.length === 0) return;
+  if (keys.length === 0) {
+    // No forecasts at all: still show where your sites are.
+    state.mapTime = londonNowKey();
+    document.getElementById("map-track").innerHTML = '<p class="hint">No forecast to scroll through yet.</p>';
+    drawPins();
+    return;
+  }
   // Start at the next hour to come (or the first hour, if the day is over).
   if (!keys.includes(state.mapTime)) {
     state.mapTime = keys.find(key => key >= londonNowKey()) || keys[0];
@@ -282,7 +289,11 @@ async function loadLibraryForecasts() {
   }
   const bounds = map.getBounds();
   const visible = guideSites().filter(({ site }) => bounds.contains([site.lat, site.lon]));
-  if (visible.length > MAX_RATED_GUIDE_SITES) {
+  if (forecastLimitReached) {
+    note.textContent = "Guide sites are grey because the forecast service's daily limit is reached.";
+    return;
+  }
+  if (map.getZoom() < GUIDE_MIN_ZOOM || visible.length > MAX_RATED_GUIDE_SITES) {
     note.textContent = `Zoom in to see forecasts for the ${visible.length} guide sites in view.`;
     return;
   }
