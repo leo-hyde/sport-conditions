@@ -43,7 +43,14 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
 - Wind speeds are in **mph**. Directions use the 16-point compass
   (N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW).
 - Speed rules belong to the **sport**; direction rules belong to the **site**.
-- Weather data comes from Open-Meteo (free, no API key).
+- Weather data comes from Open-Meteo (free, no API key). **It has a daily
+  limit per internet connection (10,000 calls; each place counts as one), and
+  Leo's devices share it.** When testing, avoid repeated full reloads with the
+  map open (guide sites and wind flow cost ~100+ calls each); use made-up
+  forecasts in the preview for design work.
+- **Two kinds of site list:** "my sites" (per person, in the browser, synced
+  via the Worker's `/sync`) and the shared site guide (`data/sites.csv`, rebuilt
+  by the GitHub Action on every change).
 - **Site data lives in `data/sites.csv`.** Never edit `sites.js` by hand: edit
   the CSV, then run `python3 tools/build_sites.py`, which validates it.
 - **Previewing on Leo's Mac:** macOS blocks the preview server from the Documents
