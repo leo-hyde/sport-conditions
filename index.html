@@ -69,15 +69,19 @@
       </div>
       <div id="map-timeline" class="timeline card">
         <div class="timeline-top">
+          <button id="map-prev" class="icon-btn" aria-label="Previous hour">‹</button>
           <span id="map-time" class="timeline-time"></span>
-          <div id="map-days" class="segmented"></div>
+          <button id="map-next" class="icon-btn" aria-label="Next hour">›</button>
         </div>
-        <input id="map-slider" type="range" min="0" max="0" step="1" aria-label="Forecast time">
+        <div id="map-track-wrap" class="track-wrap">
+          <div id="map-bubble" class="time-bubble"></div>
+          <div id="map-track" class="track" tabindex="0" aria-label="Forecast time: drag, or use the arrow keys"></div>
+        </div>
         <div class="map-toggles">
           <label><input id="show-library" type="checkbox" checked> All sites from the guide</label>
         </div>
-        <p class="hint">Drag to move through the forecast. Tap a coloured pin for details,
-          or a grey dot to add that site.</p>
+        <p class="hint">Drag along the bars to move through time; their colour is the best
+          rating at any of your sites. Tap a coloured pin for details, or a grey dot to add that site.</p>
       </div>
     </section>
   </main>

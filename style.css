@@ -553,3 +553,78 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
   display: block;
 }
 #windy-box .hint { margin-top: 8px; }
+
+/* ---------- Map timeline (like Windy's) ---------- */
+
+.timeline-top { flex-wrap: nowrap; }
+.timeline-time { flex: 1; text-align: center; }
+.timeline-time small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+
+.track-wrap { position: relative; padding-top: 34px; }
+
+.time-bubble {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The little pointer under the bubble */
+.time-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--accent);
+}
+
+.track {
+  display: flex;
+  gap: 4px;
+  touch-action: none;  /* stops the page scrolling while you drag */
+  user-select: none;
+  cursor: pointer;
+}
+
+.tl-day { flex-basis: 0; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+
+.tl-label {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.tl-day.current .tl-label { color: var(--text); }
+.tl-bars { display: flex; gap: 1px; height: 22px; }
+.tl-bar { flex: 1; border-radius: 2px; }
+.tl-bar.active { outline: 2px solid var(--text); outline-offset: 1px; position: relative; z-index: 1; }
+.tl-hours { display: flex; font-size: 10px; color: var(--muted); }
+.tl-hours span { flex: 1; overflow: visible; white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .tl-hours .minor { visibility: hidden; }
+}
+
+/* Hour details: previous / next hour */
+.hour-steps { display: flex; justify-content: space-between; gap: 8px; }
+.hour-steps .btn { min-width: 84px; }
+.hour-steps .btn:disabled { opacity: 0.35; cursor: default; }

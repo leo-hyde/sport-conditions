@@ -68,21 +68,81 @@ function drawTime() {
     state.mapTime = keys.find(key => key >= londonNowKey()) || keys[0];
   }
 
-  const slider = document.getElementById("map-slider");
-  slider.max = keys.length - 1;
-  slider.value = keys.indexOf(state.mapTime);
-
-  const dates = [...new Set(keys.map(key => key.slice(0, 10)))];
-  document.getElementById("map-days").innerHTML = dates.map(date =>
-    `<button data-map-day="${date}" class="${state.mapTime.startsWith(date) ? "active" : ""}">${dayLabel(date)}</button>`
-  ).join("");
-
+  drawTimeline(keys);
   drawPins();
 }
 
+// ---------- The timeline (like Windy's) ----------
+
+// The best rating at any of your sites, for each hour: { key → "good" | "ok" | "no" }.
+// It colours the timeline, so you can see the good times before you drag there.
+function bestRatings() {
+  const best = {};
+  const order = { no: 0, ok: 1, good: 2 };
+  for (const site of state.sites) {
+    for (const hours of Object.values(siteDays(site))) {
+      for (const hour of hours) {
+        if (!best[hour.key] || order[hour.rating] > order[best[hour.key]]) best[hour.key] = hour.rating;
+      }
+    }
+  }
+  return best;
+}
+
+// Days side by side, each with its label, a coloured bar per hour and some
+// hour numbers. A bubble above shows the chosen day and time.
+function drawTimeline(keys) {
+  const best = bestRatings();
+  const dates = [...new Set(keys.map(key => key.slice(0, 10)))];
+  const now = londonNowKey();
+
+  document.getElementById("map-track").innerHTML = dates.map(date => {
+    const dayKeys = keys.filter(key => key.startsWith(date));
+    const bars = dayKeys.map(key =>
+      `<div class="tl-bar ${best[key] || "no"} ${key < now ? "past" : ""} ${key === state.mapTime ? "active" : ""}" data-map-key="${key}"></div>`
+    ).join("");
+    const hourLabels = dayKeys.map(key => {
+      const hour = Number(key.slice(11));
+      return `<span class="${hour % 6 === 0 ? "" : "minor"}">${hour % 3 === 0 ? hour : ""}</span>`;
+    }).join("");
+    return `<div class="tl-day ${state.mapTime.startsWith(date) ? "current" : ""}" style="flex-grow: ${dayKeys.length}">
+      <button class="tl-label" data-map-day="${date}">${dayLabel(date)}</button>
+      <div class="tl-bars">${bars}</div>
+      <div class="tl-hours">${hourLabels}</div>
+    </div>`;
+  }).join("");
+
+  // Put the bubble above the chosen hour's bar.
+  const active = document.querySelector(".tl-bar.active");
+  const bubble = document.getElementById("map-bubble");
+  const wrap = document.getElementById("map-track-wrap").getBoundingClientRect();
+  const bar = active.getBoundingClientRect();
+  const centre = bar.left + bar.width / 2 - wrap.left;
+  bubble.textContent = `${dayLabel(state.mapTime.slice(0, 10))} ${state.mapTime.slice(11)}:00`;
+  // Keep the bubble inside the box at the far left and right.
+  const half = bubble.offsetWidth / 2;
+  bubble.style.left = `${Math.min(Math.max(centre, half), wrap.width - half)}px`;
+}
+
+function setMapTime(key) {
+  if (!key || key === state.mapTime) return;
+  state.mapTime = key;
+  drawTime();
+}
+
+// Moves the time by a number of hours (−1 = back an hour).
+function stepMapTime(steps) {
+  const keys = mapHourKeys();
+  const index = keys.indexOf(state.mapTime) + steps;
+  setMapTime(keys[Math.min(Math.max(index, 0), keys.length - 1)]);
+}
+
 function drawPins() {
-  document.getElementById("map-time").textContent =
-    `${dayLabel(state.mapTime.slice(0, 10))} · ${state.mapTime.slice(11)}:00`;
+  const date = state.mapTime.slice(0, 10);
+  const sun = state.sites[0] ? flyingWindow(state.sites[0], date, state.settings) : null;
+  document.getElementById("map-time").innerHTML =
+    `${dayLabel(date)} · ${state.mapTime.slice(11)}:00` +
+    (sun ? `<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)} · ${tideRange(date)} tides</small>` : "");
 
   pinLayer.clearLayers();
   for (const site of state.sites) {
@@ -202,17 +262,45 @@ document.getElementById("map-mode").addEventListener("click", event => {
 
 // ---------- Moving through time ----------
 
-// Dragging the slider moves through the hours.
-document.getElementById("map-slider").addEventListener("input", event => {
-  state.mapTime = mapHourKeys()[event.target.value];
-  drawTime();
+// Pressing and dragging along the bars moves through the hours. "Pointer"
+// events work for both a mouse and a finger.
+const track = document.getElementById("map-track");
+
+function timeAtPointer(event) {
+  const bars = [...track.querySelectorAll(".tl-bar")];
+  // The bar under the finger, or the nearest one if it's between bars.
+  let nearest = bars[0];
+  for (const bar of bars) {
+    const box = bar.getBoundingClientRect();
+    if (Math.abs(box.left + box.width / 2 - event.clientX) <
+        Math.abs(nearest.getBoundingClientRect().left + nearest.getBoundingClientRect().width / 2 - event.clientX)) {
+      nearest = bar;
+    }
+  }
+  return nearest.dataset.mapKey;
+}
+
+track.addEventListener("pointerdown", event => {
+  // Day labels jump to that day (the next hour to come, if it's today).
+  const label = event.target.closest("[data-map-day]");
+  if (label) {
+    const dayKeys = mapHourKeys().filter(key => key.startsWith(label.dataset.mapDay));
+    setMapTime(dayKeys.find(key => key >= londonNowKey()) || dayKeys[0]);
+    return;
+  }
+  track.setPointerCapture(event.pointerId);
+  setMapTime(timeAtPointer(event));
 });
 
-// The day buttons jump to that day (the next hour to come, if it's today).
-document.getElementById("map-days").addEventListener("click", event => {
-  const button = event.target.closest("[data-map-day]");
-  if (!button) return;
-  const dayKeys = mapHourKeys().filter(key => key.startsWith(button.dataset.mapDay));
-  state.mapTime = dayKeys.find(key => key >= londonNowKey()) || dayKeys[0];
-  drawTime();
+track.addEventListener("pointermove", event => {
+  if (track.hasPointerCapture(event.pointerId)) setMapTime(timeAtPointer(event));
+});
+
+document.getElementById("map-prev").addEventListener("click", () => stepMapTime(-1));
+document.getElementById("map-next").addEventListener("click", () => stepMapTime(1));
+
+// The left and right arrow keys step through the hours too.
+track.addEventListener("keydown", event => {
+  if (event.key === "ArrowLeft") stepMapTime(-1);
+  if (event.key === "ArrowRight") stepMapTime(1);
 });

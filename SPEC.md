@@ -110,6 +110,13 @@ the best one (or two).
 - **Flying day setting:** sunrise to sunset, or civil twilight (first to
   last light, which changes with the season), plus extra minutes either side.
 
+- **Map timeline like Windy's:** days side by side with an hour bar each,
+  coloured by the best rating at any of your sites; a bubble shows the
+  chosen time. Drag, tap, use ‹ › or the arrow keys.
+- **Hour details step ‹ ›** to the previous or next hour (across days).
+- **Live airport reports (METARs):** `worker/weather-proxy.js` is ready to
+  deploy as a free Cloudflare Worker. The app part comes once it's live.
+
 ### Flagged as hard, skipped for now
 - **Live weather stations:** airport METARs (e.g. Newquay, EGHQ) are free
   and good, but block requests from web pages, so they need a tiny "proxy"
