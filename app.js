@@ -1,6 +1,7 @@
 // The main file: holds the app's state, fetches forecasts and draws the page.
 // Other files: sites.js (starter sites), weather.js (forecasts and ratings),
-// storage.js (saving), details.js (hour details), settings.js (settings).
+// storage.js (saving), details.js (hour details), settings.js (settings),
+// sitesForm.js (add / edit sites).
 
 // Everything the app knows, in one place.
 const state = {
@@ -139,7 +140,10 @@ function renderSiteCards() {
             <div class="hours">${hours.map(hour => hourBlock(site, hour)).join("")}</div>
           </div>`).join("");
     return `<article class="card site" id="site-${site.id}">
-      <header class="card-head"><h3>${esc(site.name)}</h3></header>
+      <header class="card-head">
+        <h3>${esc(site.name)}</h3>
+        <button class="btn small" data-edit-site="${site.id}">Edit</button>
+      </header>
       ${strips}
     </article>`;
   }).join("");
@@ -152,6 +156,9 @@ function renderSiteCards() {
 document.addEventListener("click", event => {
   const block = event.target.closest("[data-key]");
   if (block) showHourDetails(block.dataset.site, block.dataset.key);
+
+  const editButton = event.target.closest("[data-edit-site]");
+  if (editButton) openSiteForm(editButton.dataset.editSite);
 
   // Any button marked data-close closes the dialog it's in.
   if (event.target.closest("[data-close]")) event.target.closest("dialog").close();
@@ -166,6 +173,7 @@ document.querySelectorAll("dialog").forEach(dialog => {
 
 document.getElementById("refresh").addEventListener("click", refresh);
 document.getElementById("open-settings").addEventListener("click", openSettings);
+document.getElementById("add-site").addEventListener("click", () => openSiteForm());
 
 render();
 refresh();

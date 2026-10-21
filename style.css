@@ -178,8 +178,11 @@ legend { margin-bottom: 6px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .range-inputs { display: flex; align-items: center; gap: 8px; }
 .range-inputs input { width: 90px; }
+.field input { font-size: 16px; font-weight: 400; }  /* 16px stops iPhones zooming in */
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
+.row > .btn { flex: 0 0 auto; }
+hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; }
 
 /* ---------- Cards ---------- */
 

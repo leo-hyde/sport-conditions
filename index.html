@@ -22,6 +22,10 @@
   <main>
     <!-- app.js fills these in -->
     <section id="summary" class="card summary"></section>
+    <div class="view-head">
+      <h2>Sites</h2>
+      <button id="add-site" class="btn primary small">+ Add site</button>
+    </div>
     <div id="site-cards"></div>
   </main>
 
@@ -67,6 +71,44 @@
         <button type="button" class="btn" data-close>Cancel</button>
         <button type="submit" class="btn primary">Save</button>
       </div>
+      <hr>
+      <div class="dialog-actions">
+        <button type="button" id="reset-sites" class="btn ghost danger">Reset sites to starter list</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add / edit site (sitesForm.js) -->
+  <dialog id="site-dialog">
+    <form id="site-form" class="dialog-inner">
+      <h2 id="site-form-title">Add site</h2>
+      <label class="field">
+        Name
+        <input name="name" type="text" required maxlength="60" placeholder="e.g. Fistral">
+      </label>
+      <div class="field">
+        Location
+        <div class="row">
+          <input id="place-search" type="search" placeholder="Search a place, e.g. Newquay">
+          <button type="button" id="place-search-btn" class="btn">Search</button>
+        </div>
+        <div id="search-results" class="search-results"></div>
+        <div class="row">
+          <input name="lat" type="number" step="any" min="-90" max="90" required placeholder="Latitude" aria-label="Latitude">
+          <input name="lon" type="number" step="any" min="-180" max="180" required placeholder="Longitude" aria-label="Longitude">
+        </div>
+      </div>
+      <div class="field">
+        Wind directions
+        <div id="compass" class="compass"></div>
+      </div>
+      <p id="site-error" class="error" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" id="delete-site" class="btn ghost danger" hidden>Delete</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
     </form>
   </dialog>
 
@@ -75,6 +117,7 @@
   <script src="storage.js"></script>
   <script src="details.js"></script>
   <script src="settings.js"></script>
+  <script src="sitesForm.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
