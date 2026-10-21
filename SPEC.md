@@ -133,9 +133,11 @@ the best one (or two).
   server (e.g. a free Cloudflare Worker). OpenWindMap allows it but has
   almost no UK stations. Holfuy (popular with paragliding sites) needs
   an API key per station.
-- **Exact tide heights:** the free tide model smooths out the range. A
-  proper UK tide source (e.g. Admiralty) needs an API key and a small
-  server to keep it secret.
+- **Official UK tides (ready, needs a key):** the Worker can fetch Admiralty
+  (UK Hydrographic Office) high/low water times and heights from the
+  nearest of 607 stations (within 25 km), using a free Discovery key stored
+  as the Worker secret `ADMIRALTY_KEY`. Without it, the app uses the
+  Open-Meteo tide model.
 
 ---
 

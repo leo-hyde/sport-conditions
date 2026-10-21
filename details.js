@@ -45,8 +45,8 @@ function showHourDetails(siteId, key) {
       ${stat("From", `${arrow(hour.degrees)} ${hour.direction}`)}
       ${stat("Rain", `${hour.rain} <small>mm</small>`)}
     </div>
-    ${tide ? `<p class="tide-detail">🌊 Tide ${tide.rising ? "rising" : "falling"} (${tide.height.toFixed(1)} m, approx.) ·
-      ${tideSummary(tides, hour.date)} · ${tideRange(hour.date)}</p>` : ""}
+    ${tide ? `<p class="tide-detail">🌊 Tide ${tide.rising ? "rising" : "falling"} (${tide.height.toFixed(1)} m${tides.approximate ? ", approx." : ""}) ·
+      ${tideSummary(tides, hour.date)} · ${tideRange(hour.date)}<br><small>Tides: ${esc(tides.source)}</small></p>` : ""}
     <ul class="checks">
       ${checks.map(check => `
         <li class="${check.rating}">

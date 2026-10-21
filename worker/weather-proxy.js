@@ -1,65 +1,112 @@
 // A tiny Cloudflare Worker (a small program Cloudflare runs for free) that
-// fetches live airport weather reports (METARs) for the app.
+// fetches data the app can't fetch directly from a web page:
 //
-// Why it's needed: aviationweather.gov doesn't let web pages fetch its data
-// directly (no "CORS" permission), but a server can. This Worker fetches it,
-// adds that permission, and passes it on.
+// 1. Live airport weather reports (METARs) from aviationweather.gov, which
+//    doesn't give web pages permission ("CORS") to read its data.
+// 2. Official UK tide times from the UK Hydrographic Office (Admiralty), which
+//    needs a secret key. The key is stored in Cloudflare as a secret called
+//    ADMIRALTY_KEY, so it's never in the app's code for anyone to copy.
 //
-// It only fetches METARs, only for a map area, and caches answers for
-// 5 minutes, so it can't be used as a general proxy for other websites.
+// It only fetches these things, and caches answers, so it can't be used as a
+// general proxy for other websites.
 //
-// Use:  https://<your-worker>.workers.dev/metar?bbox=49.9,-6.4,51.2,-4.0
-//       (the latest report for each airport in an area: south, west, north, east)
-// or:   https://<your-worker>.workers.dev/metar?ids=EGHQ&hours=24
-//       (every report from one or more airports over the last few hours)
+// Use:  /metar?bbox=49.9,-6.4,51.2,-4.0   latest report per airport in an area
+//                                          (south, west, north, east)
+//       /metar?ids=EGHQ&hours=24          every report from airports, last few hours
+//       /tides/stations                   all 607 UK tide stations
+//       /tides/events?station=0546        high and low waters for the next 7 days
 
-const CACHE_SECONDS = 300;
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET",
+};
+const ADMIRALTY = "https://admiraltyapi.azure-api.net/uktidalapi/api/V1/Stations";
 
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const cors = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET",
-    };
-
-    if (url.pathname !== "/metar") {
-      return new Response("Not found", { status: 404, headers: cors });
+    try {
+      const url = new URL(request.url);
+      if (url.pathname === "/metar") return await metar(request, url, ctx);
+      if (url.pathname === "/tides/stations") return await tideStations(request, env, ctx);
+      if (url.pathname === "/tides/events") return await tideEvents(request, url, env, ctx);
+      return reply("Not found", 404);
+    } catch (error) {
+      // Always answer with CORS, even when something breaks, so the app
+      // can see the error instead of a blocked request.
+      return reply(`Worker error: ${error.message}`, 500);
     }
-
-    // Only allow up to 10 four-letter airport codes (like EGHQ), or else four
-    // numbers for an area: south, west, north, east.
-    let source = "https://aviationweather.gov/api/data/metar?format=json";
-    const ids = (url.searchParams.get("ids") || "").toUpperCase();
-    if (ids) {
-      if (!/^[A-Z0-9]{4}(,[A-Z0-9]{4}){0,9}$/.test(ids)) {
-        return new Response("ids must be airport codes like EGHQ", { status: 400, headers: cors });
-      }
-      const hours = Math.min(Math.max(Math.round(Number(url.searchParams.get("hours")) || 1), 1), 24);
-      source += `&ids=${ids}&hours=${hours}`;
-    } else {
-      const numbers = (url.searchParams.get("bbox") || "").split(",").map(Number);
-      if (numbers.length !== 4 || numbers.some(n => !Number.isFinite(n))) {
-        return new Response("Use ?bbox=south,west,north,east or ?ids=EGHQ&hours=24", { status: 400, headers: cors });
-      }
-      source += "&bbox=" + numbers.map(n => n.toFixed(2)).join(",");
-    }
-
-    // Answer from Cloudflare's cache if we fetched this recently.
-    const cache = caches.default;
-    const cached = await cache.match(request);
-    if (cached) return cached;
-
-    const upstream = await fetch(source, { headers: { "User-Agent": "sport-conditions-app" } });
-    const response = new Response(upstream.body, {
-      status: upstream.status,
-      headers: {
-        ...cors,
-        "Content-Type": "application/json",
-        "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
-      },
-    });
-    if (upstream.ok) ctx.waitUntil(cache.put(request, response.clone()));
-    return response;
   },
 };
+
+function reply(text, status) {
+  return new Response(text, { status, headers: CORS });
+}
+
+// Answers from Cloudflare's cache if we fetched the same thing recently;
+// otherwise runs `load`, and caches a good answer for `seconds`.
+async function cached(request, ctx, seconds, load) {
+  const cache = caches.default;
+  const hit = await cache.match(request);
+  if (hit) return hit;
+  const upstream = await load();
+  const response = new Response(upstream.body, {
+    status: upstream.status,
+    headers: { ...CORS, "Content-Type": "application/json", "Cache-Control": `public, max-age=${seconds}` },
+  });
+  if (upstream.ok) ctx.waitUntil(cache.put(request, response.clone()));
+  return response;
+}
+
+// ---------- Airport reports ----------
+
+async function metar(request, url, ctx) {
+  // Only allow up to 10 four-letter airport codes (like EGHQ), or else four
+  // numbers for an area: south, west, north, east.
+  let source = "https://aviationweather.gov/api/data/metar?format=json";
+  const ids = (url.searchParams.get("ids") || "").toUpperCase();
+  if (ids) {
+    if (!/^[A-Z0-9]{4}(,[A-Z0-9]{4}){0,9}$/.test(ids)) return reply("ids must be airport codes like EGHQ", 400);
+    const hours = Math.min(Math.max(Math.round(Number(url.searchParams.get("hours")) || 1), 1), 24);
+    source += `&ids=${ids}&hours=${hours}`;
+  } else {
+    const numbers = (url.searchParams.get("bbox") || "").split(",").map(Number);
+    if (numbers.length !== 4 || numbers.some(n => !Number.isFinite(n))) {
+      return reply("Use ?bbox=south,west,north,east or ?ids=EGHQ&hours=24", 400);
+    }
+    source += "&bbox=" + numbers.map(n => n.toFixed(2)).join(",");
+  }
+  return cached(request, ctx, 300, () =>
+    fetch(source, { headers: { "User-Agent": "sport-conditions-app" } }));
+}
+
+// ---------- UK tides (Admiralty) ----------
+
+function admiralty(path, env) {
+  return fetch(ADMIRALTY + path, { headers: { "Ocp-Apim-Subscription-Key": env.ADMIRALTY_KEY } });
+}
+
+// The station list hardly ever changes, so it's cached for a day, and
+// trimmed to just what the app needs: [{ id, name, lat, lon }, …].
+async function tideStations(request, env, ctx) {
+  if (!env.ADMIRALTY_KEY) return reply("No ADMIRALTY_KEY secret set", 503);
+  return cached(request, ctx, 86400, async () => {
+    const upstream = await admiralty("", env);
+    if (!upstream.ok) return upstream;
+    const data = await upstream.json();
+    const stations = data.features.map(feature => ({
+      id: feature.properties.Id,
+      name: feature.properties.Name,
+      lon: feature.geometry.coordinates[0],
+      lat: feature.geometry.coordinates[1],
+    }));
+    return new Response(JSON.stringify(stations), { status: 200 });
+  });
+}
+
+// High and low waters for one station, for the next 7 days, cached for an hour.
+async function tideEvents(request, url, env, ctx) {
+  if (!env.ADMIRALTY_KEY) return reply("No ADMIRALTY_KEY secret set", 503);
+  const station = url.searchParams.get("station") || "";
+  if (!/^[0-9A-Za-z]{3,6}$/.test(station)) return reply("station must be a station id like 0546", 400);
+  return cached(request, ctx, 3600, () => admiralty(`/${station}/TidalEvents?duration=7`, env));
+}
