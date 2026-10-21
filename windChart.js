@@ -19,13 +19,13 @@ async function showStationHistory(id) {
     return;
   }
 
-  // Oldest first. Knots become mph; "VRB" (variable) directions have no arrow.
+  // Oldest first. Knots become the chosen unit; "VRB" (variable) directions have no arrow.
   const points = reports
     .filter(report => typeof report.wspd === "number")
     .map(report => ({
       time: report.obsTime,
-      speed: Math.round(report.wspd * KNOTS_TO_MPH),
-      gust: report.wgst ? Math.round(report.wgst * KNOTS_TO_MPH) : null,
+      speed: fromKnots(report.wspd),
+      gust: report.wgst ? fromKnots(report.wgst) : null,
       degrees: typeof report.wdir === "number" ? report.wdir : null,
     }))
     .sort((a, b) => a.time - b.time);
@@ -37,7 +37,7 @@ async function showStationHistory(id) {
 
   const rows = [...points].reverse().map(point => `<tr>
     <td>${clockTime(point.time)}</td>
-    <td><strong>${point.speed}</strong> mph</td>
+    <td><strong>${point.speed}</strong> ${unit().label}</td>
     <td>${point.gust ? `${point.gust} gust` : ""}</td>
     <td>${point.degrees === null ? "VRB" : `${arrow(point.degrees)} ${degreesToCompass(point.degrees)}`}</td>
   </tr>`).join("");
@@ -73,11 +73,11 @@ function chartScales(points) {
   const first = points[0].time;
   const last = points[points.length - 1].time;
   const highest = Math.max(...points.map(point => Math.max(point.speed, point.gust || 0)), state.settings.speedOk.max);
-  const yMax = Math.ceil((highest + 2) / 10) * 10;  // round up to the next 10 mph
+  const yMax = Math.ceil((highest + 2) / 10) * 10;  // round up to the next 10
   return {
     yMax,
     x: time => left + (time - first) / (last - first) * (width - left - right),
-    y: mph => top + (1 - mph / yMax) * (height - top - bottom),
+    y: speed => top + (1 - speed / yMax) * (height - top - bottom),
   };
 }
 
@@ -93,11 +93,11 @@ function windChartSvg(points) {
   const band = (range, className) =>
     `<rect class="band ${className}" x="${left}" width="${plotRight - left}" y="${y(range.max)}" height="${y(range.min) - y(range.max)}"/>`;
 
-  // Light grid lines and labels every 10 mph.
+  // Light grid lines and labels every 10 (mph, km/h, …).
   let grid = "";
-  for (let mph = 0; mph <= yMax; mph += 10) {
-    grid += `<line class="grid" x1="${left}" x2="${plotRight}" y1="${y(mph)}" y2="${y(mph)}"/>
-      <text class="axis" x="${left - 6}" y="${y(mph)}" text-anchor="end" dominant-baseline="central">${mph}</text>`;
+  for (let speed = 0; speed <= yMax; speed += 10) {
+    grid += `<line class="grid" x1="${left}" x2="${plotRight}" y1="${y(speed)}" y2="${y(speed)}"/>
+      <text class="axis" x="${left - 6}" y="${y(speed)}" text-anchor="end" dominant-baseline="central">${speed}</text>`;
   }
 
   // Time labels every 3 hours, on the hour.
@@ -120,7 +120,7 @@ function windChartSvg(points) {
       aria-label="Wind speed over the last 24 hours. A table version is below.">
     ${band(ok, "ok")}${band(good, "good")}
     ${grid}
-    <text class="axis" x="${left - 6}" y="${top - 2}" text-anchor="end">mph</text>
+    <text class="axis" x="${left - 6}" y="${top - 2}" text-anchor="end">${unit().label}</text>
     <path class="speed-line" d="${line}"/>
     ${gusts}
     ${arrows}
@@ -142,7 +142,7 @@ function setupChartHover(points) {
     cross.setAttribute("x1", x(point.time));
     cross.setAttribute("x2", x(point.time));
     const direction = point.degrees === null ? "variable" : `from ${degreesToCompass(point.degrees)}`;
-    readout.innerHTML = `<strong>${clockTime(point.time)}</strong> · ${point.speed} mph${point.gust ? `, gusting ${point.gust}` : ""} · ${direction}`;
+    readout.innerHTML = `<strong>${clockTime(point.time)}</strong> · ${point.speed} ${unit().label}${point.gust ? `, gusting ${point.gust}` : ""} · ${direction}`;
   };
 
   svg.addEventListener("pointermove", event => {

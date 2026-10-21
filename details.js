@@ -40,8 +40,8 @@ function showHourDetails(siteId, key) {
       <span class="badge ${rating}">${RATING_TEXT[rating]}</span>
     </div>
     <div class="stats">
-      ${stat("Wind", `${hour.speed} <small>mph</small>`)}
-      ${stat("Gusts", `${hour.gusts} <small>mph</small>`)}
+      ${stat("Wind", `${hour.speed} <small>${unit().label}</small>`)}
+      ${stat("Gusts", `${hour.gusts} <small>${unit().label}</small>`)}
       ${stat("From", `${arrow(hour.degrees)} ${hour.direction}`)}
       ${stat("Rain", `${hour.rain} <small>mm</small>`)}
     </div>
@@ -118,7 +118,7 @@ async function showModelComparison(site, hour) {
       const current = model.id === state.model ? ' class="current"' : "";
       return `<tr${current}>
         <td>${modelLabel(model)}</td>
-        <td><strong>${Math.round(speed)}</strong> mph</td>
+        <td><strong>${Math.round(speed)}</strong> ${unit().label}</td>
         <td>${Math.round(gusts)} gust</td>
         <td>${arrow(degrees)} ${degreesToCompass(degrees)}</td>
       </tr>`;

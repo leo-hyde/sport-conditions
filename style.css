@@ -669,3 +669,4 @@ dialog.wide { width: min(720px, calc(100vw - 32px)); }
 .key-band.ok { background: var(--ok); opacity: 0.4; }
 details summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px; }
 details .compare { margin-top: 8px; }
+.map-pin small { font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 1px; }

@@ -1,5 +1,4 @@
-// The Overview tab: three layouts that each answer "where works, when?".
-// Leo will try them all, and we'll keep the best one (or two).
+// The Overview tab: two layouts that each answer "where works, when?".
 
 function renderOverview() {
   document.querySelectorAll("#overview-switch button").forEach(button => {
@@ -15,8 +14,8 @@ function renderOverview() {
     box.innerHTML = '<p class="muted">Loading forecast…</p>';
     return;
   }
-  const layouts = { days: overviewByDay, hours: overviewByHour, best: overviewBestTimes };
-  box.innerHTML = layouts[state.layout]();
+  const layouts = { days: overviewByDay, hours: overviewByHour };
+  box.innerHTML = (layouts[state.layout] || overviewByDay)();
 }
 
 // Every site with its rated days, worked out once per drawing.
@@ -92,62 +91,8 @@ function overviewByHour() {
 
     const columns = `minmax(76px, 140px) repeat(${hourLabels.length}, 1fr)`;
     return `<div class="heatmap-day">
-      <h3>${dayLabel(date)} <small class="muted">${tideRange(date)} tides</small></h3>
+      <h3>${dayLabel(date)} <small class="muted">${tideRange(date)} tides · wind in ${unit().label}</small></h3>
       <div class="heatmap" style="grid-template-columns: ${columns}">${cells}</div>
     </div>`;
   }).join("");
-}
-
-// ---------- C. Best times: flyable windows, best first ----------
-
-// Splits a day's hours into runs of back-to-back flyable (good or OK) hours.
-function flyableWindows(site, hours) {
-  const windows = [];
-  let current = null;
-  for (const hour of hours) {
-    if (!hour.past && hour.rating !== "no") {
-      if (!current) {
-        current = { site, hours: [] };
-        windows.push(current);
-      }
-      current.hours.push(hour);
-    } else {
-      current = null;  // a "no" hour ends the window
-    }
-  }
-  return windows;
-}
-
-function overviewBestTimes() {
-  const sites = ratedSites();
-
-  return forecastDates(sites).map(date => {
-    const windows = sites.flatMap(({ site, days }) => flyableWindows(site, days[date] || []));
-    // A good hour scores 2 and an OK hour scores 1; the highest score comes first.
-    const score = slot => count(slot.hours, "good") * 2 + count(slot.hours, "ok");
-    windows.sort((a, b) => score(b) - score(a));
-
-    const list = windows.length === 0
-      ? '<p class="muted">Nothing flyable</p>'
-      : windows.map(windowCard).join("");
-    return `<div class="best-day"><h3>${dayLabel(date)}</h3>${list}</div>`;
-  }).join("");
-}
-
-function windowCard(slot, index) {
-  const { site, hours } = slot;
-  const good = count(hours, "good");
-  const ok = count(hours, "ok");
-  const speeds = hours.map(hour => hour.speed);
-  const low = Math.min(...speeds);
-  const high = Math.max(...speeds);
-  const directions = [...new Set(hours.map(hour => hour.direction))].join(", ");
-  const amounts = [good && `${good}h good`, ok && `${ok}h OK`].filter(Boolean).join(", ");
-
-  return `<div class="window">
-    <div class="window-title"><span class="rank">${index + 1}</span>${esc(site.name)}</div>
-    <div class="window-time">${timeSpan(hours)}</div>
-    <div class="window-meta">${amounts} · ${directions} · ${low === high ? low : `${low}–${high}`} mph</div>
-    <div class="hours">${hours.map(hour => hourBlock(site, hour)).join("")}</div>
-  </div>`;
 }

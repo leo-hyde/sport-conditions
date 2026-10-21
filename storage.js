@@ -3,8 +3,9 @@
 // read and write is wrapped in try/catch and falls back to the defaults.
 
 const DEFAULT_SETTINGS = {
-  speedGood: { min: 14, max: 16 },  // mph
-  speedOk:   { min: 12, max: 18 },  // mph
+  speedGood: { min: 14, max: 16 },  // in the chosen unit
+  speedOk:   { min: 12, max: 18 },
+  units: "mph",  // wind speed unit: "mph", "kmh", "knots" or "ms" (see units.js)
   rainCutoff: 1,  // mm per hour; this much or more rates the hour "no"
   daylight: "sun",  // "sun" = sunrise to sunset; "twilight" = first to last light
   extraMinutes: 0,  // added before the start and after the end of the day

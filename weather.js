@@ -29,7 +29,7 @@ function forecastUrl(site, model) {
     latitude: site.lat,
     longitude: site.lon,
     hourly: "wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation",
-    wind_speed_unit: "mph",
+    wind_speed_unit: unit().openMeteo,  // the chosen unit (see units.js)
     timezone: "Europe/London",
     forecast_days: FORECAST_DAYS,
     models: model,
@@ -92,13 +92,13 @@ function checkSpeed(hour, settings) {
   const good = settings.speedGood;
   const ok = settings.speedOk;
   if (hour.speed >= good.min && hour.speed <= good.max) {
-    return { rating: "good", text: `${hour.speed} mph is in the good range (${good.min}–${good.max})` };
+    return { rating: "good", text: `${hour.speed} ${unit().label} is in the good range (${good.min}–${good.max})` };
   }
   if (hour.speed >= ok.min && hour.speed <= ok.max) {
-    return { rating: "ok", text: `${hour.speed} mph is only OK (good is ${good.min}–${good.max})` };
+    return { rating: "ok", text: `${hour.speed} ${unit().label} is only OK (good is ${good.min}–${good.max})` };
   }
-  if (hour.speed < ok.min) return { rating: "no", text: `${hour.speed} mph is too light (needs ${ok.min}+)` };
-  return { rating: "no", text: `${hour.speed} mph is too strong (max ${ok.max})` };
+  if (hour.speed < ok.min) return { rating: "no", text: `${hour.speed} ${unit().label} is too light (needs ${ok.min}+)` };
+  return { rating: "no", text: `${hour.speed} ${unit().label} is too strong (max ${ok.max})` };
 }
 
 function checkRain(hour, settings) {

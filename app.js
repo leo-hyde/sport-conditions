@@ -71,7 +71,7 @@ function setStatus(text) {
 function statusText() {
   if (!state.updatedAt) return "Loading forecast…";
   const time = state.updatedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  let text = `${currentSport().icon} ${currentSport().name} · updated ${time}`;
+  let text = `${currentSport().icon} ${currentSport().name} · wind in ${unit().label} · updated ${time}`;
   if (state.failedSites.length > 0) text += ` · couldn't load ${state.failedSites.join(", ")}`;
   return text;
 }
@@ -139,7 +139,7 @@ function arrow(degrees) {
 // One tappable block for one hour. The compact version (for the
 // By hour heatmap) shows just the speed.
 function hourBlock(site, hour, { compact = false } = {}) {
-  const label = `${hour.hourOfDay}:00, ${hour.speed} mph from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
+  const label = `${hour.hourOfDay}:00, ${hour.speed} ${unit().label} from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
   const inside = compact
     ? `<span class="speed">${hour.speed}</span>`
     : `<span class="time">${hour.hourOfDay}</span>${arrow(hour.degrees)}<span class="speed">${hour.speed}</span>`;

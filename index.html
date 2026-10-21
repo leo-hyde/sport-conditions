@@ -42,7 +42,6 @@
         <div id="overview-switch" class="segmented">
           <button data-layout="days">By day</button>
           <button data-layout="hours">By hour</button>
-          <button data-layout="best">Best times</button>
         </div>
       </div>
       <div id="overview" class="card"></div>
@@ -113,8 +112,17 @@
   <dialog id="settings-dialog">
     <form id="settings-form" class="dialog-inner">
       <h2 id="settings-title">Settings</h2>
+      <label class="field">
+        Wind speed unit
+        <select name="units" class="pill-select">
+          <option value="mph">mph</option>
+          <option value="kmh">km/h</option>
+          <option value="knots">knots</option>
+          <option value="ms">m/s</option>
+        </select>
+      </label>
       <fieldset>
-        <legend>Good wind speed (mph)</legend>
+        <legend>Good wind speed (<span class="unit-label">mph</span>)</legend>
         <div class="range-inputs">
           <input name="goodMin" type="number" min="0" max="99" required aria-label="Good minimum">
           <span>to</span>
@@ -122,7 +130,7 @@
         </div>
       </fieldset>
       <fieldset>
-        <legend>OK wind speed (mph)</legend>
+        <legend>OK wind speed (<span class="unit-label">mph</span>)</legend>
         <div class="range-inputs">
           <input name="okMin" type="number" min="0" max="99" required aria-label="OK minimum">
           <span>to</span>
@@ -206,6 +214,7 @@
 
   <script src="sites.js"></script>
   <script src="sports.js"></script>
+  <script src="units.js"></script>
   <script src="weather.js"></script>
   <script src="sun.js"></script>
   <script src="tides.js"></script>

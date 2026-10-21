@@ -2,6 +2,23 @@
 // (sunrise/sunset or twilight) and the high tide buffer.
 
 const settingsForm = document.getElementById("settings-form");
+let formUnit = "mph";  // the unit the form's speed boxes are currently in
+
+function showUnitLabels() {
+  document.querySelectorAll("#settings-form .unit-label").forEach(label => {
+    label.textContent = UNITS[formUnit].label;
+  });
+}
+
+// Changing the unit converts the speed boxes, so 14 mph becomes 23 km/h.
+settingsForm.units.addEventListener("change", () => {
+  const newUnit = settingsForm.units.value;
+  for (const name of ["goodMin", "goodMax", "okMin", "okMax"]) {
+    settingsForm[name].value = convertSpeed(Number(settingsForm[name].value), formUnit, newUnit);
+  }
+  formUnit = newUnit;
+  showUnitLabels();
+});
 
 function openSettings() {
   document.getElementById("settings-title").textContent = `${currentSport().icon} ${currentSport().name} settings`;
@@ -11,6 +28,9 @@ function openSettings() {
 }
 
 function fillSettingsForm(settings) {
+  settingsForm.units.value = settings.units;
+  formUnit = settings.units;
+  showUnitLabels();
   settingsForm.goodMin.value = settings.speedGood.min;
   settingsForm.goodMax.value = settings.speedGood.max;
   settingsForm.okMin.value = settings.speedOk.min;
@@ -25,6 +45,7 @@ settingsForm.addEventListener("submit", event => {
   event.preventDefault();  // stop the browser reloading the page
   const number = name => Number(settingsForm[name].value);
   const settings = {
+    units: settingsForm.units.value,
     speedGood: { min: number("goodMin"), max: number("goodMax") },
     speedOk: { min: number("okMin"), max: number("okMax") },
     rainCutoff: number("rainCutoff"),
@@ -40,10 +61,17 @@ settingsForm.addEventListener("submit", event => {
     return;
   }
 
+  const unitChanged = settings.units !== state.settings.units;
   state.settings = settings;
   saveSettings(settings);
   document.getElementById("settings-dialog").close();
-  render();
+  if (unitChanged) {
+    // Forecasts arrive in the chosen unit, so fetch them again.
+    for (const id in comparisons) delete comparisons[id];
+    refresh();
+  } else {
+    render();
+  }
 });
 
 document.getElementById("reset-settings").addEventListener("click", () => {

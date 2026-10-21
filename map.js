@@ -149,7 +149,7 @@ function drawPins() {
   for (const site of state.sites) {
     const hour = (state.forecasts[site.id] || []).find(hour => hour.key === state.mapTime);
     const html = hour
-      ? `<div class="map-pin ${rateHour(hour, site, state.settings, state.tides[site.id])}">${arrow(hour.degrees)}<span>${hour.speed}</span></div>`
+      ? `<div class="map-pin ${rateHour(hour, site, state.settings, state.tides[site.id])}">${arrow(hour.degrees)}<span>${hour.speed}</span><small>${unit().label}</small></div>`
       : '<div class="map-pin night">–</div>';
 
     L.marker([site.lat, site.lon], {
@@ -231,7 +231,7 @@ function windyEmbedUrl() {
     calendar: "now",
     type: "map",
     location: "coordinates",
-    metricWind: "mph",
+    metricWind: unit().windy,
     metricTemp: "°C",
   });
   return "https://embed.windy.com/embed2.html?" + params;
