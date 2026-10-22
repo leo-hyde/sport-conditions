@@ -17,7 +17,8 @@ const feedbackDialog = document.getElementById("feedback-dialog");
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 let notes = loadSaved("sc.feedbackNotes", []);  // [{ text, context, sent }]
-let listener = null;  // the speech recognition while it's listening
+let listening = false;  // true from 🎙 until Done or ✕
+let listener = null;  // the speech recognition currently running
 let heard = "";  // words finished so far in this note
 
 function feedbackOn() {
@@ -27,11 +28,25 @@ function feedbackOn() {
 function setFeedbackMode(on) {
   save("sc.feedback", on);
   renderFeedbackTools();
+
+// A note you were in the middle of when the page closed comes back to finish.
+// (Once the whole page has loaded, as it needs app.js.)
+addEventListener("load", () => {
+  const draft = loadSaved("sc.feedbackDraft", "");
+  if (draft && feedbackOn()) showBar("typing", draft);
+});
 }
 
 function saveNotes() {
   save("sc.feedbackNotes", notes);
   renderFeedbackTools();
+
+// A note you were in the middle of when the page closed comes back to finish.
+// (Once the whole page has loaded, as it needs app.js.)
+addEventListener("load", () => {
+  const draft = loadSaved("sc.feedbackDraft", "");
+  if (draft && feedbackOn()) showBar("typing", draft);
+});
 }
 
 // ---------- The floating buttons ----------
@@ -57,71 +72,119 @@ new MutationObserver(placeFeedbackTools).observe(document.body,
 
 // ---------- Speaking a note ----------
 
+let places = [];  // the places you visit while making a note
+let wakeLock = null;  // keeps the screen on while listening
+
 function startListening() {
   heard = "";
+  places = [];
+  notePlace();
+  listening = true;
   showBar("listening");
+  keepScreenOn(true);
   listenOnce();
 }
 
 // Phones stop listening after a pause, so we start again until you tap
 // Done. (Listening one phrase at a time also avoids Android repeating words.)
 function listenOnce() {
-  listener = new Recognition();
-  listener.lang = "en-GB";
-  listener.interimResults = true;  // show words while you're still speaking
-  listener.onresult = event => {
+  if (!listening || document.hidden) return;  // stopped, or the screen is off: wait
+  const recognition = new Recognition();
+  listener = recognition;
+  recognition.lang = "en-GB";
+  recognition.interimResults = true;  // show words while you're still speaking
+  recognition.onresult = event => {
     const result = event.results[0];
     if (result.isFinal) {
       heard = (heard + " " + result[0].transcript).trim();
-      feedbackText.textContent = heard;
+      showWords(heard);
     } else {
-      feedbackText.textContent = (heard + " " + result[0].transcript).trim();
+      showWords((heard + " " + result[0].transcript).trim());
     }
   };
-  listener.onerror = event => {
-    if (event.error === "no-speech" || event.error === "aborted") return;  // a pause: keep listening
+  recognition.onerror = event => {
+    // A pause, or the phone switched the screen off: keep going.
+    if (event.error === "no-speech" || event.error === "aborted" || document.hidden) return;
     // Anything else (microphone blocked, no internet…): switch to typing,
-    // keeping any words already heard.
-    listener = null;
-    const sofar = heard;
-    showBar("typing");
-    feedbackInput.value = sofar;
+    // keeping every word heard so far.
+    const sofar = feedbackText.textContent;
+    stopListening();
+    showBar("typing", sofar);
     feedbackInput.placeholder = event.error === "not-allowed"
       ? "Microphone blocked: type, or allow it in the browser settings"
       : "Couldn't listen: type your note instead";
   };
-  listener.onend = () => {
-    if (listener) listenOnce();  // still listening: carry on
+  recognition.onend = () => {
+    if (listening && listener === recognition) listenOnce();  // still listening: carry on
   };
-  listener.start();
+  try {
+    recognition.start();
+  } catch {
+    // Already starting: the next "end" tries again.
+  }
 }
 
-function stopListening() {
-  const stopped = listener;
+// The words so far, on screen and saved, so nothing is lost if the page
+// is closed or reloaded before you tap Done.
+function showWords(text) {
+  feedbackText.textContent = text;
+  save("sc.feedbackDraft", text);
+}
+
+// Coming back to the page (e.g. the screen went off): listen again.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden || !listening) return;
+  heard = feedbackText.textContent;  // keep any half-finished phrase
+  if (listener) listener.abort();  // the old one may be stuck; start afresh
   listener = null;
-  if (stopped) stopped.abort();
+  keepScreenOn(true);  // the phone drops this while the page is hidden
+  listenOnce();
+});
+
+function stopListening() {
+  listening = false;
+  if (listener) listener.abort();
+  listener = null;
+  keepScreenOn(false);
+}
+
+// A "wake lock" stops the screen dimming and switching off while you talk.
+// Not every browser has it, so failures are ignored.
+async function keepScreenOn(on) {
+  try {
+    if (on && navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
+    if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch {
+    wakeLock = null;
+  }
 }
 
 // ---------- The bar at the top of the screen ----------
 
 // "listening" shows the words as you speak; "typing" shows a text box
 // (at the top, so the keyboard doesn't cover it).
-function showBar(mode) {
+function showBar(mode, text = "") {
   feedbackBar.hidden = false;
   feedbackBar.dataset.mode = mode;
-  feedbackText.textContent = "";
-  feedbackInput.value = "";
-  if (mode === "typing") feedbackInput.focus();
+  feedbackText.textContent = mode === "listening" ? text : "";
+  feedbackInput.value = mode === "typing" ? text : "";
+  if (mode === "typing") {
+    if (places.length === 0) notePlace();
+    feedbackInput.focus();
+  }
 }
 
 function hideBar() {
   stopListening();
   feedbackBar.hidden = true;
   feedbackInput.blur();  // closes the phone's keyboard
+  save("sc.feedbackDraft", "");
 }
 
 function finishNote() {
-  const text = (feedbackBar.dataset.mode === "typing" ? feedbackInput.value : heard || feedbackText.textContent).trim();
+  // Everything on screen, including a phrase the phone hasn't finished with.
+  const text = (feedbackBar.dataset.mode === "typing" ? feedbackInput.value : feedbackText.textContent).trim();
+  notePlace();
   hideBar();
   if (!text) return;
   notes.push({ text, context: feedbackContext(), sent: false });
@@ -133,26 +196,51 @@ function finishNote() {
   });
 }
 
-// Where you were when you made the note, so it still makes sense later.
-function feedbackContext() {
+// Typing into the bar also saves a draft.
+feedbackInput.addEventListener("input", () => save("sc.feedbackDraft", feedbackInput.value));
+
+// ---------- Where you were ----------
+
+// A short name for where you are now, e.g. "map · panel: Fistral, Today 10:00".
+function currentPlace() {
   const open = [...document.querySelectorAll("dialog[open]")].pop();
   const panel = open && open !== feedbackDialog
     ? (open.dataset.feedbackLabel || open.querySelector("h2")?.textContent.trim() || open.id) : "";
+  const tab = state.view + (state.view === "overview" ? ` (${state.layout === "days" ? "by day" : "by hour"})` : "");
+  return [tab, panel && `panel: ${panel}`, state.view === "map" && state.mapTime && `map time: ${state.mapTime}`]
+    .filter(Boolean).join(" · ");
+}
+
+// Adds where you are to the note's list of places, if it's somewhere new.
+function notePlace() {
+  const place = currentPlace();
+  if (places[places.length - 1] !== place) places.push(place);
+}
+
+// While you're making a note, every tap may take you somewhere new.
+document.addEventListener("click", () => {
+  if (!feedbackBar.hidden) setTimeout(notePlace, 300);  // after the tap has done its work
+});
+
+// When and where you made the note, so it still makes sense later.
+function feedbackContext() {
   const theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   return {
     time: new Date().toLocaleString("en-GB", { timeZone: "Europe/London" }),
-    tab: state.view + (state.view === "overview" ? ` (${state.layout === "days" ? "by day" : "by hour"})` : ""),
-    panel,
-    mapTime: state.view === "map" ? state.mapTime : "",
+    places: [...places],  // e.g. ["overview (by day)", "map · map time: 2026-10-22T14"]
     screen: `${innerWidth}×${innerHeight}, ${theme}`,
     browser: navigator.userAgent.replace(/^Mozilla\/5.0 /, ""),
     forecast: MODELS.find(model => model.id === state.model).name,
   };
 }
 
+// "22/10/2026, 12:37 · overview (by day) → map · 360×669, dark".
+// (Notes saved before places were recorded have tab and panel instead.)
 function contextLine(context) {
-  return [context.time, context.tab, context.panel && `panel: ${context.panel}`,
-    context.mapTime && `map time: ${context.mapTime}`, context.screen].filter(Boolean).join(" · ");
+  const where = context.places
+    ? context.places.join(" → ")
+    : [context.tab, context.panel && `panel: ${context.panel}`].filter(Boolean).join(" · ");
+  return [context.time, where, context.screen].filter(Boolean).join(" · ");
 }
 
 // ---------- Reviewing and sending ----------
@@ -257,3 +345,10 @@ feedbackSwitch.addEventListener("change", () => setFeedbackMode(feedbackSwitch.c
 const feedbackParam = new URLSearchParams(location.search).get("feedback");
 if (feedbackParam) setFeedbackMode(feedbackParam === "on");
 renderFeedbackTools();
+
+// A note you were in the middle of when the page closed comes back to finish.
+// (Once the whole page has loaded, as it needs app.js.)
+addEventListener("load", () => {
+  const draft = loadSaved("sc.feedbackDraft", "");
+  if (draft && feedbackOn()) showBar("typing", draft);
+});
