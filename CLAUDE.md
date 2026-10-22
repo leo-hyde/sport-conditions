@@ -14,9 +14,13 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
 Leo switches between a phone (cloud sessions) and a Mac. Neither can see
 the other's conversation; the repo is the only shared memory.
 `scripts/session.sh` enforces this, run automatically by hooks in `.claude/settings.json`.
-- If the start output says `ANOTHER DEVICE MAY STILL BE WORKING`, **tell Leo
-  straight away** and change nothing until Leo confirms the other session has
-  finished. Then run `scripts/session.sh start --force`.
+- **The lock means "Claude is working on a reply right now".** It's claimed when
+  Leo sends a message and released when Claude's reply finishes cleanly, so an
+  idle or closed session holds no lock. It lives on its own `session-lock`
+  branch, not on main.
+- If a message comes with `ANOTHER DEVICE IS WORKING`, **tell Leo straight
+  away**; read-only work is fine, but change nothing until Leo confirms that
+  reply has finished. Then run `scripts/session.sh busy --force`.
 - If a push is rejected or a merge conflicts, stop and tell Leo. Never force-push.
   (Exception: a push rejected because the project's own GitHub Action pushed
   results is expected; pull/merge and carry on, and say so. This project's
@@ -27,7 +31,8 @@ the other's conversation; the repo is the only shared memory.
 - After every finished step: overwrite the Handover block in `docs/STATUS.md`,
   update "Where we are", decisions and open questions, add a session log line,
   commit, push.
-- When Leo is done or switching device: run `scripts/session.sh end`.
+- The lock frees itself at the end of each reply. `scripts/session.sh end`
+  releases it by hand if a reply was cut off.
 - If the hooks didn't run (no "Session start" output), run `scripts/session.sh start` yourself.
 
 ## How to work

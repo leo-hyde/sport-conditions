@@ -1,20 +1,26 @@
 #!/usr/bin/env bash
 # Keeps phone and desktop Claude sessions in sync through GitHub.
 #
-#   scripts/session.sh start   pull latest main, warn if another device is active, claim the lock
-#   scripts/session.sh check   refuse to finish a turn with unsaved, unpushed or unlogged work
-#   scripts/session.sh end     release the lock and push, so the other device can start
-#   scripts/session.sh status  show the lock and git state
+# The lock means "Claude is working on a reply right now", not "a session is open".
+# It is claimed when Leo sends a message and released as soon as Claude finishes
+# its reply, so a session left open (or closed without saying goodbye) holds no lock.
 #
-# The lock is the file .session/lock on main. Because GitHub only accepts a push that
-# builds on the latest main, two devices can't both claim it: the second push fails.
-# Claude Code runs `start` and `check` automatically (see .claude/settings.json).
+#   scripts/session.sh start          a session opens: pull main, show the lock and the handover
+#   scripts/session.sh busy [--force] Leo sends a message: pull main, claim the lock
+#   scripts/session.sh check          Claude finishes a reply: refuse if work is unsaved, else release
+#   scripts/session.sh end            release the lock by hand (same as a clean check)
+#   scripts/session.sh status         show the lock and git state
+#
+# The lock is a file called `lock` on its own branch, `session-lock`, so it doesn't
+# clutter main's history or republish the site. Because GitHub only accepts a push
+# that builds on the latest version of a branch, two devices can't both claim it.
+# Claude Code runs start, busy and check automatically (see .claude/settings.json).
 
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 0
 
-LOCK=.session/lock
-STALE_HOURS=12
+LOCK_BRANCH=session-lock
+STALE_HOURS=2  # a busy lock older than this was left behind by a crash
 
 # Which device is this? Cloud sessions (phone, web) set CLAUDE_CODE_REMOTE.
 if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || [ "$(uname -s)" != "Darwin" ]; then
@@ -24,7 +30,6 @@ else
 fi
 
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-field() { [ -f "$LOCK" ] && sed -n "s/^$1=//p" "$LOCK" | head -1; }
 branch() { git rev-parse --abbrev-ref HEAD; }
 
 # Hours since an ISO time; works on macOS and Linux date.
@@ -34,69 +39,92 @@ hours_since() {
   echo $(( ( $(date -u +%s) - t ) / 3600 ))
 }
 
-write_lock() {  # state
-  mkdir -p .session
-  cat > "$LOCK" <<EOF
-state=$1
-device=$DEVICE
-since=$(now)
-branch=$(branch)
-EOF
+# ---------- The lock (on the session-lock branch) ----------
+
+fetch_lock() {
+  git fetch -q origin "+refs/heads/$LOCK_BRANCH:refs/remotes/origin/$LOCK_BRANCH" 2>/dev/null
+}
+lock_text() { git show "origin/$LOCK_BRANCH:lock" 2>/dev/null; }
+field() { lock_text | sed -n "s/^$1=//p" | head -1; }
+
+# Is another device busy right now? Prints a description if so.
+other_busy() {
+  local state device since age
+  state=$(field state); device=$(field device); since=$(field since)
+  [ "$state" = "busy" ] && [ "$device" != "$DEVICE" ] || return 1
+  age=$(hours_since "$since")
+  [ "$age" -lt "$STALE_HOURS" ] || return 1
+  echo "$device has been working on a reply since $since"
 }
 
-# Commit just the lock and push it to main. Never force.
-push_lock() {  # message
-  git add "$LOCK"
-  git commit -q -m "$1" -- "$LOCK" || return 0
-  if git push -q origin HEAD:main 2>/dev/null; then return 0; fi
-  echo "PUSH REJECTED: main moved on GitHub while this session was working. Another device may be active."
-  echo "Do not force-push. Tell Leo, then run: git pull --no-rebase origin main"
+# Write the lock file straight onto the session-lock branch and push it, without
+# touching the files you're working on. (These are git's "plumbing" commands:
+# store the file, make a folder listing, make a commit, push it.) Never forces.
+write_lock() {  # state
+  local blob tree parent commit
+  blob=$(printf 'state=%s\ndevice=%s\nsince=%s\nbranch=%s\n' "$1" "$DEVICE" "$(now)" "$(branch)" | git hash-object -w --stdin)
+  tree=$(printf '100644 blob %s\tlock\n' "$blob" | git mktree)
+  parent=$(git rev-parse -q --verify "origin/$LOCK_BRANCH")
+  commit=$(echo "Lock $1: $DEVICE" | git commit-tree "$tree" ${parent:+-p "$parent"})
+  if git push -q origin "$commit:refs/heads/$LOCK_BRANCH" 2>/dev/null; then
+    fetch_lock; return 0
+  fi
+  echo "LOCK NOT UPDATED: the other device changed it at the same moment, or GitHub can't be reached."
   return 1
 }
 
-unsaved() { git status --porcelain | grep -v " $LOCK\$"; }
+# ---------- Git state ----------
+
+unsaved() { git status --porcelain; }
 unpushed() { git log --oneline origin/main..HEAD 2>/dev/null; }
 
-# Commits since STATUS.md was last changed that touch anything other than the lock.
+# Commits since STATUS.md was last changed.
 unlogged() {
   local last
   last=$(git log -1 --format=%H -- docs/STATUS.md)
   [ -z "$last" ] && return
-  git log --format=%h "$last"..HEAD -- . ":(exclude)$LOCK" ":(exclude)docs/STATUS.md"
+  git log --format=%h "$last"..HEAD -- . ":(exclude)docs/STATUS.md"
 }
 
-cmd_start() {
-  echo "=== Session start ($DEVICE, branch $(branch)) ==="
-  git fetch -q origin || echo "WARNING: could not reach GitHub. Work may be out of date."
-  if [ -n "$(unsaved)" ]; then
-    echo "WARNING: uncommitted changes already in this checkout:"; unsaved
-  fi
-  # Bring in the latest main whatever branch we're on.
+# Bring in the latest main, whatever branch we're on.
+pull_main() {
+  git fetch -q origin main || { echo "WARNING: could not reach GitHub. Work may be out of date."; return; }
   if ! git merge -q --no-edit origin/main 2>/dev/null; then
     git merge --abort 2>/dev/null
     echo "CONFLICT: could not merge the latest main into $(branch). Stop and tell Leo."
-    exit 0
   fi
+}
 
-  local state device since age
-  state=$(field state); device=$(field device); since=$(field since)
-  if [ "$state" = "active" ]; then
-    age=$(hours_since "$since")
-    if [ "$device" != "$DEVICE" ] && [ "$age" -lt "$STALE_HOURS" ]; then
-      echo "!!! ANOTHER DEVICE MAY STILL BE WORKING: $device has been active since $since (${age}h ago)."
-      echo "!!! Before changing anything, tell Leo and ask whether that session has finished."
-      echo "!!! If it has, run: scripts/session.sh start --force"
-      [ "${1:-}" = "--force" ] || exit 0
-    elif [ "$device" != "$DEVICE" ]; then
-      echo "Note: $device never released the lock (${age}h ago). Treating it as finished."
-    fi
+# ---------- Commands ----------
+
+cmd_start() {
+  echo "=== Session start ($DEVICE, branch $(branch)) ==="
+  [ -n "$(unsaved)" ] && { echo "WARNING: uncommitted changes already in this checkout:"; unsaved; }
+  pull_main
+  fetch_lock
+  local busy
+  if busy=$(other_busy); then
+    echo "!!! ANOTHER DEVICE IS WORKING: $busy."
+    echo "!!! Tell Leo straight away and change nothing until that reply has finished."
+  else
+    echo "No other device is working. (The lock is claimed automatically when Leo sends a message.)"
   fi
-
-  write_lock active
-  push_lock "Session start: $DEVICE" && echo "Lock claimed for $DEVICE."
   echo
   echo "--- Handover from docs/STATUS.md ---"
   sed -n '/^## Handover/,/^## Where we are/p' docs/STATUS.md | sed '$d'
+}
+
+cmd_busy() {
+  pull_main
+  fetch_lock
+  local busy
+  if busy=$(other_busy) && [ "${1:-}" != "--force" ]; then
+    echo "!!! ANOTHER DEVICE IS WORKING: $busy."
+    echo "!!! Tell Leo before changing anything. Read-only work is fine."
+    echo "!!! If Leo says that session has finished, run: scripts/session.sh busy --force"
+    exit 0
+  fi
+  write_lock busy >/dev/null || echo "Note: could not claim the session lock (GitHub unreachable or busy)."
 }
 
 cmd_check() {
@@ -109,7 +137,7 @@ cmd_check() {
 - Uncommitted changes. Commit them."
   [ -n "$(unlogged)" ] && problems="$problems
 - Work committed since docs/STATUS.md was last updated. Update STATUS.md (Handover block, session log) and commit."
-  git fetch -q origin 2>/dev/null
+  git fetch -q origin main 2>/dev/null
   [ -n "$(unpushed)" ] && problems="$problems
 - Commits not on GitHub main. Push with: git push origin HEAD:main (or merge this branch into main and push)."
 
@@ -117,28 +145,37 @@ cmd_check() {
     echo "Not finished: the other device would not see this work yet.$problems" >&2
     exit 2   # tells Claude Code to keep going and fix these
   fi
+  release
   exit 0
+}
+
+# Free the lock, if this device holds it.
+release() {
+  fetch_lock
+  [ "$(field state)" = "busy" ] && [ "$(field device)" = "$DEVICE" ] && write_lock free >/dev/null
+  return 0
 }
 
 cmd_end() {
   local problems
   problems=$(cmd_check </dev/null 2>&1) || { echo "$problems"; exit 1; }
-  write_lock finished
-  push_lock "Session end: $DEVICE" && echo "Lock released. Safe to switch device."
+  echo "Lock released. Safe to switch device."
 }
 
 cmd_status() {
+  fetch_lock
   echo "Device: $DEVICE   Branch: $(branch)"
-  [ -f "$LOCK" ] && cat "$LOCK" || echo "No lock file."
+  lock_text || echo "No lock yet."
   echo "Unsaved:";  unsaved
   echo "Unpushed:"; unpushed
   echo "Unlogged:"; unlogged
 }
 
 case "${1:-status}" in
-  start)  cmd_start "${2:-}" ;;
+  start)  cmd_start ;;
+  busy)   cmd_busy "${2:-}" ;;
   check)  cmd_check ;;
   end)    cmd_end ;;
   status) cmd_status ;;
-  *) echo "Usage: $0 start [--force] | check | end | status"; exit 1 ;;
+  *) echo "Usage: $0 start | busy [--force] | check | end | status"; exit 1 ;;
 esac
