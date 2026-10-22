@@ -179,6 +179,62 @@ feedback issues, sorts them into easy / needs discussion / later, keeps
 with a personal code per approved tester); collaborators working through
 pull requests.
 
+**Changes from feedback (22 Oct, issues #1–#3):** one-tap **Send** (with a
+send code, straight to GitHub through the Worker's `/feedback`, which needs
+the secrets `GITHUB_TOKEN` and `FEEDBACK_CODE`; without, GitHub opens filled
+in); 📝 is now **Your requests**; notes list every place visited while
+speaking; the screen stays on and no words are lost; the page reopens on the
+tab you left; finer finger control on the map timeline; tide state on beach
+sites' map labels.
+
+---
+
+## Version 1.3: Surfing (proposed, waiting for Leo's OK)
+
+Leo wants surfing as a sport, with Surfline-quality information, combined
+with tides: e.g. "this spot doesn't work 2 hours either side of low tide".
+
+### Where the data comes from
+- **Surfline: link to it, don't copy it.** Surfline has no public API. Its
+  forecasts are its paid product, its terms forbid copying them, and the
+  unofficial addresses some hobby apps use can change or be blocked at any
+  time. Publishing that on a public site would be risky. Instead each surf
+  spot gets an **"Open on Surfline"** button to that spot's page (like the
+  Windy link), so Surfline is one tap away.
+- **Waves: Open-Meteo's free Marine forecast** (no key, works from web
+  pages): swell height, period and direction, and wind-wave height, hourly
+  for 7 days. It's the same kind of model data Surfline starts from, without
+  Surfline's hand-tuning per spot. It counts towards the same 10,000-a-day
+  limit (one call per spot).
+- **Wind:** the forecasts we already fetch (5 models).
+- **Tides:** the Admiralty tide times we already fetch through the Worker.
+
+### Rating a surf hour (worst of these, like now)
+| Check | 🟢 Good | 🟡 OK | 🔴 No | Belongs to |
+|---|---|---|---|---|
+| Swell height | e.g. 0.8–2 m | e.g. 0.5–2.5 m | outside OK | sport (settings) |
+| Swell period | e.g. 10 s or more | e.g. 7 s or more | shorter | sport (settings) |
+| Swell direction | site's good directions | site's OK directions | anything else | site (compass) |
+| Wind | offshore, or under e.g. 8 mph | cross-shore, or under e.g. 15 mph | onshore and stronger | site (offshore directions) + sport (speeds) |
+| Tide | outside the spot's no-go window | | inside it | site (tide rule) |
+
+### Steps
+| # | Step | Status |
+|---|---|---|
+| 1 | **Tide rules for any site:** "doesn't work within X hours of low / high water" (replaces "not near high tide"; works for parakiting too) | proposed |
+| 2 | **Settings per sport:** surfing gets its own wave height and period ranges, kept separate from parakiting's wind ranges | proposed |
+| 3 | **Surf spots:** name, place, swell compass (good/OK swell directions), wind compass (offshore directions), tide rule, Surfline link. Starting with Leo's spots | proposed |
+| 4 | **Wave forecasts and surf ratings** on the Overview and site cards | proposed |
+| 5 | **Surf hour details:** swell, period, direction, wind, tide, and why it isn't green; "Open on Surfline" | proposed |
+| 6 | **Map:** surf spots rated by the time slider, with tide state (already there for beach sites) | proposed |
+
+### Questions for Leo
+- Which surf spots first, and for each: good swell directions, offshore wind
+  directions, and tide no-go windows?
+- What's good surf for you: wave height (metres or feet?) and period?
+- Is "Open on Surfline" plus our own ratings enough, or is there something
+  specific from Surfline you'd miss (e.g. surf cams, their star rating)?
+
 ---
 
 ## Later

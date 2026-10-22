@@ -6,12 +6,12 @@ The shared memory between Leo's phone and computer sessions. **Every Claude sess
 
 | | |
 |---|---|
-| Last session | Phone/cloud, 22 Oct 2026, midday |
+| Last session | Phone/cloud, 22 Oct 2026, afternoon |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Mid-flight work | None |
-| Next step | Leo tries feedback mode on his Android phone (Settings → Feedback, or open the site with `?feedback=on`), sends a first batch, then says "check feedback" |
-| Check first | Did speech work on Leo's phone? Did the GitHub link open with the notes filled in (it may open the GitHub app instead of the browser)? |
-| Note | Feedback issues are titled "Feedback: …". The routine is in CLAUDE.md; the list lives in docs/BACKLOG.md |
+| Mid-flight work | None. Surfing plan written (SPEC.md "Version 1.3"), waiting for Leo's answers |
+| Next step | Leo answers the surfing questions in SPEC.md; optionally sets up direct feedback sending (Worker secrets, steps in the session reply / SPEC.md) |
+| Check first | Leo retests voice notes on his phone (screen staying on, no lost words) |
+| Note | Feedback issues #1–#3 handled and closed; all notes are in docs/BACKLOG.md |
 
 ## Where we are
 
@@ -21,6 +21,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 | Date | Decision | Why |
 |---|---|---|
+| 22 Oct | Surfing: link to Surfline rather than copy its data; waves from Open-Meteo Marine | Surfline has no public API and its terms forbid copying; a public site can't rely on unofficial addresses |
+| 22 Oct | Feedback Send goes straight to GitHub through the Worker when a send code is set | Leo wanted one tap, not several steps |
 | 22 Oct | Feedback mode: notes spoken in the browser (speech recognition, falls back to typing), sent as a pre-filled GitHub Issue; just Leo for now | Leo tests on his phone; no keyboard covering the screen; no server or secrets needed |
 | 22 Oct | No version numbers: "Beta", `CHANGELOG.md` by date, git tags for big milestones | Lots of small changes; git already keeps every version |
 | 22 Oct | Lock held only while Claude is replying (claimed on each message, freed when the reply ends), on a `session-lock` branch | An open-but-idle session kept blocking the other device; lock commits cluttered main |
@@ -38,6 +40,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 ## Open questions
 
+- **Surfing (SPEC.md Version 1.3):** which spots, their swell/offshore directions and tide windows, and what counts as good surf.
+- **Direct feedback sending:** Leo to add `GITHUB_TOKEN` and `FEEDBACK_CODE` secrets to the Worker and redeploy `worker/weather-proxy.js`.
 - **Phone landscape:** works but the header fills the short screen. Compact header in landscape? (In docs/BACKLOG.md.)
 
 - **Sync storage:** Leo to create a KV namespace, bind it to the Worker as `SYNC`, and deploy the latest `worker/weather-proxy.js`.
@@ -47,6 +51,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 - **Praa Sands:** added on the live site in one browser; it reaches other devices once sync works.
 
 ## Session log
+
+- **22 Oct, phone/cloud (4)**: worked through feedback #1–#3: one-tap Send + Your requests + Worker /feedback, robust voice notes, reopen on last tab, finer map timeline, map tides; wrote the surfing plan.
 
 - **22 Oct, phone/cloud (3)**: built feedback mode (version 1.2), CHANGELOG.md, docs/BACKLOG.md and the "check feedback" routine.
 
