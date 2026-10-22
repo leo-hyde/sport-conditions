@@ -80,10 +80,14 @@ feature. Change it here first, then in the code.
 
 - **Feedback mode buttons:** floating, bottom right (above the tab bar on
   phones): a 56px round `--accent` 🎙 button, and 44px `--surface` ✎ and 📝
-  buttons; 📝 shows a red count of unsent notes. Only shown in feedback mode.
+  buttons; 📝 ("Your requests") shows a red count of notes not sent yet.
+  Only shown in feedback mode.
 - **Feedback bar:** fixed to the **top** of the screen (the phone keyboard
   covers the bottom), on `--surface` with a 2px `--accent` border: a pulsing
-  red dot and the words as you speak, or a text box; ✕ and Done.
+  red dot and the words as you speak, or a text box; ✕ and **Send** (one tap).
+- **Your requests:** a bottom sheet listing notes not sent yet (editable, with
+  "Send via GitHub") and sent notes, newest first, each with "✓ Saved on
+  GitHub as #12" or "Opened on GitHub · Didn't create it? Send again".
 
 ## Phone layout (under 600px wide)
 - Nothing may be wider than the screen, or phones zoom the whole page out.

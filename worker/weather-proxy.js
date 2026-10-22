@@ -9,6 +9,10 @@
 // 3. Syncing "my sites" and settings between your devices. They're saved in
 //    Cloudflare's free key-value storage (a "KV namespace" connected to this
 //    Worker as SYNC), under a long private sync code that each device uses.
+// 4. Feedback notes from the app's feedback mode, saved as GitHub Issues.
+//    Needs two secrets: GITHUB_TOKEN (a GitHub token allowed to write issues
+//    on the sport-conditions repository only) and FEEDBACK_CODE (a send code
+//    you choose; the app must send the same one, so strangers can't post).
 //
 // It only fetches these things, and caches answers, so it can't be used as a
 // general proxy for other websites.
@@ -20,6 +24,7 @@
 //       /tides/events?station=0546        high and low waters for the next 7 days
 //       /sync?code=…  (GET)               load the sites and settings saved under a code
 //       /sync?code=…  (POST)              save them
+//       /feedback     (POST)              { code, title, body } → a new GitHub Issue
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +40,7 @@ export default {
       if (url.pathname === "/tides/stations") return await tideStations(request, env, ctx);
       if (url.pathname === "/tides/events") return await tideEvents(request, url, env, ctx);
       if (url.pathname === "/sync") return await sync(request, url, env);
+      if (url.pathname === "/feedback") return await feedback(request, env);
       return reply("Not found", 404);
     } catch (error) {
       // Always answer with CORS, even when something breaks, so the app
@@ -141,4 +147,33 @@ async function sync(request, url, env) {
     return reply("Saved", 200);
   }
   return reply("Use GET or POST", 405);
+}
+
+// ---------- Feedback notes → GitHub Issues ----------
+
+const FEEDBACK_REPO = "leo-hyde/sport-conditions";
+
+async function feedback(request, env) {
+  if (request.method !== "POST") return reply("Use POST", 405);
+  if (!env.GITHUB_TOKEN || !env.FEEDBACK_CODE) return reply("No GITHUB_TOKEN or FEEDBACK_CODE secret set", 503);
+  // Sent as plain text, so browsers don't need an extra permission check first.
+  const note = JSON.parse(await request.text());
+  if (note.code !== env.FEEDBACK_CODE) return reply("Wrong send code", 403);
+  const title = String(note.title || "").slice(0, 200);
+  const body = String(note.body || "").slice(0, 20000);
+  if (!title) return reply("A note needs a title", 400);
+
+  const upstream = await fetch(`https://api.github.com/repos/${FEEDBACK_REPO}/issues`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+      "Accept": "application/vnd.github+json",
+      "User-Agent": "sport-conditions-app",  // GitHub refuses requests without one
+    },
+    body: JSON.stringify({ title, body, labels: ["feedback"] }),
+  });
+  if (!upstream.ok) return reply(`GitHub said ${upstream.status}: ${await upstream.text()}`, 502);
+  const issue = await upstream.json();
+  return new Response(JSON.stringify({ number: issue.number, url: issue.html_url }),
+    { headers: { ...CORS, "Content-Type": "application/json" } });
 }

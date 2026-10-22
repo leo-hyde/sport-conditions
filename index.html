@@ -103,31 +103,24 @@
       <p id="feedback-text" class="feedback-text" aria-live="polite"></p>
       <input id="feedback-input" type="text" placeholder="Type your note" aria-label="Your note">
       <button type="button" id="feedback-cancel" class="btn small" aria-label="Cancel note">✕</button>
-      <button type="button" id="feedback-done" class="btn small primary">Done</button>
+      <button type="button" id="feedback-done" class="btn small primary">Send</button>
     </div>
     <div class="feedback-fabs">
-      <button type="button" id="feedback-open" class="fab small" aria-label="Your feedback notes">📝<span id="feedback-count" class="fab-count" hidden></span></button>
+      <button type="button" id="feedback-open" class="fab small" aria-label="Your requests">📝<span id="feedback-count" class="fab-count" hidden></span></button>
       <button type="button" id="feedback-type" class="fab small" aria-label="Type a note">✎</button>
       <button type="button" id="feedback-mic" class="fab" aria-label="Speak a note">🎙</button>
     </div>
   </div>
 
-  <!-- Feedback notes: review and send (feedback.js) -->
+  <!-- Your requests: feedback notes you've sent, and any waiting (feedback.js) -->
   <dialog id="feedback-dialog">
     <div class="dialog-inner">
-      <h2>Feedback notes</h2>
-      <p class="hint">Each note remembers where you were in the app. Edit them here, then send them to GitHub, where Claude picks them up.</p>
+      <h2>Your requests</h2>
+      <p class="hint">Notes you've sent, newest first. Each one remembers where you were in the app.</p>
+      <div id="feedback-waiting"></div>
       <div id="feedback-list"></div>
-      <div id="feedback-sent-box" class="feedback-sent" hidden>
-        <p id="feedback-sent-msg"></p>
-        <div class="dialog-actions start">
-          <button type="button" id="feedback-clear" class="btn small">Created: clear sent notes</button>
-          <button type="button" id="feedback-resend" class="btn small ghost">Didn't work: put them back</button>
-        </div>
-      </div>
       <div class="dialog-actions sticky-actions">
         <button type="button" class="btn" data-close>Close</button>
-        <button type="button" id="feedback-send" class="btn primary">Send to GitHub</button>
       </div>
     </div>
   </dialog>
@@ -246,7 +239,11 @@
         <div class="checks-row">
           <label><input id="feedback-switch" type="checkbox"> Feedback mode: 🎙 buttons to speak or type notes about the app</label>
         </div>
-        <p class="hint">Takes effect straight away. Sport Conditions is in beta;
+        <label class="field">
+          Send code (optional)
+          <input id="feedback-code" type="text" autocomplete="off" placeholder="Sends notes straight to GitHub">
+        </label>
+        <p class="hint">Takes effect straight away. Without a send code, Send opens GitHub with your note filled in. Sport Conditions is in beta;
           <a href="https://github.com/leo-hyde/sport-conditions/blob/main/CHANGELOG.md" target="_blank" rel="noopener">see what's changed</a>.</p>
       </section>
 

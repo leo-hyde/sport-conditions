@@ -25,6 +25,7 @@ function openSettings() {
   fillSettingsForm(state.settings);
   renderSyncBox();
   document.getElementById("feedback-switch").checked = feedbackOn();  // feedback.js
+  document.getElementById("feedback-code").value = sendCode();
   document.getElementById("settings-error").hidden = true;
   document.getElementById("settings-dialog").showModal();
 }
