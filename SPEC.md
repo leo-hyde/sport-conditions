@@ -155,6 +155,31 @@ the best one (or two).
 
 ---
 
+## Version 1.2: feedback while you test (proposed, waiting for Leo's OK)
+
+Leo tests the live site on his phone and wants to say what to change
+**without leaving the app**, and without the keyboard covering the screen.
+Just Leo for now; other testers later.
+
+| # | Step | Status |
+|---|---|---|
+| 1 | **Feedback mode** (Settings → Feedback mode, off by default): a small floating 🎙 button above the tab bar. The app stays fully usable underneath. | proposed |
+| 2 | **Speak a note:** tap 🎙 and talk; the phone turns speech into text with no keyboard (the browser's speech recognition). A slim bar at the top shows the words; tap ■ to stop. If the browser can't do this, ✎ opens a one-line box at the top (use the keyboard's mic), which closes after "Add". | proposed |
+| 3 | **Each note remembers where you were:** tab, layout, open site or hour, screen size, light/dark, app version and time. A badge counts the notes. Notes are kept on the phone until sent. | proposed |
+| 4 | **Send:** review the notes (edit, delete), then "Send to GitHub" opens a new GitHub Issue with them all filled in, labelled `feedback`. Tap "Create". | proposed |
+| 5 | **Versions:** a version number in Settings (starting at 1.2) and a `CHANGELOG.md` saying what changed in each. | proposed |
+
+**Claude's side:** when Leo says "check feedback", Claude reads the open
+`feedback` issues, sorts them into easy / needs discussion / later, keeps
+`docs/BACKLOG.md` up to date, builds what's agreed, and closes each issue
+with the version that fixed it.
+
+**Later:** other testers without GitHub accounts (send through the Worker,
+with a personal code per approved tester); collaborators working through
+pull requests.
+
+---
+
 ## Later
 
 Roughly in suggested order. Each gets its own short spec before building.

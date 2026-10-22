@@ -6,12 +6,12 @@ The shared memory between Leo's phone and computer sessions. **Every Claude sess
 
 | | |
 |---|---|
-| Last session | Phone/cloud, 22 Oct 2026, morning |
+| Last session | Phone/cloud, 22 Oct 2026, late morning |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Mid-flight work | None. Feedback/versioning plan proposed, waiting for Leo's answers (see Open questions) |
-| Next step | Leo checks the clearer "By hour" view on the live site; then agree the feedback plan and add it to SPEC.md |
-| Check first | The lock is now per reply, on the `session-lock` branch. On the Mac, the first message should claim it without a warning |
-| Note | Open-Meteo blocks a connection for the day after 10,000 calls. Real forecasts still not re-tested since the limit fixes |
+| Mid-flight work | Version 1.2 (feedback mode) written into SPEC.md as a proposal; nothing built yet |
+| Next step | Leo OKs (or changes) the 1.2 plan in SPEC.md and says which phone browser he uses; then build steps 1–5 |
+| Check first | SPEC.md "Version 1.2" section |
+| Note | Speech-to-text in the browser must be tested on Leo's actual phone; it can't be tested from a cloud session |
 
 ## Where we are
 
@@ -36,7 +36,7 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 ## Open questions
 
-- **Feedback and versioning plan** (proposed 22 Oct): in-app Feedback button → Worker → GitHub Issue, approved testers by personal code, Claude triages into easy / discuss / backlog, `CHANGELOG.md` and version numbers, collaborators work through pull requests. Leo to decide: do testers need GitHub accounts, and start with just Leo?
+- **Feedback mode (version 1.2 in SPEC.md):** Leo chose to start with just himself, speaking notes on his phone while using the app. Waiting for OK on the plan, and which browser he uses (Safari or Chrome).
 - **Phone landscape:** works but the header fills the short screen. Compact header in landscape?
 
 - **Sync storage:** Leo to create a KV namespace, bind it to the Worker as `SYNC`, and deploy the latest `worker/weather-proxy.js`.
@@ -46,6 +46,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 - **Praa Sands:** added on the live site in one browser; it reaches other devices once sync works.
 
 ## Session log
+
+- **22 Oct, phone/cloud (2)**: wrote the feedback-mode plan (version 1.2) into SPEC.md for Leo to approve.
 
 - **22 Oct, phone/cloud**: lock now per reply on its own branch; clearer By hour view; page opens on By day; proposed a feedback + versioning plan.
 
