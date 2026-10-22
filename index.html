@@ -95,6 +95,43 @@
     </section>
   </main>
 
+  <!-- Feedback mode (feedback.js): the bar at the top while you speak or type a
+       note, and the floating buttons. Moved into any open dialog so they still work. -->
+  <div id="feedback-tools" hidden>
+    <div id="feedback-bar" class="feedback-bar" hidden>
+      <span class="feedback-live" aria-hidden="true"></span>
+      <p id="feedback-text" class="feedback-text" aria-live="polite"></p>
+      <input id="feedback-input" type="text" placeholder="Type your note" aria-label="Your note">
+      <button type="button" id="feedback-cancel" class="btn small" aria-label="Cancel note">✕</button>
+      <button type="button" id="feedback-done" class="btn small primary">Done</button>
+    </div>
+    <div class="feedback-fabs">
+      <button type="button" id="feedback-open" class="fab small" aria-label="Your feedback notes">📝<span id="feedback-count" class="fab-count" hidden></span></button>
+      <button type="button" id="feedback-type" class="fab small" aria-label="Type a note">✎</button>
+      <button type="button" id="feedback-mic" class="fab" aria-label="Speak a note">🎙</button>
+    </div>
+  </div>
+
+  <!-- Feedback notes: review and send (feedback.js) -->
+  <dialog id="feedback-dialog">
+    <div class="dialog-inner">
+      <h2>Feedback notes</h2>
+      <p class="hint">Each note remembers where you were in the app. Edit them here, then send them to GitHub, where Claude picks them up.</p>
+      <div id="feedback-list"></div>
+      <div id="feedback-sent-box" class="feedback-sent" hidden>
+        <p id="feedback-sent-msg"></p>
+        <div class="dialog-actions start">
+          <button type="button" id="feedback-clear" class="btn small">Created: clear sent notes</button>
+          <button type="button" id="feedback-resend" class="btn small ghost">Didn't work: put them back</button>
+        </div>
+      </div>
+      <div class="dialog-actions sticky-actions">
+        <button type="button" class="btn" data-close>Close</button>
+        <button type="button" id="feedback-send" class="btn primary">Send to GitHub</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Messages like "Removed Fistral · Undo" (app.js) -->
   <div id="toast" class="toast" role="status" hidden></div>
 
@@ -205,6 +242,15 @@
       </section>
 
       <section class="settings-section">
+        <h3>Feedback</h3>
+        <div class="checks-row">
+          <label><input id="feedback-switch" type="checkbox"> Feedback mode: 🎙 buttons to speak or type notes about the app</label>
+        </div>
+        <p class="hint">Takes effect straight away. Sport Conditions is in beta;
+          <a href="https://github.com/leo-hyde/sport-conditions/blob/main/CHANGELOG.md" target="_blank" rel="noopener">see what's changed</a>.</p>
+      </section>
+
+      <section class="settings-section">
         <h3>Start again</h3>
         <div class="dialog-actions start">
           <button type="button" id="reset-settings" class="btn small">Reset settings to defaults</button>
@@ -278,6 +324,7 @@
   <script src="windChart.js"></script>
   <script src="tideChart.js"></script>
   <script src="windFlow.js"></script>
+  <script src="feedback.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Sport Conditions: Product Spec
 
-Status: **version 1.1 built**. The Overview has two layouts, By day (the default) and By hour. See [DESIGN.md](DESIGN.md) for how it looks.
+Status: **Beta** (version 1.2 built: feedback mode). The Overview has two layouts, By day (the default) and By hour. See [DESIGN.md](DESIGN.md) for how it looks.
 
 ## The idea
 
@@ -155,24 +155,25 @@ the best one (or two).
 
 ---
 
-## Version 1.2: feedback while you test (proposed, waiting for Leo's OK)
+## Version 1.2: feedback while you test ✅ built
 
-Leo tests the live site on his phone and wants to say what to change
-**without leaving the app**, and without the keyboard covering the screen.
-Just Leo for now; other testers later.
+Leo tests the live site on his phone (Android, Chrome) and says what to
+change **without leaving the app**, and without the keyboard covering the
+screen. Just Leo for now; other testers later. Must work on any phone and
+browser (Android and iPhone, Chrome and Safari).
 
 | # | Step | Status |
 |---|---|---|
-| 1 | **Feedback mode** (Settings → Feedback mode, off by default): a small floating 🎙 button above the tab bar. The app stays fully usable underneath. | proposed |
-| 2 | **Speak a note:** tap 🎙 and talk; the phone turns speech into text with no keyboard (the browser's speech recognition). A slim bar at the top shows the words; tap ■ to stop. If the browser can't do this, ✎ opens a one-line box at the top (use the keyboard's mic), which closes after "Add". | proposed |
-| 3 | **Each note remembers where you were:** tab, layout, open site or hour, screen size, light/dark, app version and time. A badge counts the notes. Notes are kept on the phone until sent. | proposed |
-| 4 | **Send:** review the notes (edit, delete), then "Send to GitHub" opens a new GitHub Issue with them all filled in, labelled `feedback`. Tap "Create". | proposed |
-| 5 | **Versions:** a version number in Settings (starting at 1.2) and a `CHANGELOG.md` saying what changed in each. | proposed |
+| 1 | **Feedback mode** (Settings → Feedback, or a link ending `?feedback=on`; off by default): floating buttons above the tab bar (🎙 speak, ✎ type, 📝 notes with a count). The app stays usable underneath. When a panel is open, the buttons move into it so they still work. | ✅ done |
+| 2 | **Speak a note:** tap 🎙 and talk; the browser's speech recognition turns it into text, so no keyboard. A bar at the top shows the words; tap Done. Phones stop listening after a pause, so it restarts until Done. If the browser can't (or the mic is blocked), it falls back to ✎: a text box at the top, so the keyboard doesn't cover it; Enter or Done saves and closes the keyboard. | ✅ done |
+| 3 | **Each note remembers where you were:** time, tab and layout, open panel (e.g. "Fistral, Today 10:00"), map time, screen size, light/dark, forecast model, browser. Kept on the phone until sent. | ✅ done |
+| 4 | **Send:** 📝 lists the notes (edit, delete). "Send to GitHub" opens a new GitHub Issue with them filled in (title "Feedback: …", label `feedback`); tap "Create". Big batches are split so the link isn't too long. Then "Created: clear sent notes" or "Didn't work: put them back". | ✅ done |
+| 5 | **Versions:** no version numbers. The app is in **Beta**; every change is in git; `CHANGELOG.md` lists changes by date in plain English. Big milestones (e.g. a new sport) get a git tag, a named bookmark we can go back to. | ✅ done |
 
 **Claude's side:** when Leo says "check feedback", Claude reads the open
-`feedback` issues, sorts them into easy / needs discussion / later, keeps
-`docs/BACKLOG.md` up to date, builds what's agreed, and closes each issue
-with the version that fixed it.
+feedback issues, sorts them into easy / needs discussion / later, keeps
+`docs/BACKLOG.md` up to date, builds what's agreed, adds it to
+`CHANGELOG.md`, and closes each issue saying what changed.
 
 **Later:** other testers without GitHub accounts (send through the Worker,
 with a personal code per approved tester); collaborators working through

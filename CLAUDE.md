@@ -55,6 +55,19 @@ the other's conversation; the repo is the only shared memory.
 - **Pull before starting work** (`git pull`), in case something changed from
   another device or a cloud session.
 
+## Feedback from Leo's phone ("check feedback")
+Leo records notes in the app's feedback mode and sends them as GitHub Issues
+titled "Feedback: …" (label `feedback`). When Leo says "check feedback":
+1. Read the open feedback issues (GitHub tools, or `gh issue list` on the Mac).
+   Each note says where in the app Leo was.
+2. Sort every note into **easy** (clear, small), **needs discussion**
+   (unclear, big, or not in SPEC.md) or **later**, and tell Leo in a short list.
+3. Update `docs/BACKLOG.md` with every note and its state.
+4. Build the easy ones Leo agrees to, one step at a time as usual. Add each
+   change to `CHANGELOG.md` (by date, plain English).
+5. When everything in an issue is done or moved to the backlog, comment on
+   the issue saying what changed, and close it.
+
 ## How to teach
 - After each step, explain in plain language what was added and why. Point to
   the 2–3 most important lines of code.

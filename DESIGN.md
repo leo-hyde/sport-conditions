@@ -78,6 +78,13 @@ feature. Change it here first, then in the code.
 - **Tide line:** small muted text under each day's strip ("🌊 HW … · LW … ·
   Springs").
 
+- **Feedback mode buttons:** floating, bottom right (above the tab bar on
+  phones): a 56px round `--accent` 🎙 button, and 44px `--surface` ✎ and 📝
+  buttons; 📝 shows a red count of unsent notes. Only shown in feedback mode.
+- **Feedback bar:** fixed to the **top** of the screen (the phone keyboard
+  covers the bottom), on `--surface` with a 2px `--accent` border: a pulsing
+  red dot and the words as you speak, or a text box; ✕ and Done.
+
 ## Phone layout (under 600px wide)
 - Nothing may be wider than the screen, or phones zoom the whole page out.
   Rows of controls must wrap.

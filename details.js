@@ -16,6 +16,7 @@ function showHourDetails(siteId, key) {
   const rating = worstRating(checks.map(check => check.rating));
   const tide = tides && tideAt(tides, key);
   const dialog = document.getElementById("hour-dialog");
+  dialog.dataset.feedbackLabel = `${site.name}, ${dayLabel(hour.date)} ${hour.hourOfDay}:00`;  // for feedback notes
 
   // The hours either side, for the ‹ › buttons (within the flying day,
   // carrying on into the next or previous day).

@@ -6,21 +6,23 @@ The shared memory between Leo's phone and computer sessions. **Every Claude sess
 
 | | |
 |---|---|
-| Last session | Phone/cloud, 22 Oct 2026, late morning |
+| Last session | Phone/cloud, 22 Oct 2026, midday |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Mid-flight work | Version 1.2 (feedback mode) written into SPEC.md as a proposal; nothing built yet |
-| Next step | Leo OKs (or changes) the 1.2 plan in SPEC.md and says which phone browser he uses; then build steps 1–5 |
-| Check first | SPEC.md "Version 1.2" section |
-| Note | Speech-to-text in the browser must be tested on Leo's actual phone; it can't be tested from a cloud session |
+| Mid-flight work | None |
+| Next step | Leo tries feedback mode on his Android phone (Settings → Feedback, or open the site with `?feedback=on`), sends a first batch, then says "check feedback" |
+| Check first | Did speech work on Leo's phone? Did the GitHub link open with the notes filled in (it may open the GitHub app instead of the browser)? |
+| Note | Feedback issues are titled "Feedback: …". The routine is in CLAUDE.md; the list lives in docs/BACKLOG.md |
 
 ## Where we are
 
-Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for Leo's sites (7 days, 5 models, rated good/OK/no), an Overview with a "next good session" headline, site cards, a map with rated guide sites, live airport wind (METARs), animated wind flow, and official UK tides for beach sites. Not yet working: **sync between devices** (the Worker's KV storage isn't connected yet), and real forecasts haven't been re-tested since the usage-limit fixes.
+Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for Leo's sites (7 days, 5 models, rated good/OK/no), an Overview with a "next good session" headline, site cards, a map with rated guide sites, live airport wind (METARs), animated wind flow, and official UK tides for beach sites. **Feedback mode** (version 1.2): speak or type notes while using the app, sent to GitHub Issues. Not yet working: **sync between devices** (the Worker's KV storage isn't connected yet), and real forecasts haven't been re-tested since the usage-limit fixes.
 
 ## Decisions made
 
 | Date | Decision | Why |
 |---|---|---|
+| 22 Oct | Feedback mode: notes spoken in the browser (speech recognition, falls back to typing), sent as a pre-filled GitHub Issue; just Leo for now | Leo tests on his phone; no keyboard covering the screen; no server or secrets needed |
+| 22 Oct | No version numbers: "Beta", `CHANGELOG.md` by date, git tags for big milestones | Lots of small changes; git already keeps every version |
 | 22 Oct | Lock held only while Claude is replying (claimed on each message, freed when the reply ends), on a `session-lock` branch | An open-but-idle session kept blocking the other device; lock commits cluttered main |
 | 22 Oct | By hour: time strip ("8h 9h…"), speeds only on good/OK hours; page always opens on Overview → By day | Times and speeds looked the same; By day is the quickest answer |
 | 22 Oct | Phone + computer handover kit (this file, `scripts/session.sh`, hooks) | Phone and Mac sessions can't see each other; the repo is the shared memory |
@@ -36,8 +38,7 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 ## Open questions
 
-- **Feedback mode (version 1.2 in SPEC.md):** Leo chose to start with just himself, speaking notes on his phone while using the app. Waiting for OK on the plan, and which browser he uses (Safari or Chrome).
-- **Phone landscape:** works but the header fills the short screen. Compact header in landscape?
+- **Phone landscape:** works but the header fills the short screen. Compact header in landscape? (In docs/BACKLOG.md.)
 
 - **Sync storage:** Leo to create a KV namespace, bind it to the Worker as `SYNC`, and deploy the latest `worker/weather-proxy.js`.
 - **Flybubble:** permission to publish their site list (it's public now).
@@ -46,6 +47,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 - **Praa Sands:** added on the live site in one browser; it reaches other devices once sync works.
 
 ## Session log
+
+- **22 Oct, phone/cloud (3)**: built feedback mode (version 1.2), CHANGELOG.md, docs/BACKLOG.md and the "check feedback" routine.
 
 - **22 Oct, phone/cloud (2)**: wrote the feedback-mode plan (version 1.2) into SPEC.md for Leo to approve.
 

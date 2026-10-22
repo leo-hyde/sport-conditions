@@ -159,7 +159,7 @@ p { margin: 0; }
 .icon-btn { width: 44px; font-size: 20px; }
 .btn:hover, .icon-btn:hover { filter: brightness(0.97); }
 
-input[type="text"], input[type="number"], input[type="search"] {
+input[type="text"], input[type="number"], input[type="search"], textarea {
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
@@ -170,7 +170,7 @@ input[type="text"], input[type="number"], input[type="search"] {
   font: inherit;
 }
 
-input:focus-visible, button:focus-visible {
+input:focus-visible, textarea:focus-visible, button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -980,4 +980,96 @@ dialog { overflow: auto; overscroll-behavior: contain; }
   border: 1px solid #f5c04a;
   background: rgba(245, 192, 74, 0.15);
   font-size: 14px;
+}
+
+/* ---------- Feedback mode (feedback.js) ---------- */
+
+/* Floating buttons, bottom right; above the tab bar on phones */
+.feedback-fabs {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 2500;  /* above the map */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fab {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.fab.small {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.fab-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* The bar at the top while you speak or type a note. It's at the top so the
+   phone's keyboard (at the bottom) doesn't cover it. */
+.feedback-bar {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 2600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+.feedback-text { flex: 1; min-width: 0; margin: 0; font-size: 15px; max-height: 4.5em; overflow-y: auto; }
+.feedback-text:empty::before { content: "Listening… say what you'd change"; color: var(--muted); }
+.feedback-bar input { flex: 1; min-width: 0; font-size: 16px; }  /* 16px stops iPhones zooming in */
+.feedback-bar[data-mode="listening"] input { display: none; }
+.feedback-bar[data-mode="typing"] .feedback-text,
+.feedback-bar[data-mode="typing"] .feedback-live { display: none; }
+.feedback-live {  /* a pulsing red dot while listening */
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: feedback-pulse 1.2s ease-in-out infinite;
+}
+@keyframes feedback-pulse { 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .feedback-live { animation: none; } }
+
+.feedback-note { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.feedback-note textarea { width: 100%; padding-top: 8px; padding-bottom: 8px; resize: vertical; }
+.feedback-note-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.feedback-sent { margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); }
+.feedback-sent p { margin: 0 0 8px; }
+
+@media (max-width: 600px) {
+  .feedback-fabs { right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .feedback-on .toast { bottom: calc(148px + env(safe-area-inset-bottom)); }  /* clear of the buttons */
 }

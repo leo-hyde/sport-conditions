@@ -24,6 +24,7 @@ function openSettings() {
   document.getElementById("settings-title").textContent = `${currentSport().icon} ${currentSport().name} settings`;
   fillSettingsForm(state.settings);
   renderSyncBox();
+  document.getElementById("feedback-switch").checked = feedbackOn();  // feedback.js
   document.getElementById("settings-error").hidden = true;
   document.getElementById("settings-dialog").showModal();
 }
