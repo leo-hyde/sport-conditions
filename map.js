@@ -417,6 +417,12 @@ function timeAtPointer(event) {
   return nearest.dataset.mapKey;
 }
 
+// On a phone each hour's bar is only a few pixels wide, so after a finger
+// first touches the bars, sliding it moves one hour per FINGER_STEP_PX
+// rather than following it exactly. A mouse follows the pointer.
+const FINGER_STEP_PX = 14;
+let fingerDrag = null;  // { startX, startIndex } while a finger is sliding
+
 track.addEventListener("pointerdown", event => {
   // Day labels jump to that day (the next hour to come, if it's today).
   const label = event.target.closest("[data-map-day]");
@@ -426,12 +432,26 @@ track.addEventListener("pointerdown", event => {
     return;
   }
   track.setPointerCapture(event.pointerId);
-  setMapTime(timeAtPointer(event));
+  const key = timeAtPointer(event);
+  if (event.pointerType === "touch") {
+    fingerDrag = { startX: event.clientX, startIndex: mapHourKeys().indexOf(key) };
+  }
+  setMapTime(key);
 });
 
 track.addEventListener("pointermove", event => {
-  if (track.hasPointerCapture(event.pointerId)) setMapTime(timeAtPointer(event));
+  if (!track.hasPointerCapture(event.pointerId)) return;
+  if (fingerDrag) {
+    const keys = mapHourKeys();
+    const index = fingerDrag.startIndex + Math.round((event.clientX - fingerDrag.startX) / FINGER_STEP_PX);
+    setMapTime(keys[Math.min(Math.max(index, 0), keys.length - 1)]);
+  } else {
+    setMapTime(timeAtPointer(event));
+  }
 });
+
+track.addEventListener("pointerup", () => { fingerDrag = null; });
+track.addEventListener("pointercancel", () => { fingerDrag = null; });
 
 document.getElementById("map-prev").addEventListener("click", () => stepMapTime(-1));
 document.getElementById("map-next").addEventListener("click", () => stepMapTime(1));
