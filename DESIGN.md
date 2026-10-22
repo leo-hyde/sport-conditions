@@ -59,7 +59,10 @@ feature. Change it here first, then in the code.
 - **Compass picker:** a 16-segment ring; tap to cycle no → OK → good.
 - **Overview layouts:** a pill switcher (By day · By hour · Best times).
   "By day" uses rating-coloured cells; "By hour" uses compact hour blocks
-  (speed only); "Best times" uses ranked window cards on `--surface-2`.
+  with the wind speed shown only on good and OK hours ("No" blocks are
+  blank), under a tinted **time strip** reading "8h 9h 10h…" (every other
+  hour on phones), so times and speeds can't be confused. The page always
+  opens on the Overview, by day.
 - **Map:** OpenTopoMap tiles (dimmed in dark mode), with a timeline card
   underneath: the big time label, day pills and a slider. Guide sites are
   small grey dots. A pill switcher swaps to Windy's embedded animated

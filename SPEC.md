@@ -1,6 +1,6 @@
 # Sport Conditions: Product Spec
 
-Status: **version 1 built**, waiting for Leo to pick an Overview layout. See [DESIGN.md](DESIGN.md) for how it looks.
+Status: **version 1.1 built**. The Overview has two layouts, By day (the default) and By hour. See [DESIGN.md](DESIGN.md) for how it looks.
 
 ## The idea
 
@@ -138,6 +138,8 @@ the best one (or two).
   forecast service's daily limit.
 - **UX review** (see DESIGN.md): next-good-session headline, calm "No",
   shorter site cards, grouped settings.
+- **Clearer "By hour"** (22 Oct): times on their own strip ("8h 9h…"),
+  speeds only on good/OK hours. The page always opens on Overview → By day.
 
 ### Flagged as hard, skipped for now
 - **Live weather stations:** airport METARs (e.g. Newquay, EGHQ) are free

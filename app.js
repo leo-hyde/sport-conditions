@@ -14,8 +14,9 @@ const state = {
   tides: {},  // site id → tides (beach sites only)
   updatedAt: null,
   failedSites: [],
-  view: loadSaved("sc.view", "overview"),  // which tab is showing
-  layout: loadSaved("sc.layout", "days"),  // which Overview layout
+  // The page always opens on the Overview, by day: the quickest answer.
+  view: "overview",  // which tab is showing
+  layout: "days",  // which Overview layout
   mapTime: null,  // the hour the map is showing, e.g. "2026-10-21T14"
 
   // The forecasts for the chosen model: { site id → list of hours }.
@@ -168,8 +169,10 @@ function arrow(degrees) {
 // By hour heatmap) shows just the speed.
 function hourBlock(site, hour, { compact = false } = {}) {
   const label = `${hour.hourOfDay}:00, ${hour.speed} ${unit().label} from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
+  // Compact blocks (Overview "By hour") only show a speed when the hour is
+  // flyable, so the good and OK times stand out.
   const inside = compact
-    ? `<span class="speed">${hour.speed}</span>`
+    ? `<span class="speed">${hour.rating === "no" ? "" : hour.speed}</span>`
     : `<span class="time">${hour.hourOfDay}</span>${arrow(hour.degrees)}<span class="speed">${hour.speed}</span>`;
   return `<button class="hour ${hour.rating} ${hour.past ? "past" : ""}"
       data-site="${site.id}" data-key="${hour.key}" aria-label="${label}">${inside}</button>`;
@@ -235,7 +238,6 @@ function render() {
 // Show one tab and hide the others.
 function showView(view) {
   state.view = view;
-  save("sc.view", view);
   document.querySelectorAll("#tabs button").forEach(button => {
     button.classList.toggle("active", button.dataset.view === view);
   });
@@ -346,7 +348,6 @@ document.addEventListener("click", event => {
   const layoutButton = event.target.closest("#overview-switch [data-layout]");
   if (layoutButton) {
     state.layout = layoutButton.dataset.layout;
-    save("sc.layout", state.layout);
     renderOverview();
   }
 

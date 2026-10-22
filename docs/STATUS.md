@@ -6,12 +6,12 @@ The shared memory between Leo's phone and computer sessions. **Every Claude sess
 
 | | |
 |---|---|
-| Last session | Desktop (Mac), 22 Oct 2026, morning |
-| Ended cleanly? | Yes, all pushed to `main`. Lock still held by desktop (session ongoing) |
-| Mid-flight work | None |
-| Next step | Test real forecasts now the daily limit has reset (open the page once; few requests): site colours, guide-site pins, wind flow |
-| Check first | `forecastLimitReached` notice should be gone; status line shouldn't say "couldn't load" |
-| Note | Open-Meteo blocks a connection for the day after 10,000 calls. Testing yesterday hit it. Be sparing |
+| Last session | Phone/cloud, 22 Oct 2026, morning |
+| Ended cleanly? | Yes, all pushed to `main` |
+| Mid-flight work | None. Feedback/versioning plan proposed, waiting for Leo's answers (see Open questions) |
+| Next step | Leo checks the clearer "By hour" view on the live site; then agree the feedback plan and add it to SPEC.md |
+| Check first | The lock is now per reply, on the `session-lock` branch. On the Mac, the first message should claim it without a warning |
+| Note | Open-Meteo blocks a connection for the day after 10,000 calls. Real forecasts still not re-tested since the limit fixes |
 
 ## Where we are
 
@@ -21,6 +21,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 | Date | Decision | Why |
 |---|---|---|
+| 22 Oct | Lock held only while Claude is replying (claimed on each message, freed when the reply ends), on a `session-lock` branch | An open-but-idle session kept blocking the other device; lock commits cluttered main |
+| 22 Oct | By hour: time strip ("8h 9h…"), speeds only on good/OK hours; page always opens on Overview → By day | Times and speeds looked the same; By day is the quickest answer |
 | 22 Oct | Phone + computer handover kit (this file, `scripts/session.sh`, hooks) | Phone and Mac sessions can't see each other; the repo is the shared memory |
 | 21 Oct | Forecasts kept 30 min on the device; stop asking after a "daily limit" refusal; guide sites only from zoom 9 (max 60), wind flow 8×8 from zoom 8 | Testing used up Open-Meteo's free daily limit (10,000 calls per connection) |
 | 21 Oct | "No" hours are calm grey; "Next good session" headline; cards show 2 days | UX review (DESIGN.md) |
@@ -34,6 +36,9 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 ## Open questions
 
+- **Feedback and versioning plan** (proposed 22 Oct): in-app Feedback button → Worker → GitHub Issue, approved testers by personal code, Claude triages into easy / discuss / backlog, `CHANGELOG.md` and version numbers, collaborators work through pull requests. Leo to decide: do testers need GitHub accounts, and start with just Leo?
+- **Phone landscape:** works but the header fills the short screen. Compact header in landscape?
+
 - **Sync storage:** Leo to create a KV namespace, bind it to the Worker as `SYNC`, and deploy the latest `worker/weather-proxy.js`.
 - **Flybubble:** permission to publish their site list (it's public now).
 - **Beach sites:** ticked for Fistral, Perranporth, Hale Towans and Chapel Porth. Right?
@@ -41,6 +46,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 - **Praa Sands:** added on the live site in one browser; it reaches other devices once sync works.
 
 ## Session log
+
+- **22 Oct, phone/cloud**: lock now per reply on its own branch; clearer By hour view; page opens on By day; proposed a feedback + versioning plan.
 
 - **22 Oct, desktop**: set up the phone + computer handover kit from the playbook (STATUS.md, session lock, hooks).
 - **21 Oct, desktop**: built version 1 and 1.1 in one long session: forecasts, ratings, site editing, map, units, tides, live wind, sync (pending storage), UX review; created the `/new-app` playbook. Hit Open-Meteo's daily limit while testing.

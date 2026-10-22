@@ -129,7 +129,11 @@ function overviewByHour() {
     const hourLabels = [...new Set(sites.flatMap(({ days }) =>
       (days[date] || []).map(hour => hour.hourOfDay)))].sort();
 
-    let cells = "<div></div>" + hourLabels.map(label => `<div class="hm-head">${label}</div>`).join("");
+    // The time row reads "8h 9h 10h…" on its own tinted strip, so it can't be
+    // mistaken for the wind speeds in the blocks underneath. (Phones label
+    // every other hour, as there isn't room for them all.)
+    let cells = `<div class="hm-head hm-corner">Time</div>` +
+      hourLabels.map(label => `<div class="hm-head ${label % 2 ? "odd" : ""}">${Number(label)}h</div>`).join("");
     for (const { site, days } of sites) {
       cells += `<div class="hm-site name-cell">${starButton(site)}<button class="site-link" data-goto-site="${site.id}">${esc(site.name)}</button></div>`;
       for (const label of hourLabels) {
@@ -138,9 +142,9 @@ function overviewByHour() {
       }
     }
 
-    const columns = `minmax(76px, 140px) repeat(${hourLabels.length}, 1fr)`;
+    const columns = `minmax(76px, 140px) repeat(${hourLabels.length}, minmax(0, 1fr))`;  // equal-width hours
     return `<div class="heatmap-day">
-      <h3>${dayLabel(date)} <small class="muted">wind in ${unit().label}</small></h3>
+      <h3>${dayLabel(date)} <small class="muted">numbers are wind in ${unit().label}</small></h3>
       <div class="heatmap" style="grid-template-columns: ${columns}">${cells}</div>
     </div>`;
   }).join("");
