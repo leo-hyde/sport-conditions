@@ -14,9 +14,10 @@ const state = {
   tides: {},  // site id → tides (beach sites only)
   updatedAt: null,
   failedSites: [],
-  // The page always opens on the Overview, by day: the quickest answer.
-  view: "overview",  // which tab is showing
-  layout: "days",  // which Overview layout
+  // The page reopens where you left it; the very first visit lands on
+  // the Overview, by day: the quickest answer.
+  view: loadSaved("sc.view", "overview"),  // which tab is showing
+  layout: loadSaved("sc.layout", "days"),  // which Overview layout
   mapTime: null,  // the hour the map is showing, e.g. "2026-10-21T14"
 
   // The forecasts for the chosen model: { site id → list of hours }.
@@ -238,6 +239,7 @@ function render() {
 // Show one tab and hide the others.
 function showView(view) {
   state.view = view;
+  save("sc.view", view);
   document.querySelectorAll("#tabs button").forEach(button => {
     button.classList.toggle("active", button.dataset.view === view);
   });
@@ -348,6 +350,7 @@ document.addEventListener("click", event => {
   const layoutButton = event.target.closest("#overview-switch [data-layout]");
   if (layoutButton) {
     state.layout = layoutButton.dataset.layout;
+    save("sc.layout", state.layout);
     renderOverview();
   }
 
