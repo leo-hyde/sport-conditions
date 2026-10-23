@@ -79,7 +79,10 @@
         </div>
         <div id="map-track-wrap" class="track-wrap">
           <div id="map-bubble" class="time-bubble"></div>
-          <div id="map-track" class="track" tabindex="0" aria-label="Forecast time: drag, or use the arrow keys"></div>
+          <!-- On phones this strip scrolls sideways under a fixed marker, like Windy's app -->
+          <div id="map-track-scroll" class="track-scroll">
+            <div id="map-track" class="track" tabindex="0" aria-label="Forecast time: drag or swipe, or use the arrow keys"></div>
+          </div>
         </div>
         <div class="map-toggles">
           <label><input id="show-library" type="checkbox" checked> All sites from the guide</label>
@@ -88,7 +91,7 @@
         </div>
         <p id="library-note" class="hint"></p>
         <p id="flow-note" class="hint"></p>
-        <p class="hint">Drag along the bars to move through time; their colour is the best
+        <p class="hint">Drag or swipe the bars to move through time, or tap an hour or a day; their colour is the best
           rating at any of your sites. ★ pins are your sites; small pins and dots are other sites from
           the guide (tap one to add it). Long-press the map to add a site anywhere.</p>
       </div>

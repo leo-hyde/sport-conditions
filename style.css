@@ -617,6 +617,35 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 
 @media (max-width: 600px) {
   .tl-hours .minor { visibility: hidden; }
+
+  /* Phones: a strip of 14px hours that swipes sideways under a fixed marker */
+  .track-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;  /* no scrollbar: the marker shows where you are */
+  }
+  .track-scroll::-webkit-scrollbar { display: none; }
+  .track {
+    width: max-content;
+    padding: 0 50%;  /* so the first and last hours can reach the middle */
+    touch-action: pan-x;  /* let the finger swipe it sideways */
+  }
+  .tl-day { flex: none !important; }
+  .tl-bar { flex: 0 0 14px; }
+  .tl-hours span { flex: 0 0 15px; }  /* a bar plus its 1px gap */
+  .tl-bar.active { outline: none; }  /* the marker shows the chosen hour */
+  .track-wrap::after {  /* the fixed marker: a line down the middle of the bars */
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 30px;  /* from the bubble's pointer down through the bars */
+    height: 50px;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--accent);
+    z-index: 2;
+    pointer-events: none;
+  }
 }
 
 /* Hour details: previous / next hour */

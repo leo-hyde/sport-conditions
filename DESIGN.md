@@ -64,7 +64,10 @@ feature. Change it here first, then in the code.
   hour on phones), so times and speeds can't be confused. The page reopens
   on the tab you left; a first visit lands on the Overview, by day.
 - **Map:** OpenTopoMap tiles (dimmed in dark mode), with a timeline card
-  underneath: the big time label, day pills and a slider. Guide sites are
+  underneath: the big time label, day labels and hour bars. On desktop all 7
+  days fit and you drag along them. **On phones it's Windy's pattern:** a strip
+  of 14px hours that swipes sideways under a fixed `--accent` marker; the hour
+  under the marker is the chosen time; tapping an hour or a day jumps there. Guide sites are
   small grey dots. A pill switcher swaps to Windy's embedded animated
   wind map.
 - **Mini compass:** a small 16-wedge ring with "N" in the middle, next to

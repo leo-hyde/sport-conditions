@@ -120,6 +120,7 @@ function drawTime() {
     // No forecasts at all: still show where your sites are.
     state.mapTime = londonNowKey();
     document.getElementById("map-track").innerHTML = '<p class="hint">No forecast to scroll through yet.</p>';
+    timelineDrawn = "";
     drawPins();
     return;
   }
@@ -151,6 +152,13 @@ function bestRatings() {
   return best;
 }
 
+// On phones the timeline is a strip you swipe sideways, under a marker
+// fixed in the middle; the hour under the marker is the chosen time. On
+// bigger screens all 7 days fit, and you drag along them.
+const phoneTimeline = () => matchMedia("(max-width: 600px)").matches;
+let timelineDrawn = "";  // what the bars were last drawn from, to skip redrawing them
+let scrollingTimeline = false;  // true while the strip is being swiped
+
 // Days side by side, each with its label, a coloured bar per hour and some
 // hour numbers. A bubble above shows the chosen day and time.
 function drawTimeline(keys) {
@@ -158,32 +166,52 @@ function drawTimeline(keys) {
   const dates = [...new Set(keys.map(key => key.slice(0, 10)))];
   const now = londonNowKey();
 
-  document.getElementById("map-track").innerHTML = dates.map(date => {
-    const dayKeys = keys.filter(key => key.startsWith(date));
-    const bars = dayKeys.map(key =>
-      `<div class="tl-bar ${best[key] || "no"} ${key < now ? "past" : ""} ${key === state.mapTime ? "active" : ""}" data-map-key="${key}"></div>`
-    ).join("");
-    const hourLabels = dayKeys.map(key => {
-      const hour = Number(key.slice(11));
-      return `<span class="${hour % 6 === 0 ? "" : "minor"}">${hour % 3 === 0 ? hour : ""}</span>`;
+  // Redraw the bars only when they've changed (not on every move of the time).
+  const drawnFrom = JSON.stringify([keys, best, now, phoneTimeline()]);
+  if (drawnFrom !== timelineDrawn) {
+    timelineDrawn = drawnFrom;
+    track.innerHTML = dates.map(date => {
+      const dayKeys = keys.filter(key => key.startsWith(date));
+      const bars = dayKeys.map(key =>
+        `<div class="tl-bar ${best[key] || "no"} ${key < now ? "past" : ""}" data-map-key="${key}"></div>`
+      ).join("");
+      const hourLabels = dayKeys.map(key => {
+        const hour = Number(key.slice(11));
+        return `<span class="${hour % 6 === 0 ? "" : "minor"}">${hour % 3 === 0 ? hour : ""}</span>`;
+      }).join("");
+      return `<div class="tl-day" data-day="${date}" style="flex-grow: ${dayKeys.length}">
+        <button class="tl-label" data-map-day="${date}">${dayLabel(date)}</button>
+        <div class="tl-bars">${bars}</div>
+        <div class="tl-hours">${hourLabels}</div>
+      </div>`;
     }).join("");
-    return `<div class="tl-day ${state.mapTime.startsWith(date) ? "current" : ""}" style="flex-grow: ${dayKeys.length}">
-      <button class="tl-label" data-map-day="${date}">${dayLabel(date)}</button>
-      <div class="tl-bars">${bars}</div>
-      <div class="tl-hours">${hourLabels}</div>
-    </div>`;
-  }).join("");
+  }
+  track.querySelectorAll(".tl-bar.active").forEach(bar => bar.classList.remove("active"));
+  track.querySelectorAll(".tl-day").forEach(day => day.classList.toggle("current", state.mapTime.startsWith(day.dataset.day)));
+  const active = track.querySelector(`[data-map-key="${state.mapTime}"]`);
+  active.classList.add("active");
 
-  // Put the bubble above the chosen hour's bar.
-  const active = document.querySelector(".tl-bar.active");
   const bubble = document.getElementById("map-bubble");
+  bubble.textContent = `${dayLabel(state.mapTime.slice(0, 10))} ${state.mapTime.slice(11)}:00`;
+  if (phoneTimeline()) {
+    bubble.style.left = "50%";  // the bubble stays put; the strip moves
+    if (!scrollingTimeline) centreBar(active);
+    return;
+  }
+  // Put the bubble above the chosen hour's bar, inside the box at the far left and right.
   const wrap = document.getElementById("map-track-wrap").getBoundingClientRect();
   const bar = active.getBoundingClientRect();
   const centre = bar.left + bar.width / 2 - wrap.left;
-  bubble.textContent = `${dayLabel(state.mapTime.slice(0, 10))} ${state.mapTime.slice(11)}:00`;
-  // Keep the bubble inside the box at the far left and right.
   const half = bubble.offsetWidth / 2;
   bubble.style.left = `${Math.min(Math.max(centre, half), wrap.width - half)}px`;
+}
+
+// Scrolls the phone strip so this bar sits under the middle marker.
+function centreBar(bar) {
+  const strip = document.getElementById("map-track-scroll");
+  const box = strip.getBoundingClientRect();
+  const barBox = bar.getBoundingClientRect();
+  strip.scrollLeft += (barBox.left + barBox.width / 2) - (box.left + box.width / 2);
 }
 
 function setMapTime(key) {
@@ -417,12 +445,6 @@ function timeAtPointer(event) {
   return nearest.dataset.mapKey;
 }
 
-// On a phone each hour's bar is only a few pixels wide, so after a finger
-// first touches the bars, sliding it moves one hour per FINGER_STEP_PX
-// rather than following it exactly. A mouse follows the pointer.
-const FINGER_STEP_PX = 14;
-let fingerDrag = null;  // { startX, startIndex } while a finger is sliding
-
 track.addEventListener("pointerdown", event => {
   // Day labels jump to that day (the next hour to come, if it's today).
   const label = event.target.closest("[data-map-day]");
@@ -431,27 +453,41 @@ track.addEventListener("pointerdown", event => {
     setMapTime(dayKeys.find(key => key >= londonNowKey()) || dayKeys[0]);
     return;
   }
+  if (phoneTimeline()) return;  // phones swipe the strip, or tap an hour (below)
   track.setPointerCapture(event.pointerId);
-  const key = timeAtPointer(event);
-  if (event.pointerType === "touch") {
-    fingerDrag = { startX: event.clientX, startIndex: mapHourKeys().indexOf(key) };
-  }
-  setMapTime(key);
+  setMapTime(timeAtPointer(event));
 });
 
 track.addEventListener("pointermove", event => {
-  if (!track.hasPointerCapture(event.pointerId)) return;
-  if (fingerDrag) {
-    const keys = mapHourKeys();
-    const index = fingerDrag.startIndex + Math.round((event.clientX - fingerDrag.startX) / FINGER_STEP_PX);
-    setMapTime(keys[Math.min(Math.max(index, 0), keys.length - 1)]);
-  } else {
-    setMapTime(timeAtPointer(event));
-  }
+  if (track.hasPointerCapture(event.pointerId)) setMapTime(timeAtPointer(event));
 });
 
-track.addEventListener("pointerup", () => { fingerDrag = null; });
-track.addEventListener("pointercancel", () => { fingerDrag = null; });
+// Phones: tapping an hour jumps to it.
+track.addEventListener("click", event => {
+  const bar = event.target.closest("[data-map-key]");
+  if (bar && phoneTimeline()) setMapTime(bar.dataset.mapKey);
+});
+
+// Phones: swiping the strip moves the time to whichever hour is under the
+// middle marker. (Checked once per screen refresh, not on every scroll event.)
+const trackScroll = document.getElementById("map-track-scroll");
+let scrollCheck = 0;
+trackScroll.addEventListener("scroll", () => {
+  if (!phoneTimeline() || scrollCheck) return;
+  scrollCheck = requestAnimationFrame(() => {
+    scrollCheck = 0;
+    const box = trackScroll.getBoundingClientRect();
+    const middle = box.left + box.width / 2;
+    const bar = [...track.querySelectorAll(".tl-bar")].find(bar => {
+      const barBox = bar.getBoundingClientRect();
+      return barBox.left - 1 <= middle && middle <= barBox.right + 1;  // +1 covers the gaps between bars
+    });
+    if (!bar) return;
+    scrollingTimeline = true;  // don't re-centre while the finger is moving the strip
+    setMapTime(bar.dataset.mapKey);
+    scrollingTimeline = false;
+  });
+});
 
 document.getElementById("map-prev").addEventListener("click", () => stepMapTime(-1));
 document.getElementById("map-next").addEventListener("click", () => stepMapTime(1));
