@@ -1,6 +1,6 @@
 # Sport Conditions: Product Spec
 
-Status: **Beta** (version 1.2 built: feedback mode). The Overview has two layouts, By day (the default) and By hour. See [DESIGN.md](DESIGN.md) for how it looks.
+Status: **Beta** (version 1.3 built: surfing). The Overview has two layouts, By day (the default) and By hour. See [DESIGN.md](DESIGN.md) for how it looks.
 
 ## The idea
 
@@ -189,7 +189,7 @@ sites' map labels.
 
 ---
 
-## Version 1.3: Surfing (agreed 23 Oct)
+## Version 1.3: Surfing ✅ built (23 Oct)
 
 Surfing as a second sport, starting with the Newquay spots, rated good / OK /
 no like parakiting, with a link to Surfline for each spot.
@@ -238,11 +238,11 @@ tide), as Leo asked. The Cribbar is left out (big-wave reef only).
 ### Steps
 | # | Step | Status |
 |---|---|---|
-| 1 | Tide rules for any site | building |
-| 2 | Settings per sport (surfing: wave, period and wind ranges) | building |
-| 3 | Surf spots guide (`data/surf-spots.csv` → `surfSpots.js`) | building |
-| 4 | Wave forecasts, surf ratings, and showing them (Overview, cards, hour details, map) | building |
-| 5 | Site form for surf spots: swell compass, offshore wind compass, tide rule, Surfline link | building |
+| 1 | Tide rules for any site | ✅ done |
+| 2 | Settings per sport (surfing: wave, period and wind ranges) | ✅ done |
+| 3 | Surf spots guide (`data/surf-spots.csv` → `surfSpots.js`) | ✅ done |
+| 4 | Wave forecasts, surf ratings, and showing them (Overview, cards, hour details, map) | ✅ done |
+| 5 | Site form for surf spots: swell compass, offshore wind compass, tide rule, Surfline link | ✅ done |
 
 ---
 

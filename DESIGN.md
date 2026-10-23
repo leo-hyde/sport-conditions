@@ -92,6 +92,16 @@ feature. Change it here first, then in the code.
   "Send via GitHub") and sent notes, newest first, each with "✓ Saved on
   GitHub as #12" or "Opened on GitHub · Didn't create it? Send again".
 
+- **Surfing:** the same hour blocks, pins and Overview, showing **wave height
+  in ft** (arrow = swell direction) instead of wind speed. Site cards add a
+  blue "Surfline ↗" tag. The hour panel's tiles are Waves (with Surfline-style
+  words: "waist to chest"), Period, Swell from, and Wind (marked "offshore").
+  The site form adds an **offshore wind compass** (on/off wedges) and a
+  Surfline link box, and calls the main compass "Swell directions".
+- **Tide rule** (site form, any sport): a dropdown ("Not near low water",
+  "Only near high water"…) and "within [2] h"; on cards a short tag
+  ("Avoid low ±2h").
+
 ## Phone layout (under 600px wide)
 - Nothing may be wider than the screen, or phones zoom the whole page out.
   Rows of controls must wrap.

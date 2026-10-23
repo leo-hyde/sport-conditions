@@ -3,6 +3,16 @@
 Sport Conditions is in **Beta**: it changes often, so there are no version
 numbers. Every change is also in the git history. Newest first.
 
+## 23 October 2026
+- **Surfing** 🏄: pick it in the sport menu. The 12 Newquay spots, rated
+  good / OK / no on wave height (ft), swell period and direction, wind
+  (offshore or light) and tide, with a Surfline link on each spot. Surf
+  settings (wave sizes, period, wind) are separate from parakiting's.
+- **Tide rules for any site:** "not near low water", "only near high water"
+  and so on, within as many hours as you choose (replaces "not near high tide").
+- **Map timeline on phones** swipes sideways under a fixed marker, like Windy.
+- Removed the tide labels from the map (too crowded).
+
 ## 22 October 2026 (afternoon, from feedback #1–#3)
 - **Feedback Send is one tap**, and 📝 **Your requests** shows what you've
   sent, with links. With a send code (Settings → Feedback), notes go straight

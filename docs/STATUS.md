@@ -6,21 +6,27 @@ The shared memory between Leo's phone and computer sessions. **Every Claude sess
 
 | | |
 |---|---|
-| Last session | Phone/cloud, 22 Oct 2026, afternoon |
+| Last session | Phone/cloud, 23 Oct 2026 |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Mid-flight work | None. Surfing plan written (SPEC.md "Version 1.3"), waiting for Leo's answers |
-| Next step | Leo answers the surfing questions in SPEC.md; optionally sets up direct feedback sending (Worker secrets, steps in the session reply / SPEC.md) |
-| Check first | Leo retests voice notes on his phone (screen staying on, no lost words) |
-| Note | Feedback issues #1–#3 handled and closed; all notes are in docs/BACKLOG.md |
+| Mid-flight work | None |
+| Next step | Leo tries Surfing on the live site (sport menu → Surfing) and checks the Newquay spots; then automated tests of the rating rules (BACKLOG) |
+| Check first | **Start a new session** for the next piece of work: this one got very long (see CLAUDE.md "Working efficiently") |
+| Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
 
-Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for Leo's sites (7 days, 5 models, rated good/OK/no), an Overview with a "next good session" headline, site cards, a map with rated guide sites, live airport wind (METARs), animated wind flow, and official UK tides for beach sites. **Feedback mode** (version 1.2): speak or type notes while using the app, sent to GitHub Issues. Not yet working: **sync between devices** (the Worker's KV storage isn't connected yet), and real forecasts haven't been re-tested since the usage-limit fixes.
+**Surfing** (version 1.3): the 12 Newquay spots, rated on waves, period, swell direction, wind and tide, linked to Surfline. Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for Leo's sites (7 days, 5 models, rated good/OK/no), an Overview with a "next good session" headline, site cards, a map with rated guide sites, live airport wind (METARs), animated wind flow, and official UK tides for beach sites. **Feedback mode** (version 1.2): speak or type notes while using the app, sent to GitHub Issues. Not yet working: **sync between devices** (the Worker's KV storage isn't connected yet), and real forecasts haven't been re-tested since the usage-limit fixes.
 
 ## Decisions made
 
 | Date | Decision | Why |
 |---|---|---|
+| 23 Oct | Surf ratings stay good / OK / no (not Surfline's Poor/Fair/Good scale); heights in ft with Surfline-style size words | Every sport works the same on the Overview and map; Surfline's ratings are its forecasters' own judgement |
+| 23 Oct | Waves forecast from a point 2.5 km out to sea from each spot | A point on the beach can fall in a land grid cell, which has no waves |
+| 23 Oct | Tide rules per site (not / only near low / high water, N hours), for every sport | Leo: Newquay spots don't work around low tide (except Watergate); must be easy to edit |
+| 23 Oct | Phone map timeline: a swipeable strip under a fixed marker | The finger-step version lost track of the finger |
+| 23 Oct | Explaining the work: architecture doc + walkthroughs, no "try this" suggestions | Leo wants to understand and check what's built, not tinker |
+| 23 Oct | One feature per session; tools/preview.js for checks | Long sessions use far more AI credits |
 | 22 Oct | Surfing: link to Surfline rather than copy its data; waves from Open-Meteo Marine | Surfline has no public API and its terms forbid copying; a public site can't rely on unofficial addresses |
 | 22 Oct | Feedback Send goes straight to GitHub through the Worker when a send code is set | Leo wanted one tap, not several steps |
 | 22 Oct | Feedback mode: notes spoken in the browser (speech recognition, falls back to typing), sent as a pre-filled GitHub Issue; just Leo for now | Leo tests on his phone; no keyboard covering the screen; no server or secrets needed |
@@ -40,8 +46,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 
 ## Open questions
 
-- **Surfing (SPEC.md Version 1.3):** which spots, their swell/offshore directions and tide windows, and what counts as good surf.
-- **Direct feedback sending:** Leo to add `GITHUB_TOKEN` and `FEEDBACK_CODE` secrets to the Worker and redeploy `worker/weather-proxy.js`.
+- **Surf spots:** locations, swell and offshore directions are Claude's approximations: check them. Little Fistral is often called a low-tide spot, and Lusty Glaze's beach covers at high tide, yet both have "not near low water".
+- **Direct feedback sending:** skipped for now (Leo, 23 Oct). When wanted: add `GITHUB_TOKEN` and `FEEDBACK_CODE` secrets to the Worker and redeploy.
 - **Phone landscape:** works but the header fills the short screen. Compact header in landscape? (In docs/BACKLOG.md.)
 
 - **Sync storage:** Leo to create a KV namespace, bind it to the Worker as `SYNC`, and deploy the latest `worker/weather-proxy.js`.
@@ -51,6 +57,8 @@ Live at https://leo-hyde.github.io/sport-conditions/. Parakiting forecasts for L
 - **Praa Sands:** added on the live site in one browser; it reaches other devices once sync works.
 
 ## Session log
+
+- **23 Oct, phone/cloud**: removed map tides; phone timeline now swipes under a marker; built Surfing (Newquay spots, tide rules, per-sport settings, Surfline links); added docs/ARCHITECTURE.md and tools/preview.js; new rules for explaining the work and working efficiently.
 
 - **22 Oct, phone/cloud (4)**: worked through feedback #1–#3: one-tap Send + Your requests + Worker /feedback, robust voice notes, reopen on last tab, finer map timeline, map tides; wrote the surfing plan.
 
