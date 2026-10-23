@@ -84,7 +84,6 @@ function addMapKey() {
       <div class="key-row"><span class="key-guide"></span>Other sites (tap to add; grey until you zoom in)</div>
       <div class="key-row"><span class="key-live">LIVE</span>Airport wind right now</div>
       <div class="key-row key-ratings"><i class="good"></i>Good <i class="ok"></i>OK <i class="no"></i>No</div>
-      <div class="key-row">🌊 ↑ 3.2 m&nbsp;<span class="muted">Tide at beach sites at this time (↑ rising, ↓ falling)</span></div>
       <div class="key-row muted">Coloured streaks: forecast wind flow</div>`;
     L.DomEvent.disableClickPropagation(box);  // tapping the key doesn't tap the map
     return box;
@@ -220,20 +219,10 @@ function drawPins() {
       title: site.name,
       zIndexOffset: 1000,
     })
-      .bindTooltip(esc(site.name) + tideLabel(site), { permanent: true, direction: "bottom", offset: [0, 20], className: "pin-label" })
+      .bindTooltip(esc(site.name), { permanent: true, direction: "bottom", offset: [0, 20], className: "pin-label" })
       .on("click", () => { if (hour) showHourDetails(site.id, hour.key); })
       .addTo(pinLayer);
   }
-}
-
-// Beach sites show the tide at the map's time under their name, e.g.
-// "🌊 ↑ 3.2 m" (rising), so you can watch it change as you move through time.
-function tideLabel(site) {
-  const tides = state.tides[site.id];
-  const tide = tides && tideAt(tides, state.mapTime);
-  if (!tide) return "";
-  const direction = tide.rising === null ? "" : tide.rising ? "↑ " : "↓ ";
-  return `<span class="pin-tide">🌊 ${direction}${tide.height.toFixed(1)} m</span>`;
 }
 
 // ---------- The site guide: every other site ----------
