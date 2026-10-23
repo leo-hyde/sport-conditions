@@ -10,6 +10,7 @@
 #   scripts/session.sh check          Claude finishes a reply: refuse if work is unsaved, else release
 #   scripts/session.sh end            release the lock by hand (same as a clean check)
 #   scripts/session.sh status         show the lock and git state
+#   scripts/session.sh visibility-ok  after a privacy review, record the repo's visibility as reviewed
 #
 # The lock is a file called `lock` on its own branch, `session-lock`, so it doesn't
 # clutter main's history or republish the site. Because GitHub only accepts a push
@@ -100,6 +101,49 @@ pull_main() {
   fi
 }
 
+# ---------- Public or private? ----------
+# GitHub's public API answers "private": false for a public repo; a private one
+# answers "private": true (when logged in, e.g. in cloud sessions) or Not Found.
+# The last reviewed answer is kept in .claude/repo-visibility, so Claude can warn
+# Leo when a repo turns public and check what's now visible.
+VIS_FILE=.claude/repo-visibility
+
+repo_name() { git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[/:]([^/]+/[^/]+)$#\1#'; }
+
+visibility() {
+  local body
+  body=$(curl -sS --max-time 8 "https://api.github.com/repos/$(repo_name)" 2>/dev/null) || return 1
+  case "$body" in
+    *'"private": false'*) echo public ;;
+    *'"private": true'*|*'Not Found'*) echo private ;;
+    *) return 1 ;;
+  esac
+}
+
+record_visibility() {  # value
+  mkdir -p .claude && echo "$1" >"$VIS_FILE"
+  git add -f "$VIS_FILE"
+  git diff --cached --quiet -- "$VIS_FILE" || git commit -q -m "Playbook: record that this repo is $1" -- "$VIS_FILE"
+  return 0
+}
+
+check_visibility() {
+  local now was
+  now=$(visibility) || return 0   # GitHub unreachable: say nothing
+  was=$(cat "$VIS_FILE" 2>/dev/null)
+  if [ -z "$was" ]; then
+    record_visibility "$now"
+    [ "$now" = public ] && echo "Note: this repo is PUBLIC. Anything committed here can be read by anyone."
+  elif [ "$now" = public ] && [ "$was" != public ]; then
+    echo "!!! THIS REPO IS NOW PUBLIC (it was $was). Tell Leo straight away, then check the files AND"
+    echo "!!! the git history for anything sensitive (see 'Public repos' in .claude/rules/playbook.md)."
+    echo "!!! After the review, run: scripts/session.sh visibility-ok"
+  elif [ "$now" != "$was" ]; then
+    record_visibility "$now"
+    echo "Note: this repo is now $now (it was $was)."
+  fi
+}
+
 # ---------- Commands ----------
 
 cmd_start() {
@@ -115,6 +159,7 @@ cmd_start() {
     echo "No other device is working. (The lock is claimed automatically when Leo sends a message.)"
   fi
   [ -f scripts/playbook-sync.sh ] && bash scripts/playbook-sync.sh
+  check_visibility
   echo
   echo "--- Handover from docs/STATUS.md ---"
   sed -n '/^## Handover/,/^## Where we are/p' docs/STATUS.md | sed '$d'
@@ -203,5 +248,6 @@ case "${1:-status}" in
   check)  cmd_check ;;
   end)    cmd_end ;;
   status) cmd_status ;;
-  *) echo "Usage: $0 start | busy [--force] | check | end | status"; exit 1 ;;
+  visibility-ok) v=$(visibility) && record_visibility "$v" && echo "Recorded: this repo is $v (reviewed)." ;;
+  *) echo "Usage: $0 start | busy [--force] | check | end | status | visibility-ok"; exit 1 ;;
 esac

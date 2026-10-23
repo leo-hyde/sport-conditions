@@ -61,6 +61,25 @@ usage limits, often per internet connection shared with Leo's devices: few test
 requests, cache fetched data, made-up data for design work.** Say where the
 app could mislead.
 
+## Public repos
+Leo's projects mix public and private repos, and a session may work across
+several. **Before committing to a public repo** (session start says so, or
+`.claude/repo-visibility` reads `public`; if unsure, check on GitHub), check
+the change for anything that shouldn't be public: secrets or keys, email
+addresses, names of real people, Leo's CV, job search or employers, health,
+money, internal web addresses, or content copied from a private repo. If
+there's anything like that, or you're unsure, **stop and tell Leo**: quote the
+exact lines and ask before pushing.
+- **If session start prints `THIS REPO IS NOW PUBLIC`**, tell Leo before
+  anything else. Then review the files **and the git history** (deleting a
+  file doesn't remove it from history: search with
+  `git log -p --all | grep -iE '<pattern>'`), list what you find with file and
+  line, and propose fixes. Run `scripts/session.sh visibility-ok` only once
+  Leo has seen the list. Rewriting history to remove something is Leo's call,
+  and it's a force-push: never do it without his explicit go-ahead.
+- Leo's email goes in commits only as his GitHub "noreply" address,
+  `22234407+leo-hyde@users.noreply.github.com` (`git config user.email` per repo).
+
 ## Git and the phone/Mac handover
 - The repo is the only memory shared by Leo's phone (cloud) and Mac sessions.
   `scripts/session.sh` (run by hooks) pulls main, holds a lock while Claude is
@@ -110,12 +129,8 @@ it's done. Put it in a code block so Leo can copy it on his phone.
   On the Mac the playbook is `~/.claude/skills/new-app`; in a cloud session,
   attach `leo-hyde/claude-playbook` (the `add_repo` tool) and clone it next to
   this project. Commit and push it to main like any project.
-- **The playbook is public.** Before committing to it, check the change for
-  anything that shouldn't be public: secrets or keys, email addresses, names
-  of real people, Leo's CV, job search or employers, health, money, private
-  repo contents, internal web addresses. If there's anything like that, or
-  you're unsure, **stop and tell Leo**: quote the exact lines and ask before
-  pushing. Write lessons in general terms ("a private repo's site published
-  its docs folder"), not with the project's private details.
+- **The playbook is public**: follow "Public repos" above before every commit
+  to it. Write lessons in general terms ("a private repo's site published its
+  docs folder"), not with a project's private details.
 - Project-only lessons go in this project's CLAUDE.md or docs.
 - Every project picks up playbook changes at its next session start.
