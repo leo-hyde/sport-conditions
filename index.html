@@ -334,10 +334,20 @@
         </div>
       </div>
       <div class="field">
-        Wind directions
+        <span id="compass-label">Wind directions</span>
         <div id="compass" class="compass"></div>
       </div>
-      <div class="checks-row">
+      <!-- Surf spots only (sitesForm.js) -->
+      <div class="field" id="offshore-field" hidden>
+        Offshore wind directions
+        <div id="offshore-compass" class="compass"></div>
+        <p class="hint">Tap the directions the wind comes from when it blows offshore here (from the land out to sea).</p>
+      </div>
+      <label class="field" id="surfline-field" hidden>
+        Surfline page (optional)
+        <input name="surfline" type="url" placeholder="https://www.surfline.com/surf-report/…">
+      </label>
+      <div class="checks-row" id="beach-field">
         <label><input name="beach" type="checkbox"> On or right by a beach (show tide times)</label>
       </div>
       <div class="field tide-rule">

@@ -61,7 +61,7 @@ function showHourDetails(siteId, key) {
       <div id="compare-models"><p class="hint">Loading…</p></div>
     </div>
     <p class="links">
-      ${surf ? `<a href="${esc(surflineUrl(site))}" target="_blank" rel="noopener">${site.surfline ? "Open this spot on Surfline ↗" : "Find this spot on Surfline ↗"}</a><br>` : ""}
+      ${surf ? `<a href="${esc(surflineUrl(site))}" target="_blank" rel="noopener">${isSurflineUrl(site.surfline) ? "Open this spot on Surfline ↗" : "Find this spot on Surfline ↗"}</a><br>` : ""}
       <a href="${windyPointUrl(site)}" target="_blank" rel="noopener">Open this spot's forecast on Windy ↗</a>
     </p>
     <div class="details-site-actions">

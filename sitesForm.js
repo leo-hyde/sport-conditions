@@ -4,7 +4,8 @@ const siteForm = document.getElementById("site-form");
 const siteDialog = document.getElementById("site-dialog");
 
 let editingId = null;  // the id of the site being edited, or null when adding
-let pickedDirections = {};  // compass point → "good", "ok" or "no"
+let pickedDirections = {};  // compass point → "good", "ok" or "no" (wind, or swell for surf spots)
+let pickedOffshore = {};  // surf spots: compass point → "good" (offshore) or "no"
 let foundPlaces = [];  // the latest place search results
 let fromGuide = false;  // true if the site was picked from the site guide
 
@@ -31,8 +32,22 @@ function openSiteForm(siteId, place = null) {
   siteForm.beach.checked = Boolean(site && site.beach);
   showTideRule(site && site.tideRule);
   pickedDirections = directionRatings(site || { goodDirections: [], okDirections: [] });
+  showSurfFields(site);
   drawCompass();
   siteDialog.showModal();
+}
+
+// Surf spots have swell directions (not wind), offshore wind directions and a
+// Surfline link, and are always on a beach.
+function showSurfFields(site) {
+  const surf = state.sport === "surfing";
+  document.getElementById("compass-label").textContent = surf ? "Swell directions" : "Wind directions";
+  document.getElementById("offshore-field").hidden = !surf;
+  document.getElementById("surfline-field").hidden = !surf;
+  document.getElementById("beach-field").hidden = surf;
+  siteForm.surfline.value = (site && site.surfline) || "";
+  pickedOffshore = directionRatings({ goodDirections: (site && site.offshore) || [], okDirections: [] });
+  drawOffshoreCompass();
 }
 
 // ---------- Compass picker ----------
@@ -46,6 +61,18 @@ function drawCompass() {
       <span><i style="background: var(--surface-2); border: 1px solid var(--border)"></i>No</span>
     </div>`;
 }
+
+// The offshore compass is just on (green) or off.
+function drawOffshoreCompass() {
+  document.getElementById("offshore-compass").innerHTML = compassSvg(pickedOffshore, { labels: true, size: 220 });
+}
+
+document.getElementById("offshore-compass").addEventListener("click", event => {
+  const wedge = event.target.closest("[data-dir]");
+  if (!wedge) return;
+  pickedOffshore[wedge.dataset.dir] = pickedOffshore[wedge.dataset.dir] === "good" ? "no" : "good";
+  drawOffshoreCompass();
+});
 
 // Tapping a wedge cycles it: no → OK → good → no.
 document.getElementById("compass").addEventListener("click", event => {
@@ -77,9 +104,9 @@ async function searchPlaces() {
   const results = document.getElementById("search-results");
   if (!query) return;
 
-  // Flying sites from the site guide come first: choosing one fills in its
-  // wind directions too. Then towns and places from Open-Meteo.
-  const sites = SITE_LIBRARY
+  // Sites from the guide come first (surf spots when surfing): choosing one
+  // fills in its directions too. Then towns and places from Open-Meteo.
+  const sites = (state.sport === "surfing" ? SURF_SPOTS : SITE_LIBRARY)
     .filter(site => site.name.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 5)
     .map(site => ({ site }));
@@ -103,7 +130,7 @@ async function searchPlaces() {
     ? '<p class="hint">Nothing found. Try a nearby town.</p>'
     : foundPlaces.map(({ site, place }, i) => {
         if (site) {
-          return `<button type="button" data-place="${i}">🪂 ${esc(site.name)}
+          return `<button type="button" data-place="${i}">${currentSport().icon} ${esc(site.name)}
             <span class="muted">site guide · good ${site.goodDirections.join(" ") || "–"}</span></button>`;
         }
         const area = [place.admin1, place.country].filter(Boolean).join(", ");
@@ -135,6 +162,7 @@ document.getElementById("search-results").addEventListener("click", event => {
     showTideRule(site.tideRule || (site.notHighTide ? { mode: "avoid", water: "high", hours: 1.5 } : null));
     pickedDirections = directionRatings(site);
     drawCompass();
+    if (state.sport === "surfing") showSurfFields(site);
   } else {
     siteForm.lat.value = place.latitude.toFixed(4);
     siteForm.lon.value = place.longitude.toFixed(4);
@@ -150,9 +178,16 @@ siteForm.addEventListener("submit", async event => {
 
   const goodDirections = COMPASS.filter(point => pickedDirections[point] === "good");
   const okDirections = COMPASS.filter(point => pickedDirections[point] === "ok");
+  const surf = state.sport === "surfing";
+  const error = document.getElementById("site-error");
   if (goodDirections.length + okDirections.length === 0) {
-    const error = document.getElementById("site-error");
-    error.textContent = "Tap the compass to pick at least one wind direction.";
+    error.textContent = `Tap the compass to pick at least one ${surf ? "swell" : "wind"} direction.`;
+    error.hidden = false;
+    return;
+  }
+  const surfline = siteForm.surfline.value.trim();
+  if (surf && surfline && !isSurflineUrl(surfline)) {
+    error.textContent = "The Surfline page should start with https://www.surfline.com/";
     error.hidden = false;
     return;
   }
@@ -164,13 +199,17 @@ siteForm.addEventListener("submit", async event => {
     lon: Number(siteForm.lon.value),
     goodDirections,
     okDirections,
-    beach: siteForm.beach.checked,
+    beach: surf || siteForm.beach.checked,
     // "Added by you" unless it came from the site guide, so your own sites
     // are easy to find (and tidy up) later.
     custom: editingId ? Boolean(state.sites.find(other => other.id === editingId).custom) : !fromGuide,
     tideRule: pickedTideRule(),
     sport: state.sport,
   };
+  if (surf) {
+    site.offshore = COMPASS.filter(point => pickedOffshore[point] === "good");
+    site.surfline = surfline;
+  }
 
   if (editingId) {
     const index = state.sites.findIndex(existing => existing.id === editingId);

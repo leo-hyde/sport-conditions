@@ -99,9 +99,17 @@ function sizeWords(feet) {
   return "well overhead";
 }
 
+// Only real Surfline page addresses are used as links (so a typed or synced
+// address can't be something harmful, like a "javascript:" link).
+function isSurflineUrl(text) {
+  return /^https:\/\/(www\.)?surfline\.com\//.test(text || "");
+}
+
 // The spot's Surfline page if we have its address; otherwise a search for it.
 function surflineUrl(site) {
-  return site.surfline || "https://www.google.com/search?q=" + encodeURIComponent(`Surfline ${site.name} surf report`);
+  return isSurflineUrl(site.surfline)
+    ? site.surfline
+    : "https://www.google.com/search?q=" + encodeURIComponent(`Surfline ${site.name} surf report`);
 }
 
 // ---------- Rating a surf hour ----------
