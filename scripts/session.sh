@@ -15,12 +15,17 @@
 # clutter main's history or republish the site. Because GitHub only accepts a push
 # that builds on the latest version of a branch, two devices can't both claim it.
 # Claude Code runs start, busy and check automatically (see .claude/settings.json).
+#
+# `start` also runs scripts/playbook-sync.sh (shared rules from claude-playbook), and
+# `busy` counts Leo's messages so Claude can suggest a fresh session when one gets long.
+# This file comes from github.com/leo-hyde/claude-playbook (shared/session.sh): edit it there.
 
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 0
 
 LOCK_BRANCH=session-lock
 STALE_HOURS=2  # a busy lock older than this was left behind by a crash
+COACH_EVERY=15 # remind Claude about session length every this many messages (a judgement call)
 
 # Which device is this? Cloud sessions (phone, web) set CLAUDE_CODE_REMOTE.
 if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || [ "$(uname -s)" != "Darwin" ]; then
@@ -78,12 +83,12 @@ write_lock() {  # state
 unsaved() { git status --porcelain; }
 unpushed() { git log --oneline origin/main..HEAD 2>/dev/null; }
 
-# Commits since STATUS.md was last changed.
+# Commits since STATUS.md was last changed (playbook syncs don't count).
 unlogged() {
   local last
   last=$(git log -1 --format=%H -- docs/STATUS.md)
   [ -z "$last" ] && return
-  git log --format=%h "$last"..HEAD -- . ":(exclude)docs/STATUS.md"
+  git log --format=%h --invert-grep --grep='^Playbook: ' "$last"..HEAD -- . ":(exclude)docs/STATUS.md"
 }
 
 # Bring in the latest main, whatever branch we're on.
@@ -109,12 +114,33 @@ cmd_start() {
   else
     echo "No other device is working. (The lock is claimed automatically when Leo sends a message.)"
   fi
+  [ -f scripts/playbook-sync.sh ] && bash scripts/playbook-sync.sh
   echo
   echo "--- Handover from docs/STATUS.md ---"
   sed -n '/^## Handover/,/^## Where we are/p' docs/STATUS.md | sed '$d'
 }
 
+# Count Leo's messages in this session (Claude Code passes the session id on stdin)
+# and every COACH_EVERY messages tell Claude, so it can suggest a fresh session.
+coach() {
+  local id file count path kb
+  id=$(printf '%s' "$1" | sed -n 's/.*"session_id" *: *"\([^"]*\)".*/\1/p' | head -1)
+  [ -n "$id" ] || return 0
+  mkdir -p .session
+  find .session -name 'messages-*' -mtime +7 -delete 2>/dev/null
+  file=.session/messages-$id
+  count=$(( $(cat "$file" 2>/dev/null || echo 0) + 1 ))
+  echo "$count" >"$file"
+  [ $((count % COACH_EVERY)) -eq 0 ] || return 0
+  path=$(printf '%s' "$1" | sed -n 's/.*"transcript_path" *: *"\([^"]*\)".*/\1/p' | head -1)
+  kb=$( [ -f "$path" ] && echo $(( $(wc -c <"$path") / 1024 )) || echo "?")
+  echo "COACH: this session has had $count of Leo's messages (transcript ${kb} KB). Each message re-reads all of it."
+  echo "COACH: at the next natural break, suggest wrapping up: update docs/STATUS.md and give Leo a starter prompt for a fresh session (see 'Coaching' in .claude/rules/playbook.md)."
+}
+
 cmd_busy() {
+  local input=""; [ -t 0 ] || input=$(cat)
+  coach "$input"
   pull_main
   fetch_lock
   local busy
@@ -136,7 +162,7 @@ cmd_check() {
   [ -n "$(unsaved)" ] && problems="$problems
 - Uncommitted changes. Commit them."
   [ -n "$(unlogged)" ] && problems="$problems
-- Work committed since docs/STATUS.md was last updated. Update STATUS.md (Handover block, session log) and commit."
+- Work committed since docs/STATUS.md was last updated. Update STATUS.md (Handover block, where we are; decisions in docs/decisions.md) and commit."
   git fetch -q origin main 2>/dev/null
   [ -n "$(unpushed)" ] && problems="$problems
 - Commits not on GitHub main. Push with: git push origin HEAD:main (or merge this branch into main and push)."
