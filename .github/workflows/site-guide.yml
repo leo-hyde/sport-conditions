@@ -1,17 +1,18 @@
-# Whenever data/sites.csv changes (including edits made on github.com),
-# GitHub checks it for mistakes, rebuilds sites.js, saves it, and republishes
+# Whenever data/sites.csv or data/surf-spots.csv changes (including edits made
+# on github.com), GitHub checks them for mistakes, rebuilds sites.js and
+# surfSpots.js, saves them, and republishes
 # the live site. If the check finds a mistake, this run fails and GitHub emails
-# you; sites.js isn't changed.
+# you; nothing is changed.
 
 name: Build site guide
 
 on:
   push:
     branches: [main]
-    paths: ["data/sites.csv"]
+    paths: ["data/sites.csv", "data/surf-spots.csv"]
 
 permissions:
-  contents: write  # to save the rebuilt sites.js
+  contents: write  # to save the rebuilt files
   pages: write  # to republish the live site
 
 jobs:
@@ -24,18 +25,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check data/sites.csv and build sites.js
+      - name: Check the CSVs and build sites.js and surfSpots.js
         run: python3 tools/build_sites.py
 
-      - name: Save sites.js if it changed
+      - name: Save the files if they changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add sites.js
+          git add sites.js surfSpots.js
           if git diff --cached --quiet; then
-            echo "sites.js already up to date"
+            echo "Already up to date"
           else
-            git commit -m "Rebuild sites.js from data/sites.csv"
+            git commit -m "Rebuild the site guides from data/*.csv"
             git push
           fi
 
