@@ -110,5 +110,12 @@ it's done. Put it in a code block so Leo can copy it on his phone.
   On the Mac the playbook is `~/.claude/skills/new-app`; in a cloud session,
   attach `leo-hyde/claude-playbook` (the `add_repo` tool) and clone it next to
   this project. Commit and push it to main like any project.
+- **The playbook is public.** Before committing to it, check the change for
+  anything that shouldn't be public: secrets or keys, email addresses, names
+  of real people, Leo's CV, job search or employers, health, money, private
+  repo contents, internal web addresses. If there's anything like that, or
+  you're unsure, **stop and tell Leo**: quote the exact lines and ask before
+  pushing. Write lessons in general terms ("a private repo's site published
+  its docs folder"), not with the project's private details.
 - Project-only lessons go in this project's CLAUDE.md or docs.
 - Every project picks up playbook changes at its next session start.
