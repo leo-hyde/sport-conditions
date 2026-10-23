@@ -166,10 +166,11 @@
     <form id="settings-form" class="dialog-inner settings">
       <h2 id="settings-title">Settings</h2>
 
+      <!-- Sections marked data-sport only show for that sport (settings.js) -->
       <section class="settings-section">
-        <h3>Wind</h3>
+        <h3>Units</h3>
         <label class="field">
-          Speed unit
+          Wind speed unit
           <select name="units" class="pill-select">
             <option value="mph">mph</option>
             <option value="kmh">km/h</option>
@@ -177,6 +178,10 @@
             <option value="ms">m/s</option>
           </select>
         </label>
+      </section>
+
+      <section class="settings-section" data-sport="parakiting">
+        <h3>Wind</h3>
         <div class="two-cols">
           <fieldset>
             <legend><i class="dot good"></i>Good (<span class="unit-label">mph</span>)</legend>
@@ -197,7 +202,7 @@
         </div>
       </section>
 
-      <section class="settings-section">
+      <section class="settings-section" data-sport="parakiting">
         <h3>Rain</h3>
         <label class="field">
           Rain cutoff (mm per hour)
@@ -206,8 +211,59 @@
         <p class="hint">Hours with this much rain or more are rated No.</p>
       </section>
 
+      <section class="settings-section" data-sport="surfing">
+        <h3>Waves</h3>
+        <div class="two-cols">
+          <fieldset>
+            <legend><i class="dot good"></i>Good (ft)</legend>
+            <div class="range-inputs">
+              <input name="waveGoodMin" type="number" min="0" max="60" step="0.5" required aria-label="Good waves minimum">
+              <span>to</span>
+              <input name="waveGoodMax" type="number" min="0" max="60" step="0.5" required aria-label="Good waves maximum">
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend><i class="dot ok"></i>OK (ft)</legend>
+            <div class="range-inputs">
+              <input name="waveOkMin" type="number" min="0" max="60" step="0.5" required aria-label="OK waves minimum">
+              <span>to</span>
+              <input name="waveOkMax" type="number" min="0" max="60" step="0.5" required aria-label="OK waves maximum">
+            </div>
+          </fieldset>
+        </div>
+        <div class="two-cols">
+          <label class="field">
+            <span><i class="dot good"></i>Good period: at least (s)</span>
+            <input name="periodGood" type="number" min="0" max="30" required>
+          </label>
+          <label class="field">
+            <span><i class="dot ok"></i>OK period: at least (s)</span>
+            <input name="periodOk" type="number" min="0" max="30" required>
+          </label>
+        </div>
+        <p class="hint">Wave heights are open-sea forecasts in feet, like Surfline's. Anything
+          outside the OK range is No. Period is the time between waves: longer means cleaner, more powerful surf.</p>
+      </section>
+
+      <section class="settings-section" data-sport="surfing">
+        <h3>Wind for surfing (<span class="unit-label">mph</span>)</h3>
+        <label class="field">
+          <span><i class="dot good"></i>Good in any direction, up to</span>
+          <input name="windLight" type="number" min="0" max="99" required>
+        </label>
+        <label class="field">
+          <span><i class="dot ok"></i>OK onshore or cross-shore, up to</span>
+          <input name="windOk" type="number" min="0" max="99" required>
+        </label>
+        <label class="field">
+          <span><i class="dot good"></i>Good offshore, up to</span>
+          <input name="offshoreMax" type="number" min="0" max="99" required>
+        </label>
+        <p class="hint">Each spot's offshore directions are set on the spot (Edit).</p>
+      </section>
+
       <section class="settings-section">
-        <h3>Flying day</h3>
+        <h3>Daylight hours</h3>
         <label class="field">
           From and to
           <select name="daylight" class="pill-select">
@@ -314,6 +370,7 @@
   <script src="sun.js"></script>
   <script src="tides.js"></script>
   <script src="compass.js"></script>
+  <script src="surf.js"></script>
   <script src="storage.js"></script>
   <script src="sync.js"></script>
   <script src="details.js"></script>

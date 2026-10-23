@@ -7,8 +7,8 @@
 // Everything the app knows, in one place.
 const state = {
   sites: loadSites(),
-  settings: loadSettings(),
   sport: loadSaved("sc.sport", "parakiting"),  // which sport (see sports.js)
+  settings: loadSettings(loadSaved("sc.sport", "parakiting")),  // that sport's settings
   model: loadSaved("sc.model", MODELS[0].id),  // which forecast model
   forecastCache: {},  // model id → { site id → list of hours }
   tides: {},  // site id → tides (beach sites only)
@@ -374,6 +374,7 @@ sportSelect.value = state.sport;
 sportSelect.addEventListener("change", () => {
   state.sport = sportSelect.value;
   save("sc.sport", state.sport);
+  state.settings = loadSettings(state.sport);
   render();
 });
 

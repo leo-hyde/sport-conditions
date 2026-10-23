@@ -37,7 +37,14 @@ async function pushSync() {
     const response = await fetch(`${SYNC_URL}?code=${code}`, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ sites: state.sites, settings: state.settings, savedAt: new Date().toISOString() }),
+      // "settings" is parakiting's (as before there were other sports);
+      // "sportSettings" has every sport's.
+      body: JSON.stringify({
+        sites: state.sites,
+        settings: loadSettings("parakiting"),
+        sportSettings: Object.fromEntries(SPORTS.map(sport => [sport.id, loadSettings(sport.id)])),
+        savedAt: new Date().toISOString(),
+      }),
     });
     syncStatus = response.ok ? `Saved to sync at ${time}` : `Sync isn't working (${response.status})`;
   } catch {
@@ -58,10 +65,11 @@ async function pullSync() {
       return false;
     }
     state.sites = saved.sites;
-    state.settings = { ...DEFAULT_SETTINGS, ...saved.settings };
     // Save on this device directly (not saveSites), so it doesn't send them straight back.
     save("sc.sites", state.sites);
-    save("sc.settings", state.settings);
+    save("sc.settings", saved.settings);
+    for (const [sport, settings] of Object.entries(saved.sportSettings || {})) save(settingsKey(sport), settings);
+    state.settings = loadSettings(state.sport);
     syncStatus = "Up to date";
     return true;
   } catch {

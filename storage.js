@@ -28,12 +28,22 @@ function save(key, value) {
   }
 }
 
-function loadSettings() {
-  return { ...DEFAULT_SETTINGS, ...loadSaved("sc.settings", {}) };
+// Each sport has its own settings. Parakiting's are saved as "sc.settings"
+// (as they were before there were other sports); the others as e.g.
+// "sc.settings.surfing". SURF_DEFAULTS is in surf.js.
+const SPORT_DEFAULTS = { parakiting: DEFAULT_SETTINGS, surfing: SURF_DEFAULTS };
+
+function settingsKey(sport) {
+  return sport === "parakiting" ? "sc.settings" : `sc.settings.${sport}`;
 }
 
+function loadSettings(sport = "parakiting") {
+  return { ...SPORT_DEFAULTS[sport], ...loadSaved(settingsKey(sport), {}) };
+}
+
+// Saves the settings of the sport you're looking at.
 function saveSettings(settings) {
-  save("sc.settings", settings);
+  save(settingsKey(state.sport), settings);
   queueSync();  // send to your other devices, if sync is on (sync.js)
 }
 
