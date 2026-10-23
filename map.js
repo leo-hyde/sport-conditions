@@ -40,11 +40,7 @@ function setupMap() {
   ratedLibraryLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
 
-  if (state.sites.length > 0) {
-    map.fitBounds(state.sites.map(site => [site.lat, site.lon]), { padding: [40, 40], maxZoom: 11 });
-  } else {
-    map.setView([50.4, -5.1], 9);
-  }
+  fitMapToSites();
   addMapKey();
   drawLibrary();
   setupStations();
@@ -72,6 +68,17 @@ function setupMap() {
   });
 }
 
+// Shows all your sites for the current sport (or Cornwall, if there are none).
+function fitMapToSites() {
+  if (!map) return;
+  const sites = sportSites();
+  if (sites.length > 0) {
+    map.fitBounds(sites.map(site => [site.lat, site.lon]), { padding: [40, 40], maxZoom: 12 });
+  } else {
+    map.setView([50.4, -5.1], 9);
+  }
+}
+
 // A small key in the corner explaining the different markers. It starts
 // closed on phones, where space is tight.
 function addMapKey() {
@@ -94,7 +101,7 @@ function addMapKey() {
 // Every hour shown anywhere, in order, e.g. ["2026-10-21T08", …].
 function mapHourKeys() {
   const keys = new Set();
-  for (const site of state.sites) {
+  for (const site of sportSites()) {
     for (const hours of Object.values(siteDays(site))) {
       hours.forEach(hour => keys.add(hour.key));
     }
@@ -142,7 +149,7 @@ function drawTime() {
 function bestRatings() {
   const best = {};
   const order = { no: 0, ok: 1, good: 2 };
-  for (const site of state.sites) {
+  for (const site of sportSites()) {
     for (const hours of Object.values(siteDays(site))) {
       for (const hour of hours) {
         if (!best[hour.key] || order[hour.rating] > order[best[hour.key]]) best[hour.key] = hour.rating;
@@ -229,17 +236,20 @@ function stepMapTime(steps) {
 
 function drawPins() {
   const date = state.mapTime.slice(0, 10);
-  const sun = state.sites[0] ? flyingWindow(state.sites[0], date, state.settings) : null;
+  const sun = sportSites()[0] ? flyingWindow(sportSites()[0], date, state.settings) : null;
   document.getElementById("map-time").innerHTML =
     `${dayLabel(date)} · ${state.mapTime.slice(11)}:00` +
     (sun ? `<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)} · ${tideRange(date)} tides</small>` : "");
 
   pinLayer.clearLayers();
-  for (const site of state.sites) {
-    const hour = (state.forecasts[site.id] || []).find(hour => hour.key === state.mapTime);
+  for (const site of sportSites()) {
+    const forecastHour = (state.forecasts[site.id] || []).find(hour => hour.key === state.mapTime);
+    const hour = forecastHour && withWaves(site, forecastHour);
     // Your sites are big pins with a gold ring and star, so they stand out.
+    // They show the wind speed, or for surf spots the wave height.
+    const shown = hour && hourValue(site, hour);
     const html = hour
-      ? `<div class="map-pin mine ${rateHour(hour, site, state.settings, state.tides[site.id])}">${arrow(hour.degrees)}<span>${hour.speed}</span><small>${unit().label}</small><i class="pin-star">★</i></div>`
+      ? `<div class="map-pin mine ${rateHour(hour, site, state.settings, state.tides[site.id])}">${shown.degrees === null ? "" : arrow(shown.degrees)}<span>${shown.value}</span><small>${shown.unit}</small><i class="pin-star">★</i></div>`
       : '<div class="map-pin mine night">–<i class="pin-star">★</i></div>';
 
     L.marker([site.lat, site.lon], {
@@ -258,6 +268,7 @@ function drawPins() {
 // Guide sites that aren't already yours and aren't closed, with their place
 // in SITE_LIBRARY (the "index").
 function guideSites() {
+  if (state.sport !== "parakiting") return [];  // the site guide is for flying sites
   const simple = name => name.toLowerCase().replace(/\s/g, "");
   const mine = new Set(state.sites.map(site => simple(site.name)));
   return SITE_LIBRARY
@@ -311,7 +322,7 @@ function drawRatedLibrary() {
 // all in one request, then redraws them.
 async function loadLibraryForecasts() {
   const note = document.getElementById("library-note");
-  if (!map || !document.getElementById("show-library").checked) {
+  if (!map || !document.getElementById("show-library").checked || guideSites().length === 0) {
     note.textContent = "";
     return;
   }

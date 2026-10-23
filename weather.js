@@ -194,6 +194,7 @@ function checkTide(hour, site, settings, tides) {
 
 // `tides` is optional: only beach sites have them.
 function checkHour(hour, site, settings, tides) {
+  if (site.sport === "surfing") return checkSurfHour(hour, site, settings, tides);  // surf.js
   const checks = [checkDirection(hour, site), checkSpeed(hour, settings), checkRain(hour, settings)];
   const tide = checkTide(hour, site, settings, tides);
   return tide ? [...checks, tide] : checks;

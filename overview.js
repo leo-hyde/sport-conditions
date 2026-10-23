@@ -6,7 +6,7 @@ function renderOverview() {
   });
 
   const box = document.getElementById("overview");
-  if (state.sites.length === 0) {
+  if (sportSites().length === 0) {
     box.innerHTML = '<p class="muted">No sites yet. Add one in the Sites tab, or pick from the map.</p>';
     return;
   }
@@ -38,7 +38,7 @@ function nextGoodSession() {
     }
   }
   if (sessions.length === 0) {
-    return `<div class="next-good none"><strong>Nothing flyable in the next 7 days</strong>
+    return `<div class="next-good none"><strong>Nothing ${state.sport === "surfing" ? "surfable" : "flyable"} in the next 7 days</strong>
       <span class="muted">at your sites. Check the map for other sites nearby.</span></div>`;
   }
   // The earliest session with good hours; if there are none, the earliest OK one.
@@ -46,18 +46,26 @@ function nextGoodSession() {
   const best = pick(sessions.filter(s => s.good > 0)) || pick(sessions);
   const rating = best.good > 0 ? "good" : "ok";
   const amount = best.good > 0 ? `${best.good}h good` : `${best.hours.length}h OK`;
+  const surf = best.site.sport === "surfing";
+  const details = surf
+    ? `${amount} · ${range(best.hours.map(hour => Number(feetText(hour.wave.feet))))} ft · ${range(best.hours.map(hour => hour.wave.period))} s`
+    : `${amount} · ${[...new Set(best.hours.map(hour => hour.direction))].join("/")} · ${speedRange(best.hours)} ${unit().label}`;
   return `<button class="next-good ${rating}" data-goto-site="${best.site.id}">
-    <span class="next-label">Next ${rating === "good" ? "good" : "flyable"} session</span>
+    <span class="next-label">Next ${rating === "good" ? "good" : surf ? "surfable" : "flyable"} session</span>
     <strong>${dayLabel(best.hours[0].date)} ${shortSpan(best.hours)} · ${esc(best.site.name)}</strong>
-    <span>${amount} · ${[...new Set(best.hours.map(hour => hour.direction))].join("/")} · ${speedRange(best.hours)} ${unit().label}</span>
+    <span>${details}</span>
   </button>`;
 }
 
 // "12–16": the lowest to highest wind speed over some hours.
 function speedRange(hours) {
-  const speeds = hours.map(hour => hour.speed);
-  const low = Math.min(...speeds);
-  const high = Math.max(...speeds);
+  return range(hours.map(hour => hour.speed));
+}
+
+// "3–4.5": the lowest to highest of some numbers.
+function range(numbers) {
+  const low = Math.min(...numbers);
+  const high = Math.max(...numbers);
   return low === high ? `${low}` : `${low}–${high}`;
 }
 
@@ -69,7 +77,7 @@ function shortSpan(hours) {
 
 // Every site with its rated days, worked out once per drawing.
 function ratedSites() {
-  return state.sites.map(site => ({ site, days: siteDays(site) }));
+  return sportSites().map(site => ({ site, days: siteDays(site) }));
 }
 
 // All the dates in the forecast, e.g. ["2026-10-21", "2026-10-22", …].
@@ -144,7 +152,7 @@ function overviewByHour() {
 
     const columns = `minmax(76px, 140px) repeat(${hourLabels.length}, minmax(0, 1fr))`;  // equal-width hours
     return `<div class="heatmap-day">
-      <h3>${dayLabel(date)} <small class="muted">numbers are wind in ${unit().label}</small></h3>
+      <h3>${dayLabel(date)} <small class="muted">numbers are ${state.sport === "surfing" ? "wave height in ft" : `wind in ${unit().label}`}</small></h3>
       <div class="heatmap" style="grid-template-columns: ${columns}">${cells}</div>
     </div>`;
   }).join("");

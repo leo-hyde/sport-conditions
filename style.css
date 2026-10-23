@@ -1113,3 +1113,6 @@ dialog { overflow: auto; overscroll-behavior: contain; }
 .tide-rule select { flex: 1 1 180px; }
 label.inline { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 label.inline input { width: 76px; }
+.tag.link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { white-space: nowrap; }

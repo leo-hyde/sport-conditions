@@ -12,6 +12,7 @@ const state = {
   model: loadSaved("sc.model", MODELS[0].id),  // which forecast model
   forecastCache: {},  // model id → { site id → list of hours }
   tides: {},  // site id → tides (beach sites only)
+  waves: {},  // site id → waves (surf spots only; see surf.js)
   updatedAt: null,
   failedSites: [],
   // The page reopens where you left it; the very first visit lands on
@@ -30,25 +31,31 @@ const state = {
 
 // ---------- Fetching ----------
 
-// Fetch one site's forecast (for the chosen model) and, if it's on a beach,
-// its tides. Failures are noted so the status line can mention them.
-async function loadSite(site, { tides = true } = {}) {
-  const [forecast, tideData] = await Promise.allSettled([
+// Fetch one site's forecast (for the chosen model); if it's on a beach, its
+// tides; and if it's a surf spot, its waves. `sea: false` skips the tides and
+// waves (they don't depend on the model). Failures are noted so the status
+// line can mention them.
+async function loadSite(site, { sea = true } = {}) {
+  const surf = site.sport === "surfing";
+  const [forecast, tideData, waveData] = await Promise.allSettled([
     fetchForecast(site, state.model),
-    tides && site.beach ? fetchTides(site) : Promise.resolve(null),
+    sea && site.beach ? fetchTides(site) : Promise.resolve(null),
+    sea && surf ? fetchWaves(site) : Promise.resolve(null),
   ]);
   if (forecast.status === "fulfilled") state.forecasts[site.id] = forecast.value;
-  else state.failedSites.push(site.name);
+  if (waveData.status === "fulfilled" && waveData.value) state.waves[site.id] = waveData.value;
+  if (forecast.status === "rejected" || waveData.status === "rejected") state.failedSites.push(site.name);
   if (tideData.status === "fulfilled" && tideData.value) state.tides[site.id] = tideData.value;
 }
 
-// Fetch everything again, for every site at the same time.
+// Fetch everything again, for every site of the current sport at the same
+// time. (Other sports' sites load when you switch to them.)
 async function refresh() {
   setStatus("Loading forecast…");
   document.getElementById("refresh").classList.add("spinning");
   state.failedSites = [];
   state.forecastCache = {};
-  await Promise.all(state.sites.map(site => loadSite(site)));
+  await Promise.all(sportSites().map(site => loadSite(site)));
   state.updatedAt = new Date();
   document.getElementById("refresh").classList.remove("spinning");
   render();
@@ -70,16 +77,23 @@ function retryFailedSoon() {
   }, 60000);
 }
 
-// Switching model only fetches that model's forecasts (tides don't change),
-// and only the first time: after that it's remembered.
+// Switching model only fetches that model's forecasts (tides and waves
+// don't change), and only the first time: after that it's remembered.
 async function changeModel(model) {
   state.model = model;
   save("sc.model", model);
-  const missing = state.sites.filter(site => !state.forecasts[site.id]);
+  await loadMissing({ sea: false });
+}
+
+// Fetches the current sport's sites that don't have a forecast yet, e.g.
+// after switching sport or model.
+async function loadMissing(options) {
+  const missing = sportSites().filter(site => !state.forecasts[site.id]);
   if (missing.length > 0) {
     setStatus("Loading forecast…");
     state.failedSites = [];
-    await Promise.all(missing.map(site => loadSite(site, { tides: false })));
+    await Promise.all(missing.map(site => loadSite(site, options)));
+    if (!state.updatedAt) state.updatedAt = new Date();
   }
   render();
 }
@@ -118,7 +132,8 @@ function siteDays(site) {
   const tides = state.tides[site.id];
   const windows = {};  // date → flying window, worked out once per day
 
-  for (const hour of state.forecasts[site.id] || []) {
+  for (const forecastHour of state.forecasts[site.id] || []) {
+    const hour = withWaves(site, forecastHour);  // surf spots also get that hour's waves (surf.js)
     if (!windows[hour.date]) windows[hour.date] = flyingWindow(site, hour.date, state.settings);
     const hourNum = Number(hour.hourOfDay);
     if (hourNum < windows[hour.date].start || hourNum > windows[hour.date].end) continue;
@@ -166,15 +181,26 @@ function arrow(degrees) {
   return `<span class="arrow" style="transform: rotate(${degrees}deg)">↓</span>`;
 }
 
+// The headline number for an hour: the wind speed, or for surf spots the
+// wave height (with the swell's direction for the arrow).
+function hourValue(site, hour) {
+  if (site.sport !== "surfing") return { value: hour.speed, unit: unit().label, degrees: hour.degrees };
+  if (!hour.wave) return { value: "–", unit: "ft", degrees: null };
+  return { value: feetText(hour.wave.feet), unit: "ft", degrees: hour.wave.degrees };
+}
+
 // One tappable block for one hour. The compact version (for the
-// By hour heatmap) shows just the speed.
+// By hour heatmap) shows just the speed (or wave height).
 function hourBlock(site, hour, { compact = false } = {}) {
-  const label = `${hour.hourOfDay}:00, ${hour.speed} ${unit().label} from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
-  // Compact blocks (Overview "By hour") only show a speed when the hour is
-  // flyable, so the good and OK times stand out.
+  const { value, unit: valueUnit, degrees } = hourValue(site, hour);
+  const label = site.sport === "surfing"
+    ? `${hour.hourOfDay}:00, ${value} ft waves, wind ${hour.speed} ${unit().label} from ${hour.direction}, ${RATING_TEXT[hour.rating]}`
+    : `${hour.hourOfDay}:00, ${hour.speed} ${unit().label} from ${hour.direction}, ${RATING_TEXT[hour.rating]}`;
+  // Compact blocks (Overview "By hour") only show a number when the hour is
+  // good or OK, so those times stand out.
   const inside = compact
-    ? `<span class="speed">${hour.rating === "no" ? "" : hour.speed}</span>`
-    : `<span class="time">${hour.hourOfDay}</span>${arrow(hour.degrees)}<span class="speed">${hour.speed}</span>`;
+    ? `<span class="speed">${hour.rating === "no" ? "" : value}</span>`
+    : `<span class="time">${hour.hourOfDay}</span>${degrees === null ? "" : arrow(degrees)}<span class="speed">${value}</span>`;
   return `<button class="hour ${hour.rating} ${hour.past ? "past" : ""}"
       data-site="${site.id}" data-key="${hour.key}" aria-label="${label}">${inside}</button>`;
 }
@@ -256,11 +282,11 @@ const expandedSites = new Set();  // ids of cards showing all days
 // One card per site, with one strip of hour blocks per day.
 function renderSiteCards() {
   const cards = document.getElementById("site-cards");
-  if (state.sites.length === 0) {
+  if (sportSites().length === 0) {
     cards.innerHTML = '<p class="muted">No sites yet. Add one, or pick from the map.</p>';
     return;
   }
-  cards.innerHTML = state.sites.map(site => {
+  cards.innerHTML = sportSites().map(site => {
     const tides = state.tides[site.id];
     const allDays = Object.entries(siteDays(site));
     const expanded = expandedSites.has(site.id);
@@ -292,8 +318,9 @@ function renderSiteCards() {
 
     // Right now, for beach sites: e.g. "🌊 Rising · HW 17:10".
     const tideTag = tides && tideNow(tides) ? `🌊 ${tideNow(tides)}` : "";
-    const tags = [site.custom && "Added by you", tideTag, tideRuleText(site.tideRule)].filter(Boolean)
-      .map(tag => `<span class="tag">${tag}</span>`).join("");
+    const tags = [site.custom && "Added by you", tideTag, tideRuleTag(site.tideRule)].filter(Boolean)
+      .map(tag => `<span class="tag">${tag}</span>`).join("")
+      + (site.sport === "surfing" ? `<a class="tag link" href="${esc(surflineUrl(site))}" target="_blank" rel="noopener">Surfline ↗</a>` : "");
     return `<article class="card site" id="site-${site.id}">
       <header class="card-head">
         <div class="site-title">
@@ -375,7 +402,9 @@ sportSelect.addEventListener("change", () => {
   state.sport = sportSelect.value;
   save("sc.sport", state.sport);
   state.settings = loadSettings(state.sport);
-  render();
+  if (state.sport === "surfing") addSurfStartersIfNone();  // surf.js
+  fitMapToSites();  // map.js
+  loadMissing();
 });
 
 // The forecast model picker.
@@ -399,6 +428,7 @@ showView(state.view);
 (async () => {
   await checkSyncLink();
   if (syncCode()) await pullSync();
+  if (state.sport === "surfing") addSurfStartersIfNone();
   render();
   refresh();
 })();

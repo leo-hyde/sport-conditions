@@ -76,9 +76,10 @@ function saveSites(sites) {
   queueSync();  // send to your other devices, if sync is on (sync.js)
 }
 
-// Copies of the starter sites, each given an id so we can edit them later.
+// Copies of the starter sites (and surf spots), each given an id so we can
+// edit them later.
 function starterSites() {
-  return STARTER_SITES.map(site => librarySiteCopy(site));
+  return [...STARTER_SITES.map(site => librarySiteCopy(site)), ...SURF_STARTERS.map(surfSiteCopy)];
 }
 
 // A copy of a site from the library, ready to add to your own sites.

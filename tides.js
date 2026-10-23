@@ -141,6 +141,12 @@ function tideRuleText(rule) {
   return `${rule.mode === "avoid" ? "Not" : "Only"} within ${rule.hours}h of ${rule.water} water`;
 }
 
+// The same, short enough for a tag on a site card: "Avoid low ±2h".
+function tideRuleTag(rule) {
+  if (!rule) return "";
+  return `${rule.mode === "avoid" ? "Avoid" : "Only"} ${rule.water} ±${rule.hours}h`;
+}
+
 // The stretches of a day (in hours, 0–24) a tide rule rules out.
 function tideNoGo(rule, turns) {
   const near = turns.filter(turn => turn.type === rule.water)

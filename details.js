@@ -8,8 +8,10 @@ const comparisons = {};
 
 function showHourDetails(siteId, key) {
   const site = state.sites.find(site => site.id === siteId);
-  const hour = (state.forecasts[siteId] || []).find(hour => hour.key === key);
-  if (!site || !hour) return;
+  const forecastHour = (state.forecasts[siteId] || []).find(hour => hour.key === key);
+  if (!site || !forecastHour) return;
+  const hour = withWaves(site, forecastHour);  // surf spots also get the waves (surf.js)
+  const surf = site.sport === "surfing";
 
   const tides = state.tides[siteId];
   const checks = checkHour(hour, site, state.settings, tides);
@@ -40,11 +42,11 @@ function showHourDetails(siteId, key) {
       </div>
       <span class="badge ${rating}">${RATING_TEXT[rating]}</span>
     </div>
-    <div class="stats">
+    <div class="stats">${surf ? surfStats(site, hour) : `
       ${stat("Wind", `${hour.speed} <small>${unit().label}</small>`)}
       ${stat("Gusts", `${hour.gusts} <small>${unit().label}</small>`)}
       ${stat("From", `${arrow(hour.degrees)} ${hour.direction}`)}
-      ${stat("Rain", `${hour.rain} <small>mm</small>`)}
+      ${stat("Rain", `${hour.rain} <small>mm</small>`)}`}
     </div>
     ${tide ? `<p class="tide-detail">🌊 Tide ${tide.rising ? "rising" : "falling"} (${tide.height.toFixed(1)} m${tides.approximate ? ", approx." : ""}) ·
       ${tideSummary(tides, hour.date)} · ${tideRange(hour.date)}<br><small>Tides: ${esc(tides.source)}</small></p>` : ""}
@@ -55,10 +57,11 @@ function showHourDetails(siteId, key) {
         </li>`).join("")}
     </ul>
     <div>
-      <h3 class="section-title">All forecasts for this hour</h3>
+      <h3 class="section-title">${surf ? "Wind from every forecast model" : "All forecasts for this hour"}</h3>
       <div id="compare-models"><p class="hint">Loading…</p></div>
     </div>
     <p class="links">
+      ${surf ? `<a href="${esc(surflineUrl(site))}" target="_blank" rel="noopener">${site.surfline ? "Open this spot on Surfline ↗" : "Find this spot on Surfline ↗"}</a><br>` : ""}
       <a href="${windyPointUrl(site)}" target="_blank" rel="noopener">Open this spot's forecast on Windy ↗</a>
     </p>
     <div class="details-site-actions">
@@ -80,6 +83,16 @@ document.getElementById("hour-dialog").addEventListener("keydown", event => {
   if (event.key === "ArrowLeft") buttons[0].click();
   if (event.key === "ArrowRight") buttons[1].click();
 });
+
+// The four tiles for a surf hour: waves, period, swell direction and wind.
+function surfStats(site, hour) {
+  const wind = stat("Wind", `${arrow(hour.degrees)} ${hour.speed} <small>${unit().label} ${hour.direction}${(site.offshore || []).includes(hour.direction) ? ", offshore" : ""}</small>`);
+  if (!hour.wave) return stat("Waves", "–") + wind;
+  return stat("Waves", `${feetText(hour.wave.feet)} <small>ft · ${sizeWords(hour.wave.feet)}</small>`)
+    + stat("Period", `${hour.wave.period} <small>s</small>`)
+    + stat("Swell from", `${arrow(hour.wave.degrees)} ${hour.wave.direction}`)
+    + wind;
+}
 
 function stat(label, value) {
   return `<div class="stat"><span>${label}</span><strong>${value}</strong></div>`;
