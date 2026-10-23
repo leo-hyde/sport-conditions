@@ -5,7 +5,7 @@ we rely on from outside, and where the weak spots are. Read this first to
 understand the code. Claude updates it whenever the structure changes.
 
 (The other documents: [SPEC.md](../SPEC.md) says *what* the app does,
-[DESIGN.md](../DESIGN.md) how it looks, [STATUS.md](STATUS.md) where we are
+[DESIGN.md](../DESIGN.md) how it looks, [STATUS.md](STATUS.md) where we are, [decisions.md](decisions.md) why
 and why decisions were made, [CHANGELOG.md](../CHANGELOG.md) what changed when.)
 
 ## The big picture
@@ -97,7 +97,8 @@ rules about the **site** (directions, tide rule) live on the site.
 | `worker/weather-proxy.js` | The Cloudflare Worker (deployed by Leo in Cloudflare) |
 | `tools/build_sites.py` | Checks the CSVs for mistakes and builds the guides |
 | `tools/preview.js` | Opens the app with made-up forecasts and saves a screenshot, for checking changes |
-| `scripts/session.sh`, `.claude/settings.json` | Keeping phone and Mac sessions in step (the lock) |
+| `scripts/session.sh`, `.claude/settings.json` | Keeping phone and Mac sessions in step (the lock); counting messages so Claude suggests fresh sessions |
+| `scripts/playbook-sync.sh`, `.claude/rules/playbook.md` | Leo's shared rules, copied from claude-playbook at each session start (don't edit here) |
 | `.github/workflows/site-guide.yml` | Rebuilds the guides on GitHub when a CSV changes |
 
 ## What's stored where
