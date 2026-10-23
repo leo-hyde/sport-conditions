@@ -29,7 +29,7 @@ function openSiteForm(siteId, place = null) {
   }
 
   siteForm.beach.checked = Boolean(site && site.beach);
-  siteForm.notHighTide.checked = Boolean(site && site.notHighTide);
+  showTideRule(site && site.tideRule);
   pickedDirections = directionRatings(site || { goodDirections: [], okDirections: [] });
   drawCompass();
   siteDialog.showModal();
@@ -55,6 +55,20 @@ document.getElementById("compass").addEventListener("click", event => {
   pickedDirections[wedge.dataset.dir] = next[pickedDirections[wedge.dataset.dir]];
   drawCompass();
 });
+
+// ---------- Tide rule ----------
+
+// The form shows a rule as e.g. "Not near low water" "within 2 h".
+function showTideRule(rule) {
+  siteForm.tideRule.value = rule ? `${rule.mode}-${rule.water}` : "";
+  siteForm.tideHours.value = rule ? rule.hours : 2;
+}
+
+function pickedTideRule() {
+  if (!siteForm.tideRule.value) return null;
+  const [mode, water] = siteForm.tideRule.value.split("-");
+  return { mode, water, hours: Number(siteForm.tideHours.value) || 2 };
+}
 
 // ---------- Place search ----------
 
@@ -118,7 +132,7 @@ document.getElementById("search-results").addEventListener("click", event => {
     siteForm.lat.value = site.lat;
     siteForm.lon.value = site.lon;
     siteForm.beach.checked = Boolean(site.beach);
-    siteForm.notHighTide.checked = Boolean(site.notHighTide);
+    showTideRule(site.tideRule || (site.notHighTide ? { mode: "avoid", water: "high", hours: 1.5 } : null));
     pickedDirections = directionRatings(site);
     drawCompass();
   } else {
@@ -154,7 +168,7 @@ siteForm.addEventListener("submit", async event => {
     // "Added by you" unless it came from the site guide, so your own sites
     // are easy to find (and tidy up) later.
     custom: editingId ? Boolean(state.sites.find(other => other.id === editingId).custom) : !fromGuide,
-    notHighTide: siteForm.notHighTide.checked,
+    tideRule: pickedTideRule(),
     sport: state.sport,
   };
 

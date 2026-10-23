@@ -292,7 +292,7 @@ function renderSiteCards() {
 
     // Right now, for beach sites: e.g. "🌊 Rising · HW 17:10".
     const tideTag = tides && tideNow(tides) ? `🌊 ${tideNow(tides)}` : "";
-    const tags = [site.custom && "Added by you", tideTag, site.notHighTide && "Not at high tide"].filter(Boolean)
+    const tags = [site.custom && "Added by you", tideTag, tideRuleText(site.tideRule)].filter(Boolean)
       .map(tag => `<span class="tag">${tag}</span>`).join("");
     return `<article class="card site" id="site-${site.id}">
       <header class="card-head">

@@ -126,10 +126,35 @@ function tideAt(tides, key) {
   return { height, rising: next !== undefined ? next > height : null };
 }
 
-// The high water (if any) within `windowHours` of this hour.
-function nearbyHighWater(tides, key, windowHours) {
+// The high or low water (type "high" or "low"), if any, within
+// `windowHours` of this hour.
+function nearbyTurn(tides, key, type, windowHours) {
   const at = hourNumber(key);
-  return tides.turns.find(turn => turn.type === "high" && Math.abs(turn.at - at) <= windowHours);
+  return tides.turns.find(turn => turn.type === type && Math.abs(turn.at - at) <= windowHours);
+}
+
+// A site's tide rule says when it works, e.g. { mode: "avoid", water: "low",
+// hours: 2 } is "not within 2 hours of low water"; mode "only" means only then.
+// Sites without one work at any tide.
+function tideRuleText(rule) {
+  if (!rule) return "";
+  return `${rule.mode === "avoid" ? "Not" : "Only"} within ${rule.hours}h of ${rule.water} water`;
+}
+
+// The stretches of a day (in hours, 0–24) a tide rule rules out.
+function tideNoGo(rule, turns) {
+  const near = turns.filter(turn => turn.type === rule.water)
+    .map(turn => [Math.max(turn.hours - rule.hours, 0), Math.min(turn.hours + rule.hours, 24)]);
+  if (rule.mode === "avoid") return near;
+  // "Only": everything between the allowed stretches.
+  const gaps = [];
+  let from = 0;
+  for (const [start, end] of near.sort((a, b) => a[0] - b[0])) {
+    if (start > from) gaps.push([from, start]);
+    from = Math.max(from, end);
+  }
+  if (from < 24) gaps.push([from, 24]);
+  return gaps;
 }
 
 // Spring tides come 1–2 days after a new or full moon, and neaps about a

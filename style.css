@@ -1107,3 +1107,9 @@ dialog { overflow: auto; overscroll-behavior: contain; }
   .feedback-on .toast { bottom: calc(148px + env(safe-area-inset-bottom)); }  /* clear of the buttons */
 }
 .hint a { color: var(--accent); }
+
+/* Site form: "within [2] h" next to the tide rule */
+.tide-rule .row { flex-wrap: wrap; align-items: center; }
+.tide-rule select { flex: 1 1 180px; }
+label.inline { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+label.inline input { width: 76px; }

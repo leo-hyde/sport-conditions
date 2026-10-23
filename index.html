@@ -224,15 +224,6 @@
       </section>
 
       <section class="settings-section">
-        <h3>Tides</h3>
-        <label class="field">
-          High tide buffer (hours either side of high water)
-          <input name="highTideWindow" type="number" min="0" max="6" step="0.5" required>
-        </label>
-        <p class="hint">For beach sites marked "doesn't work near high tide".</p>
-      </section>
-
-      <section class="settings-section">
         <h3>Sync between devices</h3>
         <div id="sync-box" class="sync-box"></div>
       </section>
@@ -292,7 +283,19 @@
       </div>
       <div class="checks-row">
         <label><input name="beach" type="checkbox"> On or right by a beach (show tide times)</label>
-        <label><input name="notHighTide" type="checkbox"> Doesn't work near high tide</label>
+      </div>
+      <div class="field tide-rule">
+        Tide (for beach sites)
+        <div class="row">
+          <select name="tideRule" class="pill-select" aria-label="Tide rule">
+            <option value="">Works at any tide</option>
+            <option value="avoid-low">Not near low water</option>
+            <option value="avoid-high">Not near high water</option>
+            <option value="only-low">Only near low water</option>
+            <option value="only-high">Only near high water</option>
+          </select>
+          <label class="inline">within <input name="tideHours" type="number" min="0.5" max="6" step="0.5" aria-label="Hours either side"> h</label>
+        </div>
       </div>
       <p id="site-error" class="error" hidden></p>
       <div class="dialog-actions">

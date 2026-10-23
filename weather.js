@@ -176,12 +176,20 @@ function checkRain(hour, settings) {
   return { rating: "good", text: "Dry" };
 }
 
-// Only for sites marked "doesn't work near high tide".
+// Only for sites with a tide rule (see tideRuleText in tides.js).
 function checkTide(hour, site, settings, tides) {
-  if (!site.notHighTide || !tides) return null;
-  const high = nearbyHighWater(tides, hour.key, settings.highTideWindow);
-  if (high) return { rating: "no", text: `Too close to high water (${formatHours(high.hours)})` };
-  return { rating: "good", text: `Clear of high tide (more than ${settings.highTideWindow}h away)` };
+  const rule = site.tideRule;
+  if (!rule || !tides) return null;
+  const near = nearbyTurn(tides, hour.key, rule.water, rule.hours);
+  const water = `${rule.water} water`;
+  if (rule.mode === "avoid") {
+    return near
+      ? { rating: "no", text: `Too close to ${water} (${formatHours(near.hours)})` }
+      : { rating: "good", text: `Clear of ${water} (more than ${rule.hours}h away)` };
+  }
+  return near
+    ? { rating: "good", text: `Near ${water} (${formatHours(near.hours)}), when it works` }
+    : { rating: "no", text: `Only works within ${rule.hours}h of ${water}` };
 }
 
 // `tides` is optional: only beach sites have them.

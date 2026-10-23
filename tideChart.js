@@ -33,7 +33,7 @@ function showTideDetails(siteId, date) {
     <div class="chart-legend">
       <span><i class="key-line tide"></i>Tide height</span>
       <span><i class="key-band fly"></i>Your flying hours</span>
-      ${site.notHighTide ? '<span><i class="key-band avoid"></i>Too near high tide</span>' : ""}
+      ${site.tideRule ? `<span><i class="key-band avoid"></i>Doesn't work: ${tideRuleText(site.tideRule).toLowerCase()}</span>` : ""}
     </div>
     <ul class="tide-events">${turns.map(turn => `<li class="${turn.type}">${describe(turn)}</li>`).join("")}</ul>
     <p class="hint">Source: ${esc(tides.source)}${tides.approximate ? " (heights are rough)" : ""}</p>`;
@@ -80,14 +80,11 @@ function tideChartSvg(site, tides, date) {
   const plotBottom = height - bottom;
   const plotRight = width - right;
 
-  // Shaded flying hours, and the times to avoid near high water.
+  // Shaded flying hours, and the times the site's tide rule rules out.
   const fly = flyingWindow(site, date, state.settings);
   let bands = `<rect class="band fly" x="${x(fly.start)}" width="${x(fly.end) - x(fly.start)}" y="${top}" height="${plotBottom - top}"/>`;
-  if (site.notHighTide) {
-    const buffer = state.settings.highTideWindow;
-    for (const turn of turns.filter(turn => turn.type === "high")) {
-      const from = Math.max(turn.hours - buffer, 0);
-      const to = Math.min(turn.hours + buffer, 24);
+  if (site.tideRule) {
+    for (const [from, to] of tideNoGo(site.tideRule, turns)) {
       bands += `<rect class="band avoid" x="${x(from)}" width="${x(to) - x(from)}" y="${top}" height="${plotBottom - top}"/>`;
     }
   }

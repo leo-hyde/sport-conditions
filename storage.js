@@ -9,7 +9,6 @@ const DEFAULT_SETTINGS = {
   rainCutoff: 1,  // mm per hour; this much or more rates the hour "no"
   daylight: "sun",  // "sun" = sunrise to sunset; "twilight" = first to last light
   extraMinutes: 0,  // added before the start and after the end of the day
-  highTideWindow: 1.5,  // hours either side of high water, for tide-sensitive sites
 };
 
 function loadSaved(key, fallback) {
@@ -52,6 +51,12 @@ function loadSites() {
     if (site.beach === undefined) site.beach = Boolean(match && match.beach);  // before "beach" replaced "coastal"
     if (site.custom === undefined) site.custom = !match;  // not in the guide, so you made it
     delete site.coastal;
+    // Before tide rules, sites could only be marked "not near high tide",
+    // with the hours set in Settings.
+    if (site.notHighTide) {
+      site.tideRule = { mode: "avoid", water: "high", hours: loadSaved("sc.settings", {}).highTideWindow || 1.5 };
+    }
+    delete site.notHighTide;
   }
   return saved;
 }
@@ -77,7 +82,7 @@ function librarySiteCopy(site) {
     okDirections: [...site.okDirections],
     beach: Boolean(site.beach),
     custom: false,  // from the site guide, not made by you
-    notHighTide: Boolean(site.notHighTide),
+    tideRule: site.tideRule || (site.notHighTide ? { mode: "avoid", water: "high", hours: 1.5 } : null),
     sport: "parakiting",
   };
 }

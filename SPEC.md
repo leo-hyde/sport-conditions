@@ -189,51 +189,60 @@ sites' map labels.
 
 ---
 
-## Version 1.3: Surfing (proposed, waiting for Leo's OK)
+## Version 1.3: Surfing (agreed 23 Oct)
 
-Leo wants surfing as a sport, with Surfline-quality information, combined
-with tides: e.g. "this spot doesn't work 2 hours either side of low tide".
+Surfing as a second sport, starting with the Newquay spots, rated good / OK /
+no like parakiting, with a link to Surfline for each spot.
 
 ### Where the data comes from
-- **Surfline: link to it, don't copy it.** Surfline has no public API. Its
-  forecasts are its paid product, its terms forbid copying them, and the
-  unofficial addresses some hobby apps use can change or be blocked at any
-  time. Publishing that on a public site would be risky. Instead each surf
-  spot gets an **"Open on Surfline"** button to that spot's page (like the
-  Windy link), so Surfline is one tap away.
-- **Waves: Open-Meteo's free Marine forecast** (no key, works from web
-  pages): swell height, period and direction, and wind-wave height, hourly
-  for 7 days. It's the same kind of model data Surfline starts from, without
-  Surfline's hand-tuning per spot. It counts towards the same 10,000-a-day
-  limit (one call per spot).
-- **Wind:** the forecasts we already fetch (5 models).
-- **Tides:** the Admiralty tide times we already fetch through the Worker.
+- **Surfline: linked, not copied.** It has no public API, its forecasts are
+  its paid product and its terms forbid copying them. Each spot has a
+  Surfline button: a search for that spot until its real Surfline page
+  address is pasted into the spot (Edit → Surfline link).
+- **Waves: Open-Meteo Marine** (free, no key): wave height, swell period and
+  swell direction, hourly for 7 days, from a point about 2.5 km out to sea
+  from each spot (so it's always a sea grid cell). Heights are open-water
+  model heights, not Surfline's hand-tuned breaking heights, so treat them
+  as a guide. One call per spot, counted in the same daily limit.
+- **Wind and tides:** as for parakiting (the chosen model; Admiralty tides).
 
-### Rating a surf hour (worst of these, like now)
+### Borrowed from Surfline
+- **Wave height in feet**, and the same plain descriptions of size
+  ("knee to waist", "head high"…) in the hour details.
+- Not their ratings (Poor / Fair / Good…): those are Surfline's own
+  forecasters' judgement per spot. We keep good / OK / no so every sport
+  works the same on the Overview and map.
+
+### Rating a surf hour (the worst of these)
 | Check | 🟢 Good | 🟡 OK | 🔴 No | Belongs to |
 |---|---|---|---|---|
-| Swell height | e.g. 0.8–2 m | e.g. 0.5–2.5 m | outside OK | sport (settings) |
-| Swell period | e.g. 10 s or more | e.g. 7 s or more | shorter | sport (settings) |
-| Swell direction | site's good directions | site's OK directions | anything else | site (compass) |
-| Wind | offshore, or under e.g. 8 mph | cross-shore, or under e.g. 15 mph | onshore and stronger | site (offshore directions) + sport (speeds) |
-| Tide | outside the spot's no-go window | | inside it | site (tide rule) |
+| Wave height (ft) | 3–6 | 2–8 | outside OK (at least 2 ft, as Leo asked) | sport settings |
+| Swell period (s) | 10+ | 7+ | shorter | sport settings |
+| Swell direction | site's good directions | site's OK directions | anything else | site (swell compass) |
+| Wind | offshore up to 25 mph, or any direction up to 6 mph | other directions up to 12 mph | stronger onshore / cross-shore | site (offshore directions) + sport settings |
+| Tide | outside the spot's tide window | | inside it | site (tide rule) |
+
+Daylight hours as for parakiting (Settings → Daylight). Rain doesn't count.
+
+### Tide rules (both sports, editable per site)
+Any tide · not within N h of low water · not within N h of high water ·
+only within N h of low water · only within N h of high water. Replaces
+"doesn't work near high tide" (old sites keep their setting).
+
+### Newquay spots (data/surf-spots.csv; locations and directions approximate, editable)
+Fistral North, Fistral South, Little Fistral, Towan, Great Western,
+Tolcarne, Lusty Glaze, Porth, Watergate Bay, Mawgan Porth, Crantock,
+Holywell Bay. Tide: not within 2 h of low water, except Watergate Bay (any
+tide), as Leo asked. The Cribbar is left out (big-wave reef only).
 
 ### Steps
 | # | Step | Status |
 |---|---|---|
-| 1 | **Tide rules for any site:** "doesn't work within X hours of low / high water" (replaces "not near high tide"; works for parakiting too) | proposed |
-| 2 | **Settings per sport:** surfing gets its own wave height and period ranges, kept separate from parakiting's wind ranges | proposed |
-| 3 | **Surf spots:** name, place, swell compass (good/OK swell directions), wind compass (offshore directions), tide rule, Surfline link. Starting with Leo's spots | proposed |
-| 4 | **Wave forecasts and surf ratings** on the Overview and site cards | proposed |
-| 5 | **Surf hour details:** swell, period, direction, wind, tide, and why it isn't green; "Open on Surfline" | proposed |
-| 6 | **Map:** surf spots rated by the time slider, with tide state (already there for beach sites) | proposed |
-
-### Questions for Leo
-- Which surf spots first, and for each: good swell directions, offshore wind
-  directions, and tide no-go windows?
-- What's good surf for you: wave height (metres or feet?) and period?
-- Is "Open on Surfline" plus our own ratings enough, or is there something
-  specific from Surfline you'd miss (e.g. surf cams, their star rating)?
+| 1 | Tide rules for any site | building |
+| 2 | Settings per sport (surfing: wave, period and wind ranges) | building |
+| 3 | Surf spots guide (`data/surf-spots.csv` → `surfSpots.js`) | building |
+| 4 | Wave forecasts, surf ratings, and showing them (Overview, cards, hour details, map) | building |
+| 5 | Site form for surf spots: swell compass, offshore wind compass, tide rule, Surfline link | building |
 
 ---
 

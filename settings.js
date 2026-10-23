@@ -1,5 +1,5 @@
 // The settings panel for the current sport: speed ranges, rain cutoff, flying day
-// (sunrise/sunset or twilight) and the high tide buffer.
+// (sunrise/sunset or twilight).
 
 const settingsForm = document.getElementById("settings-form");
 let formUnit = "mph";  // the unit the form's speed boxes are currently in
@@ -41,7 +41,6 @@ function fillSettingsForm(settings) {
   settingsForm.rainCutoff.value = settings.rainCutoff;
   settingsForm.daylight.value = settings.daylight;
   settingsForm.extraMinutes.value = settings.extraMinutes;
-  settingsForm.highTideWindow.value = settings.highTideWindow;
 }
 
 settingsForm.addEventListener("submit", event => {
@@ -54,7 +53,6 @@ settingsForm.addEventListener("submit", event => {
     rainCutoff: number("rainCutoff"),
     daylight: settingsForm.daylight.value,
     extraMinutes: number("extraMinutes"),
-    highTideWindow: number("highTideWindow"),
   };
 
   const error = document.getElementById("settings-error");
