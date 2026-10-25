@@ -10,7 +10,7 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 | Ended cleanly? | Yes, all pushed to `main` |
 | Work in progress | None |
 | Next step | Leo tries Surfing on the live site (sport menu → Surfing) and checks the Newquay spots. Then automated tests of the rating rules (BACKLOG) |
-| Check first | The plain-English catch-up `2026-10-24-plain-english` is done (25 Oct): the docs and the app's help text are reworded, with no change to facts or how the app works |
+| Check first | Playbook updated 25 Oct: each session start now also checks this repo's set-up (hooks, `.gitignore`, required files) and other repos attached to a cloud session. 5 open feedback issues (#4–#8) wait for "check feedback" |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
