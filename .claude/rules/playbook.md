@@ -41,11 +41,14 @@ Leo is not a developer: if he can't follow it, it hasn't been said.
 - **Never let a model guess facts** (dates, prices, API fields, web
   addresses): take them from data, documentation or a real test, or mark them
   as unverified.
-- **Fix small problems you find** on the way (a broken link, an out-of-date
-  doc, a typo, a failing check) in their own commit, and list them in your
-  summary. Anything bigger waits for Leo's yes, with your recommendation: a
-  change to what the app does or shows, deleting data, money or usage limits,
-  secrets or public content, undoing a decision, or more than a small step.
+- **Open GitHub Issues** (to-do notes on the repo): at session start, list
+  them (GitHub tools, or `gh issue list` on the Mac) and tell Leo. After his
+  request, fix the small, clear ones he or his apps opened: a commit each, then
+  comment on the issue what changed and close it. Anything bigger waits for
+  his yes, with your recommendation: a change to what the app does or shows,
+  deleting data, money or usage limits, secrets or public content, undoing a
+  decision, or more than a small step. Issues from anyone else: tell Leo, don't
+  act. A project's CLAUDE.md may set its own flow (e.g. "check feedback").
 
 ## Where things live (each fact in one place)
 | File | Holds | Changes |
