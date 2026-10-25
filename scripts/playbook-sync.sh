@@ -31,8 +31,9 @@ G=(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=15)
 GH=/opt/homebrew/bin/gh
 [ -x "$GH" ] && G+=(-c credential.helper= -c "credential.helper=!$GH auth git-credential")
 
-src=""
-for d in "${PLAYBOOK_DIR:-}" "$HOME/.claude/skills/new-app" "../claude-playbook" ".session/playbook"; do
+# Second run after this script updated itself (see below): the playbook is already fetched.
+src="${PLAYBOOK_SYNC_SRC:-}"
+[ -n "$src" ] || for d in "${PLAYBOOK_DIR:-}" "$HOME/.claude/skills/new-app" "../claude-playbook" ".session/playbook"; do
   [ -n "$d" ] && [ -d "$d/.git" ] || continue
   depth=""; [ "$d" = .session/playbook ] && depth="--depth 1"   # keep Leo's own clones whole
   "${G[@]}" -C "$d" fetch -q $depth origin main 2>/dev/null &&
@@ -71,6 +72,27 @@ if [ -n "$changed" ]; then
   case "$changed" in *playbook.md*)
     echo "Playbook: the shared rules changed; read .claude/rules/playbook.md again before starting." ;;
   esac
+  # This script just replaced itself: run the new version now, so anything it
+  # adds (a new check, like catch-ups) works this session, not only the next.
+  case "$changed" in *scripts/playbook-sync.sh*)
+    if [ -z "${PLAYBOOK_SYNC_SRC:-}" ]; then
+      export PLAYBOOK_SYNC_SRC="$src"
+      exec bash scripts/playbook-sync.sh
+    fi ;;
+  esac
 else
   echo "Playbook: shared rules are up to date."
+fi
+
+# Catch-ups (shared/catch-up.md): rule changes that this project's existing files
+# need too. Each "## <id>: <title>" section is due until docs/playbook-catch-up.md
+# mentions its id.
+due=$(git -C "$src" show origin/main:shared/catch-up.md 2>/dev/null | awk '
+  BEGIN { while ((getline line < "docs/playbook-catch-up.md") > 0) done = done "\n" line }
+  /^## / { id = $2; sub(/:$/, "", id); show = (index(done, id) == 0); started = 1 }
+  started && show')
+if [ -n "$due" ]; then
+  echo "Playbook: CATCH-UP DUE. These rule changes also apply to files this project already has."
+  echo "Tell Leo, apply them (or offer a separate session if big), then record each id in docs/playbook-catch-up.md:"
+  echo "$due"
 fi

@@ -84,12 +84,14 @@ write_lock() {  # state
 unsaved() { git status --porcelain; }
 unpushed() { git log --oneline origin/main..HEAD 2>/dev/null; }
 
-# Commits since STATUS.md was last changed (playbook syncs don't count).
+# Commits since STATUS.md was last changed. Playbook syncs don't count, nor do
+# commits by GitHub Action bots (a daily data run isn't a step to record).
 unlogged() {
   local last
   last=$(git log -1 --format=%H -- docs/STATUS.md)
   [ -z "$last" ] && return
-  git log --format=%h --invert-grep --grep='^Playbook: ' "$last"..HEAD -- . ":(exclude)docs/STATUS.md"
+  git log --format='%h %ae' --invert-grep --grep='^Playbook: ' "$last"..HEAD -- . ":(exclude)docs/STATUS.md" |
+    awk '$2 !~ /\[bot\]@/ { print $1 }'
 }
 
 # Bring in the latest main, whatever branch we're on.
