@@ -45,7 +45,9 @@ if [ -z "$src" ]; then
   "${G[@]}" clone -q --depth 1 --branch main "$URL" .session/playbook 2>/dev/null && src=.session/playbook
 fi
 if [ -z "$src" ]; then
-  echo "Playbook: couldn't reach github.com/leo-hyde/claude-playbook, so this session uses the copy already in .claude/rules/playbook.md."
+  last=$(git log -1 --format=%cs --grep='^Playbook: update' 2>/dev/null)
+  echo "PLAYBOOK NOT SYNCED: couldn't reach github.com/leo-hyde/claude-playbook, so this session uses the copy"
+  echo "already in .claude/rules/playbook.md (last updated ${last:-never}). Tell Leo; retry later with: bash scripts/playbook-sync.sh"
   exit 0
 fi
 
@@ -83,6 +85,68 @@ if [ -n "$changed" ]; then
 else
   echo "Playbook: shared rules are up to date."
 fi
+
+# Set-up (shared/setup.txt): what every project needs besides the copied files.
+# Missing .gitignore lines and hooks are added and committed; missing files are reported.
+setup=$(git -C "$src" show origin/main:shared/setup.txt 2>/dev/null | sed -n 's/^\([a-z]*\): *\(.*[^ ]\) *$/\1 \2/p')
+fixed=""
+want=$(printf '%s\n' "$setup" | sed -n 's/^gitignore //p')
+if [ -n "$want" ]; then
+  missing=$(printf '%s\n' "$want" | while IFS= read -r l; do grep -qxF -- "$l" .gitignore 2>/dev/null || echo "$l"; done)
+  if [ -n "$missing" ]; then
+    # Rewrite the whole block in order, so a "!" exception always comes after the line it excepts.
+    { [ -f .gitignore ] && grep -vxF -- "$want" .gitignore; printf '%s\n' "$want"; } >.gitignore.new
+    mv .gitignore.new .gitignore
+    fixed="$fixed .gitignore"
+  fi
+fi
+for f in $(printf '%s\n' "$setup" | sed -n 's/^hooks //p'); do
+  tmpl=$(mktemp) || break
+  git -C "$src" show "origin/main:$f" >"$tmpl" 2>/dev/null || { rm -f "$tmpl"; continue; }
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "SETUP: can't check the hooks in .claude/settings.json (no python3). Compare it with the playbook's $f."
+  else
+    mkdir -p .claude
+    # Adds each hook group whose commands aren't all there yet; keeps everything else.
+    python3 - "$tmpl" .claude/settings.json <<'PY'
+import json, sys
+tmpl, path = sys.argv[1], sys.argv[2]
+want = json.load(open(tmpl)).get("hooks", {})
+try:
+    settings = json.load(open(path))
+except FileNotFoundError:
+    settings = {}
+except ValueError:
+    print("SETUP: .claude/settings.json isn't valid JSON, so its hooks weren't checked. Fix it by hand.")
+    sys.exit(1)
+hooks = settings.setdefault("hooks", {})
+changed = False
+for event, groups in want.items():
+    have = [h.get("command") for g in hooks.get(event, []) for h in g.get("hooks", [])]
+    for g in groups:
+        if not all(h.get("command") in have for h in g.get("hooks", [])):
+            hooks.setdefault(event, []).append(g)
+            changed = True
+if changed:
+    with open(path, "w") as out:
+        json.dump(settings, out, indent=2)
+        out.write("\n")
+sys.exit(0 if changed else 1)
+PY
+    [ $? -eq 0 ] && fixed="$fixed .claude/settings.json"
+  fi
+  rm -f "$tmpl"
+done
+if [ -n "$fixed" ]; then
+  git add -f -- $fixed && git commit -q -m "Playbook: complete the project set-up ($(echo $fixed))" -- $fixed
+  echo "Playbook: added what the playbook's set-up needs to$fixed (committed, not yet pushed)."
+  case "$fixed" in *settings.json*)
+    echo "Playbook: new hooks start working from the next session. Until then, run any start step by hand." ;;
+  esac
+fi
+for f in $(printf '%s\n' "$setup" | sed -n 's/^file //p'); do
+  [ -e "$f" ] || echo "SETUP: $f is missing. Tell Leo and offer to add it (playbook reference/phone-and-computer.md)."
+done
 
 # Catch-ups (shared/catch-up.md): rule changes that this project's existing files
 # need too. Each "## <id>: <title>" section is due until docs/playbook-catch-up.md

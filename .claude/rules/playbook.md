@@ -114,9 +114,11 @@ exact lines and ask before pushing.
   (unless the project's CLAUDE.md names an Action that pushes: then pull and carry on).
 - **Commit and push after every working step**, plain-English messages. After
   every finished step, overwrite the STATUS.md Handover block and "Where we are".
-- Session start runs only in the repo the session opened in. If a repo you'll
-  change has no "Session start" output (several repos attached, or hooks
-  didn't fire), run `scripts/session.sh start` in it yourself.
+- Session start runs only in the repo the session opened in. Before changing
+  any other repo (attached later, or listed as "Also attached"), run
+  `scripts/session.sh start` in it; do the same if hooks didn't fire.
+- **Session start messages are for Leo**: tell him about `PLAYBOOK NOT SYNCED`,
+  `SETUP:`, `NOT SET UP` and `CATCH-UP DUE` lines, and offer to fix them.
 - **Every repo of Leo's follows the playbook**, small helper repos too (data
   stores, saved sources, tools). One without `.claude/rules/playbook.md` isn't
   set up: tell Leo and offer to set it up (playbook
@@ -156,8 +158,10 @@ it's done. Put it in a code block so Leo can copy it on his phone.
   docs folder"), not with a project's private details.
 - Project-only lessons go in this project's CLAUDE.md or docs. Every project
   picks up playbook changes at its next session start.
-- **A rule that changes how files should look applies to existing files
-  too**, not only to new work. Apply it in the project where it's made and in
-  the playbook itself, and add an entry to `shared/catch-up.md` for the others.
+- **Every change must reach existing projects**, not only new ones. A
+  set-up addition (a hook, a `.gitignore` line, a required file) goes in
+  `shared/setup.txt`, which every session checks. Anything else that changes
+  existing files (a rule about how files look, a template change, removing
+  or renaming set-up) gets an entry in `shared/catch-up.md`. Apply it here too.
 - **If session start prints `CATCH-UP DUE`**, tell Leo, apply it (or offer a
   separate session if it's big), then record it in `docs/playbook-catch-up.md`.
