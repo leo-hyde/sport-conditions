@@ -6,11 +6,11 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 | | |
 |---|---|
-| Last session | Phone/cloud, 23 Oct 2026 |
+| Last session | Phone/cloud, 25 Oct 2026 |
 | Ended cleanly? | Yes, all pushed to `main` |
 | Mid-flight work | None |
-| Next step | Leo tries Surfing on the live site (sport menu → Surfing) and checks the Newquay spots; then automated tests of the rating rules (BACKLOG) |
-| Check first | New this session: shared rules from the playbook in `.claude/rules/playbook.md` (synced at each session start); decisions moved to `docs/decisions.md` |
+| Next step | Playbook catch-up `2026-10-24-plain-english` is due: rewrite the docs and the site's text in plain English, in its own session (not yet recorded in `docs/playbook-catch-up.md`). Then Leo tries Surfing on the live site (sport menu → Surfing) and checks the Newquay spots; then automated tests of the rating rules (BACKLOG) |
+| Check first | Playbook updated 25 Oct: new "Writing for people" and "Fix small problems" rules, and catch-ups (rule changes that existing files must follow too) |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
