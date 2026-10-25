@@ -1,133 +1,150 @@
 # Sport Conditions: Design Guide
 
 How the app looks and feels. Claude follows this for every new screen or
-feature. Change it here first, then in the code.
+feature. A design change goes in here first, then in the code.
 
 ## Inspiration
-- **Windy:** modern, data-rich but easy to read, bold colours on calm
-  surfaces, a map with a time slider. This is **the look we're aiming for**.
-- **Flybubble:** very usable site info. Keep the usability, modernise
-  the look.
-- **XC Weather:** a good single-site page. Avoid its dated visuals and its
-  cluttered homepage.
+- **Windy** (a popular weather map site): modern, full of data but easy to
+  read. Bold colours on calm backgrounds, and a map with a time slider. This
+  is **the look we're aiming for**.
+- **Flybubble** (a paragliding shop with a site guide): very usable site
+  information. Keep how usable it is, but make it look modern.
+- **XC Weather** (a wind forecast site): a good page for a single site. Avoid
+  its dated look and its cluttered home page.
 
 ## Principles
-1. **Glance first.** "Where can I fly, and when?" should be answered in
-   under 2 seconds. Detail comes on tap.
+1. **Glance first.** You should be able to answer "where can I fly, and
+   when?" in under 2 seconds. Detail comes when you tap.
 2. **Colour carries meaning.** Bright colours are kept for good and OK
-   conditions. Everything else (chrome, "no" hours, the past) is calm and
-   muted, so the flyable hours pop out.
-3. **Never colour alone.** About 1 in 12 men are red–green colour-blind. Good
-   and OK are bright and "no" is faint, so the ratings also differ in
-   brightness, and the details panel uses words and ✓ ~ ✕ symbols.
-4. **Phone first.** Designed for a phone in one hand on a hillside, then
-   scaled up for desktop. Buttons are at least 44px tall.
-5. **Follow the phone.** Light or dark theme comes from the device setting.
+   conditions. Everything else is calm and muted: the frame of the app, "no"
+   hours and the past. That way the flyable hours stand out.
+3. **Never rely on colour alone.** About 1 in 12 men are red–green colour-blind.
+   Good and OK are bright and "no" is faint, so the ratings also differ in
+   brightness. The details panel also uses words and the symbols ✓ ~ ✕.
+4. **Phone first.** It's designed for a phone held in one hand on a hillside,
+   then made bigger for desktop. Buttons are at least 44px tall.
+5. **Follow the phone.** The light or dark theme comes from the device's own
+   setting.
 
-## Design tokens (the building blocks; defined in `:root` in style.css)
+## Design tokens
+
+These are the building blocks: named colours that the whole app uses. They're
+defined in `:root` in style.css.
 
 | Token | Light | Dark | Used for |
 |---|---|---|---|
 | `--bg` | #eef1f5 | #0e1116 | page background |
 | `--surface` | #ffffff | #171b22 | cards, dialogs |
-| `--surface-2` | #f4f6f9 | #202631 | inputs, inner panels |
+| `--surface-2` | #f4f6f9 | #202631 | input boxes, inner panels |
 | `--text` | #111827 | #e8ecf2 | main text |
-| `--muted` | #6b7280 | #98a2b3 | secondary text |
-| `--border` | #e3e7ee | #2a313c | dividers |
-| `--accent` | #2563eb | #5b8cff | buttons, active tab, links |
+| `--muted` | #6b7280 | #98a2b3 | less important text |
+| `--border` | #e3e7ee | #2a313c | dividing lines |
+| `--accent` | #2563eb | #5b8cff | buttons, the chosen tab, links |
 | `--good` | #22c55e | #2fd36b | 🟢 good |
 | `--ok` | #fbbf24 | #f5c04a | 🟡 OK |
 | `--no` | #eceff3 | #222833 | no: a calm grey, so good and OK hours stand out |
 
-- **Font:** the device's system font (SF Pro on Apple). Numbers use
-  `tabular-nums` so they line up.
-- **Type sizes:** 12 / 14 / 16 / 20 / 26px.
+- **Font:** the device's own font (SF Pro on Apple). Numbers use
+  `tabular-nums` (every digit the same width) so they line up.
+- **Text sizes:** 12 / 14 / 16 / 20 / 26px.
 - **Spacing:** multiples of 4px.
-- **Corners:** 14px for cards and dialogs, 6px for hour blocks.
-- **Shadows:** soft and subtle, light theme only.
+- **Corners:** rounded by 14px for cards and dialogs, 6px for hour blocks.
+- **Shadows:** soft and subtle, in the light theme only.
 
-## Components
-- **Header:** app name, "Updated 14:05", refresh and settings buttons.
-- **Tabs:** Overview · Sites · Map. A pill-style segmented control, sticky
-  at the top.
-- **Hour block:** a rounded tile in the rating colour, showing the hour,
-  a wind arrow and speed. Past hours are faded to 35%.
+## Components (the parts of the screen)
+- **Header:** the app name, "Updated 14:05", and refresh and settings buttons.
+- **Tabs:** Overview · Sites · Map. A row of pill-shaped buttons that stays
+  at the top as you scroll.
+- **Hour block:** a rounded tile in the rating colour. It shows the hour, a
+  wind arrow and the speed. Past hours are faded to 35%.
 - **Cards:** one per site, on `--surface`, with the name and an edit button.
-- **Dialogs:** centred on desktop; a bottom sheet on phones.
+- **Dialogs** (pop-up panels): in the middle of the screen on desktop. On
+  phones they slide up from the bottom (a "bottom sheet").
 - **Map pins:** round, in the rating colour, with the wind arrow and speed
   inside and the site name underneath.
-- **Compass picker:** a 16-segment ring; tap to cycle no → OK → good.
-- **Overview layouts:** a pill switcher (By day · By hour · Best times).
-  "By day" uses rating-coloured cells; "By hour" uses compact hour blocks
-  with the wind speed shown only on good and OK hours ("No" blocks are
-  blank), under a tinted **time strip** reading "8h 9h 10h…" (every other
-  hour on phones), so times and speeds can't be confused. The page reopens
-  on the tab you left; a first visit lands on the Overview, by day.
-- **Map:** OpenTopoMap tiles (dimmed in dark mode), with a timeline card
-  underneath: the big time label, day labels and hour bars. On desktop all 7
-  days fit and you drag along them. **On phones it's Windy's pattern:** a strip
-  of 14px hours that swipes sideways under a fixed `--accent` marker; the hour
-  under the marker is the chosen time; tapping an hour or a day jumps there. Guide sites are
-  small grey dots. A pill switcher swaps to Windy's embedded animated
-  wind map.
-- **Mini compass:** a small 16-wedge ring with "N" in the middle, next to
-  each site's name.
-- **Sport and forecast pickers:** pill-shaped dropdowns under the header;
-  the sport shows its emoji (🪁 Parakiting).
-- **Wind history chart:** one mph axis; wind is a 2px `--accent` line, gusts
-  are orange dots with a surface ring; good/OK ranges are faint bands behind;
-  direction arrows run underneath. A readout above follows your finger, and
-  there's always a table view.
+- **Compass picker:** a ring of 16 segments. Tap one to cycle it through
+  no → OK → good.
+- **Overview layouts:** pill buttons to switch (By day · By hour · Best times).
+  - "By day" uses cells coloured by rating.
+  - "By hour" uses small hour blocks. Only good and OK hours show the wind
+    speed; "No" blocks are blank. Above them is a tinted **time strip**
+    reading "8h 9h 10h…" (every other hour on phones). So you can't mix up
+    times and speeds.
+  - The page reopens on the tab you left. A first visit lands on the
+    Overview, by day.
+- **Map:** OpenTopoMap background (dimmed in dark mode). A timeline card sits
+  underneath, with the time in large text, day labels and bars of hours.
+  - On desktop, all 7 days fit and you drag along them.
+  - **On phones it works like Windy:** a strip of 14px hours that you swipe
+    sideways under a fixed `--accent` marker. The hour under the marker is
+    the chosen time. Tapping an hour or a day jumps there.
+  - Guide sites are small grey dots. Pill buttons switch to Windy's own
+    animated wind map.
+- **Mini compass:** a small ring of 16 wedges with "N" in the middle, next
+  to each site's name.
+- **Sport and forecast menus:** pill-shaped drop-down menus under the header.
+  The sport shows its emoji (🪁 Parakiting).
+- **Wind history chart:** one mph scale. Wind is a 2px `--accent` line. Gusts
+  are orange dots with a ring the colour of the card. Faint bands behind show
+  the good and OK ranges. Direction arrows run underneath. A reading above the
+  chart follows your finger. There's always a table version too.
 - **Tide line:** small muted text under each day's strip ("🌊 HW … · LW … ·
-  Springs").
+  Springs"). HW and LW mean high and low water.
 
-- **Feedback mode buttons:** floating, bottom right (above the tab bar on
-  phones): a 56px round `--accent` 🎙 button, and 44px `--surface` ✎ and 📝
-  buttons; 📝 ("Your requests") shows a red count of notes not sent yet.
-  Only shown in feedback mode.
-- **Feedback bar:** fixed to the **top** of the screen (the phone keyboard
-  covers the bottom), on `--surface` with a 2px `--accent` border: a pulsing
-  red dot and the words as you speak, or a text box; ✕ and **Send** (one tap).
-- **Your requests:** a bottom sheet listing notes not sent yet (editable, with
-  "Send via GitHub") and sent notes, newest first, each with "✓ Saved on
-  GitHub as #12" or "Opened on GitHub · Didn't create it? Send again".
+- **Feedback mode buttons:** they float at the bottom right (above the tab bar
+  on phones). There's a 56px round `--accent` 🎙 button, and 44px `--surface`
+  ✎ and 📝 buttons. 📝 ("Your requests") shows a red count of notes not sent
+  yet. The buttons only show in feedback mode.
+- **Feedback bar:** fixed to the **top** of the screen, because the phone
+  keyboard covers the bottom. It sits on `--surface` with a 2px `--accent`
+  border. It shows a pulsing red dot and your words as you speak, or a text
+  box. It has ✕ and **Send** (one tap).
+- **Your requests:** a bottom sheet listing notes not sent yet (you can edit
+  them, with "Send via GitHub") and sent notes, newest first. Each sent note
+  says "✓ Saved on GitHub as #12" or "Opened on GitHub · Didn't create it?
+  Send again".
 
-- **Surfing:** the same hour blocks, pins and Overview, showing **wave height
-  in ft** (arrow = swell direction) instead of wind speed. Site cards add a
-  blue "Surfline ↗" tag. The hour panel's tiles are Waves (with Surfline-style
-  words: "waist to chest"), Period, Swell from, and Wind (marked "offshore").
-  The site form adds an **offshore wind compass** (on/off wedges) and a
-  Surfline link box, and calls the main compass "Swell directions".
-- **Tide rule** (site form, any sport): a dropdown ("Not near low water",
-  "Only near high water"…) and "within [2] h"; on cards a short tag
-  ("Avoid low ±2h").
+- **Surfing:** the same hour blocks, pins and Overview, but showing **wave
+  height in ft** instead of wind speed (the arrow shows the swell direction).
+  - Site cards add a blue "Surfline ↗" tag.
+  - The hour panel's tiles are Waves (with Surfline-style words: "waist to
+    chest"), Period, Swell from, and Wind (marked "offshore").
+  - The site form adds an **offshore wind compass** (wedges on or off) and a
+    box for the Surfline link. Its main compass is called "Swell directions".
+- **Tide rule** (site form, any sport): a drop-down menu ("Not near low
+  water", "Only near high water"…) and "within [2] h". On cards it shows a
+  short tag ("Avoid low ±2h").
 
 ## Phone layout (under 600px wide)
 - Nothing may be wider than the screen, or phones zoom the whole page out.
-  Rows of controls must wrap.
-- Tabs become a bar fixed to the bottom, with icons (📊 ⭐ 🗺️).
-- A smaller header; the Sport and Forecast pickers take half the width each.
-- On site cards the day name sits above its strip, so hours get the full width.
+  Rows of controls must wrap onto the next line.
+- The tabs become a bar fixed to the bottom, with icons (📊 ⭐ 🗺️).
+- The header is smaller. The Sport and Forecast menus take half the width each.
+- On site cards, the day name sits above its strip, so the hours get the full
+  width.
 - The map fills most of the screen.
 
-## UX review (21 October 2026)
+## Design review (21 October 2026)
 
-What we checked: glanceability, hierarchy, colour carrying meaning,
-contrast, phone ergonomics and progressive disclosure.
+What we checked: how quickly you can read it at a glance, what stands out
+first, whether colour carries meaning, contrast, how easy it is to use with
+one hand, and whether detail stays hidden until you ask for it.
 
-| Finding | Change |
+| What we found | What we changed |
 |---|---|
-| No headline answer: you had to scan a grid to find when to go | **"Next good session"** card at the top of the Overview (tap → that site) |
-| Red "No" cells dominated, so good/OK didn't pop; "No" text failed contrast | **"No" is now calm grey** with darker text (≈5:1 contrast) |
+| No headline answer: you had to scan a grid to find when to go | A **"Next good session"** card at the top of the Overview (tap it to go to that site) |
+| Red "No" cells took over, so good and OK didn't stand out; "No" text was too faint to read easily | **"No" is now a calm grey** with darker text (contrast about 5:1) |
 | No colour key on the Overview | A **Good / OK / No key** under the headline |
-| Site cards showed 7 days, so one site per screen | Cards show **today and tomorrow**; "Show all 7 days" (with "3h good later" hint) |
-| Phone Overview: names cut off, tide labels on every day, ":00" wasted space | Names wrap; tide labels removed from the Overview; compact times ("8–11h") |
-| Live airport wind looked like site pins | **Dark square LIVE tags** with a pointer; a **map key** |
-| Settings was one long list, with Save at the very bottom | **Grouped sections**; Save/Cancel always visible at the bottom |
-| Phone dialogs had no affordance | Bottom sheets with a **grab handle**; they scroll inside |
-| No feedback while refreshing | The ↻ button **spins** while loading (still if "reduce motion" is on) |
+| Site cards showed 7 days, so only one site fitted on a screen | Cards show **today and tomorrow**, with "Show all 7 days" (and a hint like "3h good later") |
+| Phone Overview: names cut off, tide labels on every day, ":00" wasting space | Names wrap onto two lines; no tide labels on the Overview; short times ("8–11h") |
+| Live airport wind looked like site pins | **Dark square LIVE tags** with a pointer, and a **map key** |
+| Settings was one long list, with Save at the very bottom | Settings **in groups**; Save and Cancel always visible at the bottom |
+| Phone dialogs didn't look like you could move them | Bottom sheets with a **grab handle**; they scroll inside |
+| No sign that it was refreshing | The ↻ button **spins** while loading (it stays still if "reduce motion" is on) |
 
 ## References
-- Apple Human Interface Guidelines: tap targets, hierarchy, legibility
-- *Refactoring UI*: spacing, contrast, restraint
-- WCAG 2.2: text contrast of at least 4.5:1, don't rely on colour alone
+- Apple Human Interface Guidelines (Apple's design advice): button sizes,
+  what stands out first, how easy text is to read
+- *Refactoring UI* (a book on interface design): spacing, contrast, restraint
+- WCAG 2.2 (the web's accessibility standard): text contrast of at least
+  4.5:1, and don't rely on colour alone
