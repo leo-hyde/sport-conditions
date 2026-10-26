@@ -10,7 +10,7 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 | Ended cleanly? | Yes, all pushed to `main` |
 | Work in progress | None |
 | Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
-| Check first | 5 open feedback issues (#4–#8) wait for "check feedback" |
+| Check first | Feedback #4–#8 sorted into docs/BACKLOG.md (26 Oct). Waiting for Leo: build the easy ones (#8 map location button, #5 pause button)? #4, #5 beeping, #6 and #7 need discussion. Issues stay open until done |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
