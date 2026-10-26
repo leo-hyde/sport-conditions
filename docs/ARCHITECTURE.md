@@ -101,7 +101,7 @@ Rules about the **site** (directions, tide rule) live on the site.
 | `storage.js` | Saving and loading in browser storage; settings for each sport; starter sites |
 | `sync.js` | Syncing sites and settings between devices through the Worker |
 | `overview.js` | The Overview tab: next good session, By day and By hour |
-| `map.js` | The Map tab: pins, guide sites, the timeline |
+| `map.js` | The Map tab: pins, guide sites, the timeline, "show where I am" |
 | `details.js` | The hour details panel |
 | `settings.js` | The Settings panel (a section for each sport) |
 | `sitesForm.js` | Adding and editing a site: compasses, tide rule, place search |
@@ -149,6 +149,8 @@ Rules about the **site** (directions, tide rule) live on the site.
   and needs a send code before it creates issues.
 - **Text people type is "escaped"** (`esc()` in app.js) before it goes into
   the page. So a site called `<script>` is shown as text, not run as code.
+- **Your location** (the map's ◎ button) comes from the browser, only when
+  you tap it. It's used to move the map and is never saved or sent anywhere.
 - **Links people type are checked.** A Surfline link must start
   `https://www.surfline.com/` (`isSurflineUrl` in surf.js).
 - **Forecasts can be wrong.** Ratings are a guide from computer forecasts, not

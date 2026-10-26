@@ -200,6 +200,9 @@ Worker, with a personal code for each approved tester). Collaborators
 working through pull requests (proposed changes that Leo reviews before they
 go in).
 
+**Changes from feedback (26 Oct, issues #5 and #8):** a ◎ button on the map
+shows where you are; a ⏸ button pauses a voice note.
+
 **Changes from feedback (22 Oct, issues #1–#3):**
 - One-tap **Send**. With a send code, notes go straight to GitHub through the
   Worker's `/feedback` address. That needs two Worker secrets, `GITHUB_TOKEN`

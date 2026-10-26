@@ -98,7 +98,12 @@ defined in `:root` in style.css.
 - **Feedback bar:** fixed to the **top** of the screen, because the phone
   keyboard covers the bottom. It sits on `--surface` with a 2px `--accent`
   border. It shows a pulsing red dot and your words as you speak, or a text
-  box. It has ✕ and **Send** (one tap).
+  box. It has ⏸ (while speaking; becomes ▶ when paused, and the dot turns
+  grey and stops), ✕ and **Send** (one tap).
+- **"Show where I am":** a ◎ button in the map's own button style, under
+  + and −. Your position is a blue (`#2563eb`) dot with a white ring, inside
+  a faint blue circle showing how accurate it is. The ◎ pulses while
+  searching.
 - **Your requests:** a bottom sheet listing notes not sent yet (you can edit
   them, with "Send via GitHub") and sent notes, newest first. Each sent note
   says "✓ Saved on GitHub as #12" or "Opened on GitHub · Didn't create it?

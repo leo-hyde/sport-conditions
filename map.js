@@ -9,6 +9,7 @@ let libraryLayer = null;  // grey dots: guide sites without a forecast yet
 let ratedLibraryLayer = null;  // guide sites with a forecast, coloured by rating
 let libraryTimer = null;
 let placingPin = false;  // true after tapping "Add site on map"
+let youLayer = null;  // the blue "you are here" dot and its accuracy circle
 
 // Forecasts for guide sites near where you're looking: model → { site index → hours }.
 const libraryForecasts = {};
@@ -42,6 +43,7 @@ function setupMap() {
 
   fitMapToSites();
   addMapKey();
+  addLocateButton();
   drawLibrary();
   setupStations();
   setupWindFlow();
@@ -96,6 +98,45 @@ function addMapKey() {
     return box;
   };
   key.addTo(map);
+}
+
+// A ◎ button under the zoom buttons: shows where you are. The phone asks
+// for permission the first time. Your location stays on the device: it is
+// only used to move the map, never sent anywhere.
+function addLocateButton() {
+  const control = L.control({ position: "topleft" });
+  control.onAdd = () => {
+    const bar = L.DomUtil.create("div", "leaflet-bar locate-control");
+    bar.innerHTML = '<a href="#" role="button" class="locate-btn" title="Show where I am" aria-label="Show where I am">◎</a>';
+    L.DomEvent.disableClickPropagation(bar);
+    bar.querySelector("a").addEventListener("click", event => {
+      event.preventDefault();
+      showWhereIAm();
+    });
+    return bar;
+  };
+  control.addTo(map);
+  youLayer = L.layerGroup().addTo(map);
+  map.on("locationfound", event => {
+    document.querySelector(".locate-btn").classList.remove("busy");
+    youLayer.clearLayers();
+    // Colours are set here, not in style.css: this map draws on a canvas.
+    L.circle(event.latlng, { radius: event.accuracy, interactive: false,
+      color: "#2563eb", opacity: 0.4, weight: 1, fillColor: "#2563eb", fillOpacity: 0.12 }).addTo(youLayer);
+    L.circleMarker(event.latlng, { radius: 7, interactive: false,
+      color: "#ffffff", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }).addTo(youLayer);
+  });
+  map.on("locationerror", event => {
+    document.querySelector(".locate-btn").classList.remove("busy");
+    showToast(event.code === 1
+      ? "Location blocked: allow it for this site in the browser settings"
+      : "Couldn't find where you are. Try again outside, or with location on");
+  });
+}
+
+function showWhereIAm() {
+  document.querySelector(".locate-btn").classList.add("busy");
+  map.locate({ setView: true, maxZoom: 12, timeout: 15000, enableHighAccuracy: true });
 }
 
 // Every hour shown anywhere, in order, e.g. ["2026-10-21T08", …].

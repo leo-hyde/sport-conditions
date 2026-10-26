@@ -11,8 +11,6 @@ in CHANGELOG.md) · not doing (with the reason).
 
 | Idea | From | State | Notes |
 |---|---|---|---|
-| Map: a button to show where I am | Leo, #8 | easy | Uses the phone's location, only on the device. Nothing is sent anywhere |
-| Voice notes: a pause button | Leo, #5 | easy | |
 | Voice notes: stop the beeping | Leo, #5 | discuss | Android beeps each time listening restarts after a pause. The browser can't turn that off. The fix would be recording audio and sending it to a paid transcription service |
 | Surf: wave size for each spot (for example Towan smaller than Fistral, behind the headland) | Leo, #7 | discuss | Now: the same open-sea forecast 2.5 km out, not adjusted for shelter. Could add a size factor for each spot. Surfline-level quality isn't possible from free data |
 | Surf: drop the swell compass for each spot? | Leo, #6 | discuss | Leo says big swells wrap in anyway. Pulls against #7, which wants more spot detail |
@@ -29,6 +27,8 @@ in CHANGELOG.md) · not doing (with the reason).
 
 | Idea | From | Done | Notes |
 |---|---|---|---|
+| Map: a button to show where I am | Leo, #8 | 26 Oct | ◎ under the zoom buttons |
+| Voice notes: a pause button | Leo, #5 | 26 Oct | The beeping is still in "To do" |
 | Surfing, starting with the Newquay spots, linked to Surfline | Leo, #3 + 23 Oct | 23 Oct | SPEC.md version 1.3 |
 | Map timeline: stay with the finger | Leo, 23 Oct | 23 Oct | On phones, a strip you swipe under a fixed marker |
 | Tide rules you can edit for each site (for example not within 2 hours of low water) | Leo, 23 Oct | 23 Oct | |

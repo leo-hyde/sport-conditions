@@ -76,8 +76,31 @@ function startListening() {
   notePlace();
   listening = true;
   showBar("listening");
+  setPaused(false);
   keepScreenOn(true);
   listenOnce();
+}
+
+// ⏸ stops listening but keeps the note open, with every word so far;
+// ▶ carries on adding to the same note.
+function togglePause() {
+  if (listening) {
+    heard = feedbackText.textContent;  // keep any half-finished phrase
+    stopListening();
+    setPaused(true);
+  } else {
+    listening = true;
+    setPaused(false);
+    keepScreenOn(true);
+    listenOnce();
+  }
+}
+
+function setPaused(paused) {
+  feedbackBar.dataset.paused = paused;
+  const button = document.getElementById("feedback-pause");
+  button.textContent = paused ? "▶" : "⏸";
+  button.setAttribute("aria-label", paused ? "Carry on listening" : "Pause");
 }
 
 // Phones stop listening after a pause, so we start again until you tap
@@ -89,6 +112,7 @@ function listenOnce() {
   recognition.lang = "en-GB";
   recognition.interimResults = true;  // show words while you're still speaking
   recognition.onresult = event => {
+    if (listener !== recognition) return;  // paused or stopped: ignore late words
     const result = event.results[0];
     if (result.isFinal) {
       heard = (heard + " " + result[0].transcript).trim();
@@ -339,6 +363,7 @@ document.getElementById("feedback-type").addEventListener("click", () => showBar
 document.getElementById("feedback-open").addEventListener("click", openFeedbackDialog);
 document.getElementById("feedback-done").addEventListener("click", sendNote);
 document.getElementById("feedback-cancel").addEventListener("click", hideBar);
+document.getElementById("feedback-pause").addEventListener("click", togglePause);
 feedbackInput.addEventListener("keydown", event => {
   if (event.key === "Enter") sendNote();
 });

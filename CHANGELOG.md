@@ -4,6 +4,13 @@ Sport Conditions is in **Beta**: it's still being tested and changes often,
 so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
+## 26 October 2026
+- **"Show where I am" on the map:** tap ◎ under the + and − buttons. The map
+  moves to you and shows a blue dot. Your phone asks for permission the first
+  time. Your location stays on your phone. (Feedback #8.)
+- **Pause voice notes:** while you speak a note, tap ⏸ to pause and ▶ to
+  carry on. The words so far are kept. (Feedback #5.)
+
 ## 25 October 2026
 - **Plainer wording** in the app's help text: the map, the wave settings,
   first and last light, and feedback. Nothing works differently.

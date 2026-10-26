@@ -856,6 +856,10 @@ details .compare { margin-top: 8px; }
 .dialog-actions.start { justify-content: flex-start; }
 .sync-code { font-size: 15px; padding: 4px 8px; border-radius: 6px; background: var(--surface-2); user-select: all; }
 
+/* Map: "show where I am" button (the blue dot itself is drawn in map.js) */
+.locate-btn { font-size: 18px; line-height: 30px !important; }
+.locate-btn.busy { color: var(--accent) !important; animation: feedback-pulse 1s ease-in-out infinite; }
+
 /* Map key */
 .map-key {
   background: var(--surface);
@@ -1079,6 +1083,9 @@ dialog { overflow: auto; overscroll-behavior: contain; }
 .feedback-text:empty::before { content: "Listening… say what you'd change"; color: var(--muted); }
 .feedback-bar input { flex: 1; min-width: 0; font-size: 16px; }  /* 16px stops iPhones zooming in */
 .feedback-bar[data-mode="listening"] input { display: none; }
+.feedback-bar[data-mode="typing"] #feedback-pause { display: none; }
+.feedback-bar[data-paused="true"] .feedback-live { animation: none; background: var(--muted); }
+.feedback-bar[data-paused="true"] .feedback-text:empty::before { content: "Paused: tap ▶ to carry on"; }
 .feedback-bar[data-mode="typing"] .feedback-text,
 .feedback-bar[data-mode="typing"] .feedback-live { display: none; }
 .feedback-live {  /* a pulsing red dot while listening */
