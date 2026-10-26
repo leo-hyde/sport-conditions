@@ -1,13 +1,15 @@
 # Sport Conditions: Product Spec
 
-This file says what the app does. Status: **Beta** (version 1.3 built:
-surfing). The Overview has two layouts: By day (the default) and By hour.
-[DESIGN.md](DESIGN.md) says how it looks.
+This file says what the app does, and is the plan. Status: **Beta**
+(version 1.3 built: surfing; updated 26 Oct 2026). What comes next is in
+[What's next](#whats-next) below. The Overview has two layouts: By day (the
+default) and By hour. [DESIGN.md](DESIGN.md) says how it looks.
 
 ## The idea
 
 One page that shows at a glance when conditions are good for each of my
-sports, at each of my sites. It starts with paragliding.
+sports, at each of my sites. It started with parakiting (the first plan
+said paragliding), and surfing is the second sport.
 
 ## Key ideas
 
@@ -47,13 +49,13 @@ is the **worst** of the three.
 | 4 | **Tap an hour for details:** speed, gusts, direction, rain, and *why* it isn't green | ✅ done |
 | 5 | **Add, edit and delete sites:** name, a place search or map coordinates, and a 16-point compass to pick directions. Saved in the browser. A "Reset to starter sites" option | ✅ done |
 | 6 | **Settings:** good and OK speed ranges, rain cutoff | ✅ done |
-| 7 | **Overview: 3 layouts to choose from** (see below) | ✅ done |
+| 7 | **Overview: 3 layouts to choose from** (see below). By day and By hour kept; Best times removed 21 Oct | ✅ done |
 | 8 | **Map view:** sites as coloured pins with wind arrows. A time slider moves through the forecast (like Windy, a popular weather map site) | ✅ done |
 | 9 | **Design and polish:** follow DESIGN.md; light or dark to match the phone; an "updated at" time and a refresh button; loading and error messages | ✅ done |
 
 ### Overview layouts (step 7)
 Three ways to answer "where works, and when?". Leo tries them all. Then we
-keep the best one or two.
+keep the best one or two. **Result (21 Oct):** we kept A and B, and removed C.
 
 - **A. By day:** a table with sites down the side and days across. Each
   cell shows the best rating and how many good or OK hours there are, for
@@ -131,8 +133,10 @@ keep the best one or two.
   (called METARs). They reach the app through our free Cloudflare Worker, a
   small program that runs on Cloudflare's servers (`worker/weather-proxy.js`,
   running at sport-conditions-weather.leo-h-hyde.workers.dev).
-- **Sports:** a sport menu. **Parakiting** is the current sport. Paragliding
-  and Surfing are listed as "coming soon". Each site is tagged with its sport.
+- **Sports:** a sport menu. **Parakiting** was the first sport. Paragliding
+  and Surfing were listed as "coming soon"; Surfing has since been built
+  (version 1.3), and Paragliding is still "coming soon". Each site is tagged
+  with its sport.
 - **Live wind history:** tap a live airport label, then "📈 Last 24 hours".
   You get a chart of wind and gusts against your good and OK ranges, with
   direction arrows, a table version and a link to the full reports.
@@ -273,27 +277,45 @@ waves only.
 
 ---
 
+## What's next
+
+The steps we've agreed, in order. docs/STATUS.md points at these numbers.
+
+| # | Step | Status |
+|---|---|---|
+| 1 | **Leo tries Surfing on the live site** (sport menu → Surfing) and checks the Newquay spots' locations, directions and tide rules | Waiting for Leo |
+| 2 | **Automated tests of the rating rules** (see docs/ARCHITECTURE.md "Weak spots"). Spec first: `specs/rating-tests.md` (not written yet), then build it in a fresh session | Not started |
+
+Open feedback issues (#4–#8) are sorted when Leo says "check feedback";
+anything agreed from them is added here.
+
+---
+
 ## Later
 
 Roughly in the order we suggest. Each one gets its own short spec before
-we build it.
+we build it. (Status notes added 26 Oct 2026.)
 
 - **A. Put it online and on your phone:** host it free on GitHub Pages, and
-  let you add it to your home screen.
+  let you add it to your home screen. *Online: done (version 1.1). Home
+  screen: not done.*
 - **B. Sync sites between devices:** a small online database with sign-in.
-  Until then: an export and import button.
+  Until then: an export and import button. *Built differently in version
+  1.1: a private sync code, no sign-in. Not working yet: the Worker's
+  storage isn't connected.*
 - **C. Gusts in the rating:** an hour becomes 🔴 if it's too gusty, or if
   gusts are too far above the average wind.
 - **D. Thermals and cloud base:** boundary layer height, CAPE (a measure of
   how much air rises) and cloud base, shown as a sign of "XC potential"
   (how good it is for flying cross-country).
 - **E. More sports:** kitesurfing (wind and tide) and surfing (swell, from
-  Open-Meteo's marine forecast), with a sport menu.
+  Open-Meteo's marine forecast), with a sport menu. *Sport menu and surfing:
+  done (version 1.3). Kitesurfing: not done.*
 - **F. Map extras:** tap the map to place a new site; a wind layer like
-  Windy's.
+  Windy's. *Done (version 1.1).*
 - **G. Alerts:** for example "tell me when Fistral is 🟢 for 3 hours or more
   this weekend". Needs A and B first.
 - **H. Better forecasts:** compare weather models; live readings from
-  weather stations.
+  weather stations. *Done (version 1.1): 5 models, and live airport wind.*
 - **I. More sites:** from an open data source, or from Flybubble with their
   permission.

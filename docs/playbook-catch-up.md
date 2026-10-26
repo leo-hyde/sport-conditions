@@ -13,3 +13,9 @@ what changed. Session start stops asking about an id once it's listed here.
   code left technical. Checked with `node tools/preview.js` (both sports,
   phone and desktop, light and dark: no page errors) and
   `python3 tools/build_sites.py`.
+- **2026-10-25-spec-is-the-plan** (26 Oct 2026): SPEC.md now has a "What's
+  next" step table (Leo checks Surfing; automated rating tests), an
+  "updated" date, the Best times and parakiting changes, and status notes on
+  the "Later" ideas already built. Three late entries in docs/decisions.md.
+  STATUS.md's next steps point at SPEC.md's step numbers. No spec files
+  exist in `specs/` yet.

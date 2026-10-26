@@ -6,11 +6,11 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 | | |
 |---|---|
-| Last session | Phone/cloud, 25 Oct 2026 |
+| Last session | Mac, 26 Oct 2026 |
 | Ended cleanly? | Yes, all pushed to `main` |
 | Work in progress | None |
-| Next step | Leo tries Surfing on the live site (sport menu → Surfing) and checks the Newquay spots. Then automated tests of the rating rules (BACKLOG) |
-| Check first | Playbook updated 25 Oct: each session start now also checks this repo's set-up (hooks, `.gitignore`, required files) and other repos attached to a cloud session. 5 open feedback issues (#4–#8) wait for "check feedback" |
+| Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
+| Check first | 5 open feedback issues (#4–#8) wait for "check feedback" |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
@@ -22,8 +22,8 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 ## Next steps
 
-1. Leo tries Surfing on the live site and checks the Newquay spots.
-2. Automated tests of the rating rules (docs/BACKLOG.md). First write a short spec in `specs/rating-tests.md`, then build it in a fresh session.
+See SPEC.md "What's next": step 1 (Leo checks Surfing), then step 2
+(automated rating tests, spec first).
 
 ## Open questions
 

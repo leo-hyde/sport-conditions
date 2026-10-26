@@ -6,6 +6,9 @@ the old one "Replaced by <date>". (I moved these here from docs/STATUS.md on
 23 Oct 2026. The earlier entries give the reason, but not the other options
 we turned down.)
 
+## 23 Oct 2026: Next steps: Leo checks Surfing, then automated tests of the rating rules
+- **Why:** The surf spots' details are Claude's rough guesses, so Leo checks them first. Tests are the main weak spot in docs/ARCHITECTURE.md. (Recorded late, on 26 Oct 2026, from docs/STATUS.md and docs/BACKLOG.md.)
+
 ## 23 Oct 2026: Shared rules come from the playbook; STATUS.md holds the current state only
 - **Why:** Leo's general rules now copy themselves from claude-playbook into `.claude/rules/playbook.md`, so this project's CLAUDE.md holds only its own rules. Anthropic's best-practice guide says to keep the current state separate from history. So STATUS.md holds the current state only; decisions live here, and the history is in git log (the record of every saved change).
 - **Turned down:** keeping a session diary in STATUS.md (every session re-read it, and git log already has it).
@@ -51,6 +54,12 @@ we turned down.)
 
 ## 21 Oct 2026: Forecasts kept 30 min on the device; stop asking after a "daily limit" refusal; guide sites only from zoom level 9 (60 at most); wind flow 8×8 from zoom level 8
 - **Why:** Testing used up Open-Meteo's free daily limit (10,000 calls per internet connection).
+
+## 21 Oct 2026: Overview keeps By day and By hour; Best times removed
+- **Why:** Leo tried all three layouts, as SPEC.md step 7 planned, and the first two answered "where works, and when?" best. (Recorded late, on 26 Oct 2026, from git log: "remove Best times".)
+
+## 21 Oct 2026: Parakiting is the first sport, not paragliding
+- **Why:** It's the sport Leo does at these sites. Paragliding stays in the sport menu as "coming soon". (Recorded late, on 26 Oct 2026, from git log: "Parakiting sport picker".)
 
 ## 21 Oct 2026: "No" hours are calm grey; a "Next good session" headline; cards show 2 days
 - **Why:** The design review (DESIGN.md).
