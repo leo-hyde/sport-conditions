@@ -199,7 +199,7 @@ cmd_start() {
 }
 
 # Count Leo's messages in this session (Claude Code passes the session id on stdin)
-# and every COACH_EVERY messages tell Claude, so it can suggest a fresh session.
+# and every COACH_EVERY messages ask Claude to judge whether a fresh session would help.
 coach() {
   local id file count path kb
   id=$(printf '%s' "$1" | sed -n 's/.*"session_id" *: *"\([^"]*\)".*/\1/p' | head -1)
@@ -213,7 +213,7 @@ coach() {
   path=$(printf '%s' "$1" | sed -n 's/.*"transcript_path" *: *"\([^"]*\)".*/\1/p' | head -1)
   kb=$( [ -f "$path" ] && echo $(( $(wc -c <"$path") / 1024 )) || echo "?")
   echo "COACH: this session has had $count of Leo's messages (transcript ${kb} KB). Each message re-reads all of it."
-  echo "COACH: at the next natural break, suggest wrapping up: update docs/STATUS.md and give Leo a starter prompt for a fresh session (see 'Coaching' in .claude/rules/playbook.md)."
+  echo "COACH: judge whether the conversation still helps the current work. Suggest a fresh session (STATUS.md updated, starter prompt) only if the work changed or the context is cluttered, not for length alone (see 'Coaching' in .claude/rules/playbook.md)."
 }
 
 cmd_busy() {

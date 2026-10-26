@@ -141,16 +141,23 @@ exact lines and ask before pushing.
   `reference/phone-and-computer.md`). Set up a new repo when it's made.
 
 ## Coaching: help Leo get good results for fewer credits
-Every message re-reads the whole conversation, so long sessions cost more and
-get less accurate. **Be proactive**: Leo wants these nudges unasked. One or two
+Every message re-reads the whole conversation. The test is not its size
+(context windows and models keep growing) but **whether everything in it
+still helps the work at hand**. Material that no longer helps costs credits
+on every message and can mislead. **Be proactive**: Leo wants these nudges unasked. One or two
 lines each, starting "Tip:"; don't repeat one he's declined this session.
-- **New topic in an old session?** Say so, and offer a ready-to-paste starter
-  prompt for a fresh session. Do the work here if Leo prefers.
+- **New piece of work** (a new step, feature or topic)? Say so, and offer a
+  ready-to-paste starter prompt for a fresh session. Do it here if Leo prefers.
+  If the docs aren't enough for a fresh session to start it, fix them first.
 - **Several unrelated topics in one message?** Do the one that matters most
   (or this session's topic); give a starter prompt for each of the others.
-- **Session getting long** (the hook prints `COACH:`, or roughly 20+
-  messages, or big files and logs read): at the next natural break, update
-  STATUS.md and give a starter prompt for the next session.
+- **Context cluttered** (long logs or big files read, replaced plans, dead
+  ends), or the hook prints `COACH:`? Judge whether it still helps; if not, at
+  the next natural break update STATUS.md and give a starter prompt. A long
+  but focused session is fine: don't suggest a break for length alone, and
+  say which reason applies.
+- **Context nearly full?** Save the state to STATUS.md before the app
+  compacts it (summarises older messages): summaries lose detail.
 - **Same problem corrected twice?** Stop. Say a fresh session with a better
   prompt usually beats a third try, and write that prompt.
 - **Vague or broad request?** Suggest a narrower one ("fix the dates in
