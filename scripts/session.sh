@@ -94,6 +94,17 @@ unlogged() {
     awk '$2 !~ /\[bot\]@/ { print $1 }'
 }
 
+# Commits that changed specs/ since SPEC.md was last changed: a feature plan
+# moved on but the overall plan didn't. Same exclusions as unlogged.
+unplanned() {
+  [ -f SPEC.md ] || return
+  local last
+  last=$(git log -1 --format=%H -- SPEC.md)
+  [ -z "$last" ] && return
+  git log --format='%h %ae' --invert-grep --grep='^Playbook: ' "$last"..HEAD -- specs |
+    awk '$2 !~ /\[bot\]@/ { print $1 }'
+}
+
 # Other repos attached to the same cloud session sit next to this one. Hooks only
 # run in the repo the session opened in, so start and check look after the others.
 siblings() {
@@ -229,7 +240,9 @@ cmd_check() {
   [ -n "$(unsaved)" ] && problems="$problems
 - Uncommitted changes. Commit them."
   [ -n "$(unlogged)" ] && problems="$problems
-- Work committed since docs/STATUS.md was last updated. Update STATUS.md (Handover block, where we are; decisions in docs/decisions.md) and commit."
+- Work committed since docs/STATUS.md was last updated. Update STATUS.md (Handover block, where we are) and commit. If the plan, scope or a choice changed, SPEC.md and docs/decisions.md too ('Keeping the docs true' in .claude/rules/playbook.md)."
+  [ -n "$(unplanned)" ] && problems="$problems
+- specs/ changed since SPEC.md was last updated. Make SPEC.md match (goal, scope, steps and their status, a link to each spec), log any change of plan in docs/decisions.md, and commit."
   git fetch -q origin main 2>/dev/null
   [ -n "$(unpushed)" ] && problems="$problems
 - Commits not on GitHub main. Push with: git push origin HEAD:main (or merge this branch into main and push)."
@@ -269,6 +282,7 @@ cmd_status() {
   echo "Unsaved:";  unsaved
   echo "Unpushed:"; unpushed
   echo "Unlogged:"; unlogged
+  echo "Spec changed, SPEC.md not:"; unplanned
 }
 
 case "${1:-status}" in

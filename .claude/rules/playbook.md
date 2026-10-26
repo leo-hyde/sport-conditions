@@ -55,10 +55,11 @@ Leo is not a developer: if he can't follow it, it hasn't been said.
 |---|---|---|
 | `CLAUDE.md` | Stable project rules: commands, conventions, gotchas. Under ~100 lines; nothing Claude can read from the code | Rarely |
 | `.claude/rules/playbook.md` | This file (synced, don't edit) | From the playbook |
-| `docs/STATUS.md` | **Current state only**: Handover block, where we are, next steps, open questions. Overwritten, not a diary: git log is the history | Every step |
+| `SPEC.md` | **The plan, in one place**: goal, users, scope, every step with its status, a link to each `specs/` file | Same commit as any change of plan, scope or step |
+| `specs/<feature>.md` | One feature's detail: parts, out of scope, how to check it's done | Before building it |
+| `docs/STATUS.md` | **Current state only**: Handover block, where we are, next steps (pointing at SPEC's steps, not copying them), open questions. Overwritten, not a diary: git log is the history | Every step |
 | `docs/decisions.md` | One entry per decision: date, what, why, what was rejected. Stops later sessions undoing a choice | When one is made |
 | `docs/ARCHITECTURE.md` | The parts, data flow, outside services, safety, weak spots | Same commit as any structural change |
-| `SPEC.md` / `specs/<feature>.md` | What to build, what's out of scope, how to check it's done | Before building |
 | `docs/CONTEXT.md` | Background and the "why" (if the project has one) | Rarely |
 
 ## Each feature
@@ -72,8 +73,23 @@ Leo is not a developer: if he can't follow it, it hasn't been said.
    until it's been seen working.
 4. **Walkthrough**: what changed and why, which files and how data flows, the
    2–3 lines that matter, **how it was checked and what wasn't**, risks.
-5. **Record**: ARCHITECTURE.md (if structure changed), decisions.md (if a
-   choice was made), STATUS.md. Commit, push. Next feature, new session.
+5. **Record** (see "Keeping the docs true"). Commit, push. Next feature,
+   new session.
+
+## Keeping the docs true
+Every session starts with no memory. The docs are how Claude and Leo both
+know the goal, scope, plan and why; code shows how it works, never why,
+what's out of scope or what's next. A stale doc is worse than none: the next
+session plans from it. So, **in the same commit as the change**:
+- Goal, users, scope, plan or order of steps changed (**including a plan
+  agreed only in conversation**) → SPEC.md, and an entry in decisions.md.
+- A choice made between options, or one undone → decisions.md.
+- A spec written, or a step started or finished → its row in SPEC.md.
+- Parts, data flow or outside services changed → ARCHITECTURE.md.
+- Every finished step → STATUS.md.
+Before calling a step done, ask: "would a fresh session reading only the
+docs plan the same next step, for the same reasons?" If not, fix the docs
+first. The end-of-reply check blocks if `specs/` changed but SPEC.md didn't.
 
 ## Safety and responsibility (flag as they come up)
 Secrets never in browser code or the repo (Worker or GitHub secrets). Collect
