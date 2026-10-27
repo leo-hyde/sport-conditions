@@ -1,29 +1,64 @@
 #!/usr/bin/env bash
-# Keeps Leo's Claude sessions (phone/cloud and Mac, often several at once) in step
+# Keeps the user's Claude sessions (phone/cloud and Mac, often several at once) in step
 # through GitHub. Git itself is the safety net: worktrees and cloud branches keep
 # sessions' files apart, and GitHub refuses a push that would overwrite newer work.
 # This script makes sure each session starts up to date, sees other unfinished
 # work, and doesn't end with work that only it can see.
 #
 #   scripts/session.sh start          a session opens: pull main, list other unfinished work, issues, handover
-#   scripts/session.sh busy           Leo sends a message: count it, for the coaching tips (nothing else)
+#   scripts/session.sh busy           the user sends a message: note when the context has grown costly
 #   scripts/session.sh check          Claude finishes a reply: cloud blocks on work not on GitHub; the Mac
-#                                     shows Leo a reminder; work on main must have its docs updated
-#   scripts/session.sh end            the same checks, printed, before switching device
+#                                     shows the user a reminder
+#   scripts/session.sh push-check     Claude runs a command: a push to main must bring its docs with it
+#   scripts/session.sh end            the checks, printed, before switching device
 #   scripts/session.sh status         git state, and other unfinished work
 #   scripts/session.sh visibility-ok  after a privacy review, record the repo's visibility as reviewed
 #
 # There used to be a lock on a `session-lock` branch (Oct 2026). It tracked devices,
 # not sessions, so it couldn't handle several sessions at once; git does the real job.
-# Claude Code runs start, busy and check automatically (see .claude/settings.json).
-# `start` also runs scripts/playbook-sync.sh (shared rules from claude-playbook).
-# This file comes from github.com/leo-hyde/claude-playbook (shared/session.sh): edit it there.
+# Claude Code runs start, busy, check and push-check automatically (see .claude/settings.json).
+# `start` also runs scripts/playbook-sync.sh (shared rules from the playbook).
+# This file comes from the playbook (shared/session.sh): edit it there.
 
 set -u
-cd "$(git rev-parse --show-toplevel)" || exit 0
 
-COACH_EVERY=15  # remind Claude about session length every this many messages (a judgement call)
-RECENT_DAYS=14  # other branches with no commit for longer than this are treated as abandoned
+# Claude Code passes JSON on stdin. Run by hand there may be none, or stdin may stay
+# open with nothing coming, so wait at most 2 seconds.
+INPUT=""; [ -t 0 ] || IFS= read -r -d '' -t 2 INPUT || true
+
+# push-check runs before every command Claude runs: leave at once unless it's a push.
+[ "${1:-}" = push-check ] && case "$INPUT" in *push*) ;; *) exit 0 ;; esac
+
+# Which folder is the session working in? Hooks run the main checkout's copy of this
+# script ($CLAUDE_PROJECT_DIR stays put), but a session in a worktree (its own copy of
+# the files) works elsewhere. The hook's JSON says where, in "cwd". If that's a
+# worktree of this same repo, check it, with its own copy of this script.
+session_dir() {
+  local cwd top
+  cwd=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("cwd",""))' 2>/dev/null)
+  [ -n "$cwd" ] && [ -d "$cwd" ] || return 1
+  top=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || return 1
+  # Same repo? (A worktree shares the main checkout's .git folder.)
+  [ "$(cd "$top" && cd "$(git rev-parse --git-common-dir)" && pwd -P)" = \
+    "$(cd "$(git rev-parse --git-common-dir)" && pwd -P)" ] || return 1
+  echo "$top"
+}
+here=$(git rev-parse --show-toplevel) || exit 0
+if [ -z "${SESSION_SH_IN_WORKTREE:-}" ] && there=$(session_dir) && [ "$(cd "$there" && pwd -P)" != "$(cd "$here" && pwd -P)" ]; then
+  export SESSION_SH_IN_WORKTREE=1 SESSION_SH_LAUNCHER="$here"
+  cd "$there" || exit 0
+  script=scripts/session.sh; [ -f "$script" ] || script="$here/scripts/session.sh"
+  printf '%s' "$INPUT" | bash "$script" "$@"
+  exit $?   # its exit code, so a block (2) still blocks
+fi
+cd "$here" || exit 0
+
+# The cost notes' thresholds. Each matches a row of the assumptions table in the
+# playbook's reference/efficient-sessions.md: change them together.
+COST_NOTE=3       # note once when each message re-reads this many times a fresh session's context
+COST_FIRM=6       # and once more past this
+CACHE_MINUTES=55  # a gap longer than this since the last reply: the prompt cache has likely expired
+RECENT_DAYS=14    # other branches with no commit for longer than this are treated as abandoned
 
 # Which device is this? Cloud sessions (phone, web) set CLAUDE_CODE_REMOTE.
 if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || [ "$(uname -s)" != "Darwin" ]; then
@@ -101,7 +136,7 @@ pull_main() {
   git fetch -q --prune origin || { echo "WARNING: could not reach GitHub. Work may be out of date."; return; }
   if ! git merge -q --no-edit origin/main 2>/dev/null; then
     git merge --abort 2>/dev/null
-    echo "CONFLICT: could not merge the latest main into $(branch). Stop and tell Leo."
+    echo "CONFLICT: could not merge the latest main into $(branch). Stop and tell the user."
   fi
 }
 
@@ -109,7 +144,7 @@ pull_main() {
 # GitHub's public API answers "private": false for a public repo; a private one
 # answers "private": true (when logged in, e.g. in cloud sessions) or Not Found.
 # The last reviewed answer is kept in .claude/repo-visibility, so Claude can warn
-# Leo when a repo turns public and check what's now visible.
+# the user when a repo turns public and check what's now visible.
 VIS_FILE=.claude/repo-visibility
 
 repo_name() { git remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#.*[/:]([^/]+/[^/]+)$#\1#'; }
@@ -139,7 +174,7 @@ check_visibility() {
     record_visibility "$now"
     [ "$now" = public ] && echo "Note: this repo is PUBLIC. Anything committed here can be read by anyone."
   elif [ "$now" = public ] && [ "$was" != public ]; then
-    echo "!!! THIS REPO IS NOW PUBLIC (it was $was). Tell Leo straight away, then check the files AND"
+    echo "!!! THIS REPO IS NOW PUBLIC (it was $was). Tell the user straight away, then check the files AND"
     echo "!!! the git history for anything sensitive (see 'Public repos' in .claude/rules/playbook.md)."
     echo "!!! After the review, run: scripts/session.sh visibility-ok"
   elif [ "$now" != "$was" ]; then
@@ -149,19 +184,19 @@ check_visibility() {
 }
 
 # Open GitHub Issues, so every session sees them without being asked. Uses the GitHub
-# CLI where it exists (Leo's Mac); cloud sessions have none and use their GitHub tools.
+# CLI where it exists (the Mac); cloud sessions have none and use their GitHub tools.
 list_issues() {
   local gh out
   gh=$(command -v gh || { [ -x /opt/homebrew/bin/gh ] && echo /opt/homebrew/bin/gh; })
   if [ -z "$gh" ]; then
-    echo "ISSUES: no GitHub CLI here. List open issues with the GitHub tools and tell Leo."
+    echo "ISSUES: no GitHub CLI here. List open issues with the GitHub tools and tell the user."
     return
   fi
   if ! out=$("$gh" issue list --state open --limit 20 --json number,title,author,labels \
       -q '.[] | "  #\(.number) \(.title) (from \(.author.login)\(if (.labels|length)>0 then ", "+([.labels[].name]|join(", ")) else "" end))"' 2>/dev/null); then
-    echo "ISSUES: couldn't read them (offline or not signed in). Try again before telling Leo."
+    echo "ISSUES: couldn't read them (offline or not signed in). Try again before telling the user."
   elif [ -n "$out" ]; then
-    echo "ISSUES: open on GitHub. Tell Leo, and follow the rules for issues:"
+    echo "ISSUES: open on GitHub. Tell the user, and follow the rules for issues:"
     echo "$out"
   else
     echo "Issues: none open."
@@ -171,25 +206,26 @@ list_issues() {
 # ---------- Commands ----------
 
 cmd_start() {
-  echo "=== Session start ($DEVICE, branch $(branch)) ==="
+  echo "=== Session start ($DEVICE, branch $(branch)${SESSION_SH_IN_WORKTREE:+, in the session worktree}) ==="
   [ -n "$(unsaved)" ] && { echo "WARNING: uncommitted changes already in this checkout:"; unsaved; }
   pull_main
   local others
   others=$(other_work)
   if [ -n "$others" ]; then
-    echo "OTHER WORK not on main yet (other sessions, maybe still running). Avoid editing the same files; tell Leo if it overlaps:"
+    echo "OTHER WORK not on main yet (other sessions, maybe still running). Avoid editing the same files; tell the user if it overlaps:"
     echo "$others"
   else
     echo "No other unfinished work on other branches."
   fi
   [ -f scripts/playbook-sync.sh ] && bash scripts/playbook-sync.sh
+  update_launcher
   check_visibility
   local d
   for d in $(siblings); do
     if [ -f "$d/scripts/session.sh" ]; then
       echo "Also attached: $(basename "$d"). Before changing it, run: bash $d/scripts/session.sh start"
     elif [ ! -f "$d/shared/ai-dev-rules.md" ]; then   # the playbook itself has no session script
-      echo "NOT SET UP: $(basename "$d") doesn't follow the playbook yet. Tell Leo and offer to set it up."
+      echo "NOT SET UP: $(basename "$d") doesn't follow the playbook yet. Tell the user and offer to set it up."
     fi
   done
   list_issues
@@ -198,32 +234,78 @@ cmd_start() {
   sed -n '/^## Handover/,/^## Where we are/p' docs/STATUS.md | sed '$d'
 }
 
-# Count Leo's messages in this session (Claude Code passes the session id on stdin)
-# and every COACH_EVERY messages ask Claude to judge whether a fresh session would help.
-coach() {
-  local id file count path kb
-  id=$(printf '%s' "$1" | sed -n 's/.*"session_id" *: *"\([^"]*\)".*/\1/p' | head -1)
-  [ -n "$id" ] || return 0
+# Hooks run the main checkout's copy of this script, so keep that checkout up to date
+# when this session works in a worktree: fast-forward only, and only if it's on main
+# with nothing unsaved (otherwise someone is working there; leave it alone).
+update_launcher() {
+  local l=${SESSION_SH_LAUNCHER:-}
+  [ -n "$l" ] || return 0
+  [ "$(git -C "$l" rev-parse --abbrev-ref HEAD 2>/dev/null)" = main ] && [ -z "$(git -C "$l" status --porcelain 2>/dev/null)" ] || return 0
+  git -C "$l" merge -q --ff-only origin/main 2>/dev/null ||
+    echo "Note: the main checkout ($l) couldn't be brought up to date; hooks may run an old copy of this script."
+}
+
+# How costly is each message now? Measured, not counted: the context of the latest
+# main-conversation request (input + cache read + cache write tokens) against the
+# session's first, which is about a fresh session's size. Subagent requests don't count.
+# Claude Code passes the transcript's path on stdin. Without python3: silent.
+COST_PY='
+import calendar, json, sys, time
+hook = json.loads(sys.argv[1] or "{}")
+first = last = when = None
+with open(hook.get("transcript_path") or "") as f:
+    for line in f:
+        if "\"assistant\"" not in line:
+            continue
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if e.get("type") != "assistant" or e.get("isSidechain"):
+            continue
+        u = (e.get("message") or {}).get("usage") or {}
+        n = sum(u.get(k) or 0 for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+        if n:
+            first = first or n
+            last, when = n, e.get("timestamp") or ""
+if not first:
+    sys.exit(1)
+try:
+    age = int(time.time() - calendar.timegm(time.strptime(when[:19], "%Y-%m-%dT%H:%M:%S")))
+except ValueError:
+    age = -1
+print(hook.get("session_id") or "-", last // 1000, 10 * last // first, age)
+'
+cost() {
+  local stats id k r10 age level file
+  stats=$(python3 -c "$COST_PY" "$INPUT" 2>/dev/null) || return 0
+  read -r id k r10 age <<EOF
+$stats
+EOF
+  if [ "$age" -gt $((CACHE_MINUTES * 60)) ] && [ "$r10" -gt 20 ]; then
+    echo "COST: the cache has likely expired; this message re-processes about ${k}k tokens at full price."
+  fi
+  level=0
+  [ "$r10" -gt $((COST_NOTE * 10)) ] && level=1
+  [ "$r10" -gt $((COST_FIRM * 10)) ] && level=2
+  [ "$level" -gt 0 ] || return 0
+  # Each level is said once per session.
   mkdir -p .session
-  find .session -name 'messages-*' -mtime +7 -delete 2>/dev/null
-  file=.session/messages-$id
-  count=$(( $(cat "$file" 2>/dev/null || echo 0) + 1 ))
-  echo "$count" >"$file"
-  [ $((count % COACH_EVERY)) -eq 0 ] || return 0
-  path=$(printf '%s' "$1" | sed -n 's/.*"transcript_path" *: *"\([^"]*\)".*/\1/p' | head -1)
-  kb=$( [ -f "$path" ] && echo $(( $(wc -c <"$path") / 1024 )) || echo "?")
-  echo "COACH: this session has had $count of Leo's messages (transcript ${kb} KB). Each message re-reads all of it."
-  echo "COACH: judge whether the conversation still helps the current work. Suggest a fresh session (STATUS.md updated, starter prompt) only if the work changed or the context is cluttered, not for length alone (see 'Coaching' in .claude/rules/playbook.md)."
+  find .session \( -name 'cost-*' -o -name 'messages-*' \) -mtime +7 -delete 2>/dev/null
+  file=.session/cost-$id
+  [ "$level" -gt "$(cat "$file" 2>/dev/null || echo 0)" ] || return 0
+  echo "$level" >"$file"
+  echo "COST: each message now re-reads about ${k}k tokens, about $(( (r10 + 5) / 10 ))× a fresh session's."
 }
 
 cmd_busy() {
-  local input=""; [ -t 0 ] || input=$(cat)
-  coach "$input"
+  cost
 }
 
-# Fills $block (must be fixed before the reply ends) and $remind (Leo is told).
-# Work not on GitHub blocks in the cloud, where it's lost when the session closes;
-# on the Mac it's safe in its folder, so Leo gets a reminder instead.
+# Fills $block (must be fixed before the reply ends) and $remind (the user is told).
+# Only lost work counts: work not on GitHub blocks in the cloud, where it's lost when
+# the session closes; on the Mac it's safe in its folder, so the user gets a reminder.
+# Docs are checked when work lands on main instead (push-check), mid-turn.
 find_problems() {
   block=""; remind=""
   git fetch -q origin 2>/dev/null
@@ -233,12 +315,6 @@ find_problems() {
   [ -n "$(unpushed)" ] && lost="$lost
 - Commits on no branch on GitHub. Push this branch (git push origin HEAD), or, if the step is finished, merge into main and push (git push origin HEAD:main)."
   if [ "$DEVICE" = phone/cloud ]; then block="$lost"; else remind="$lost"; fi
-  if on_main; then
-    [ -n "$(unlogged)" ] && block="$block
-- Work reached main since docs/STATUS.md was last updated. Update STATUS.md (Handover block, where we are) and push. If the plan, scope or a choice changed, SPEC.md and docs/decisions.md too ('Keeping the docs true' in .claude/rules/playbook.md)."
-    [ -n "$(unplanned)" ] && block="$block
-- specs/ changed on main since SPEC.md was last updated. Make SPEC.md match (steps and their status, a link to each spec), log any change of plan in docs/decisions.md, and push."
-  fi
   local d
   for d in $(siblings); do
     [ -n "$(git -C "$d" status --porcelain 2>/dev/null)" ] && block="$block
@@ -249,13 +325,13 @@ find_problems() {
   return 0
 }
 
-# A JSON string, for the reminder Claude Code shows Leo.
+# A JSON string, for the reminder Claude Code shows the user.
 json_str() { printf '%s' "$1" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' 2>/dev/null ||
              printf '"%s"' "$(printf '%s' "$1" | tr '\n"\\' " '/")"; }
 
 cmd_check() {
   # Claude Code passes JSON on stdin; if it is already retrying after a block, don't loop.
-  local input=""; [ -t 0 ] || input=$(cat)
+  local input=$INPUT
   case "$input" in *'"stop_hook_active":true'*|*'"stop_hook_active": true'*) exit 0 ;; esac
   local block remind
   find_problems
@@ -269,9 +345,111 @@ cmd_check() {
   exit 0
 }
 
+# The command Claude is about to run (PreToolUse on Bash): which of its git pushes go
+# to main? Prints "<folder><TAB><what's pushed>" for each; "?HEAD" means the current
+# branch, if that's main. Handles `git -C <dir> -c <x> push [options] [remote] [refspecs]`.
+PUSH_PY='
+import json, shlex, sys
+cmd = ((json.loads(sys.argv[1] or "{}").get("tool_input") or {}).get("command")) or ""
+cmd = cmd.replace("\n", " ; ")   # each line is a command of its own
+lex = shlex.shlex(cmd, posix=True, punctuation_chars=";&|()")
+lex.whitespace_split = True
+try:
+    tokens = list(lex)
+except ValueError:
+    sys.exit(0)
+segments, seg = [], []
+for t in tokens + [";"]:
+    if t and set(t) <= set(";&|()\n"):
+        segments.append(seg)
+        seg = []
+    else:
+        seg.append(t)
+for s in segments:
+    while s and "=" in s[0] and not s[0].startswith("-"):
+        s = s[1:]   # FOO=bar git push ...
+    if not s or s[0] != "git":
+        continue
+    i, where = 1, "."
+    while i < len(s) and s[i].startswith("-"):
+        if s[i] in ("-C", "-c") and i + 1 < len(s):
+            if s[i] == "-C":
+                where = s[i + 1]
+            i += 1
+        i += 1
+    if i >= len(s) or s[i] != "push":
+        continue
+    args, j = [], i + 1
+    while j < len(s):
+        a = s[j]
+        if a in ("-o", "--push-option", "--repo", "--receive-pack", "--exec"):
+            j += 1
+        elif a in ("--all", "--branches", "--mirror"):
+            args.append("main")
+        elif not a.startswith("-"):
+            args.append(a)
+        j += 1
+    refspecs = args[1:]
+    if not refspecs:
+        print(where + "\t?HEAD")
+    for r in refspecs:
+        r = r.lstrip("+")
+        src, colon, dst = r.partition(":")
+        if not colon and src == "HEAD":
+            print(where + "\t?HEAD")
+            continue
+        if not colon:
+            dst = src
+        if src and dst.replace("refs/heads/", "", 1) == "main":
+            print(where + "\t" + src)
+'
+
+# What a push of <src> to main would bring without its docs. Same exclusions as unlogged.
+docs_missing() {  # src
+  local commits files
+  commits=$(git log --format='%h %ae' --invert-grep --grep='^Playbook: ' origin/main.."$1" 2>/dev/null |
+    awk '$2 !~ /\[bot\]@/ { print $1 }')
+  [ -n "$commits" ] || return 0
+  files=$(git log --format= --name-only origin/main.."$1")
+  if [ -n "$(git log -1 --format=%H "$1" -- docs/STATUS.md)" ] && ! printf '%s\n' "$files" | grep -qx docs/STATUS.md; then
+    echo "- docs/STATUS.md: update the Handover block and 'Where we are'. If the plan, scope or a choice changed, SPEC.md and docs/decisions.md too ('Keeping the docs true' in .claude/rules/playbook.md)."
+  fi
+  if git cat-file -e "$1:SPEC.md" 2>/dev/null && printf '%s\n' "$files" | grep -q '^specs/' &&
+     ! printf '%s\n' "$files" | grep -qx SPEC.md; then
+    echo "- SPEC.md: specs/ changed, so make SPEC.md match (steps and their status, a link to each spec)."
+  fi
+}
+
+cmd_push_check() {
+  local pushes where src missing=""
+  pushes=$(python3 -c "$PUSH_PY" "$INPUT" 2>/dev/null) || exit 0
+  [ -n "$pushes" ] || exit 0
+  git fetch -q origin main 2>/dev/null
+  while IFS="$(printf '\t')" read -r where src; do
+    [ -n "$src" ] || continue
+    if [ "$src" = "?HEAD" ]; then
+      [ "$(git -C "$where" rev-parse --abbrev-ref HEAD 2>/dev/null)" = main ] || continue
+      src=HEAD
+    fi
+    missing="$missing$( cd "$where" 2>/dev/null && docs_missing "$src" )"
+  done <<EOF
+$pushes
+EOF
+  [ -n "$missing" ] || exit 0
+  echo "Push to main stopped by the playbook: this work lands on main without its docs. Commit these, then push again:
+$missing" >&2
+  exit 2   # tells Claude Code not to run the command, and why
+}
+
 cmd_end() {
   local block remind
   find_problems
+  if on_main; then
+    [ -n "$(unlogged)" ] && remind="$remind
+- Work reached main since docs/STATUS.md was last updated."
+    [ -n "$(unplanned)" ] && remind="$remind
+- specs/ changed on main since SPEC.md was last updated."
+  fi
   if [ -n "$block$remind" ]; then
     echo "Not ready to switch device:$block$remind"
     exit 1
@@ -292,9 +470,10 @@ cmd_status() {
 case "${1:-status}" in
   start)  cmd_start ;;
   busy)   cmd_busy ;;   # an old "busy --force" from the lock days is harmless
+  push-check) cmd_push_check ;;
   check)  cmd_check ;;
   end)    cmd_end ;;
   status) cmd_status ;;
   visibility-ok) v=$(visibility) && record_visibility "$v" && echo "Recorded: this repo is $v (reviewed)." ;;
-  *) echo "Usage: $0 start | busy | check | end | status | visibility-ok"; exit 1 ;;
+  *) echo "Usage: $0 start | busy | check | push-check | end | status | visibility-ok"; exit 1 ;;
 esac

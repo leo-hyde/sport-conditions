@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Brings this project's copies of the shared playbook files up to date from
-# github.com/leo-hyde/claude-playbook, so a change made once in the playbook
-# reaches every project. session.sh runs this at every session start.
+# The playbook's address on GitHub. A fork of the playbook changes this line and owner/.
+PLAYBOOK_URL=${PLAYBOOK_URL:-https://github.com/leo-hyde/claude-playbook.git}   # tests point it elsewhere
+
+# Brings this project's copies of the shared playbook files up to date from the
+# playbook, so a change made once there reaches every project. session.sh runs
+# this at every session start.
 #
 # Where it looks for the playbook, in order:
-#   1. $PLAYBOOK_DIR, ~/.claude/skills/new-app (Leo's Mac), or ../claude-playbook
+#   1. $PLAYBOOK_DIR, ~/.claude/skills/new-app (the Mac), or ../claude-playbook
 #      (a cloud session with the playbook attached): any clone, refreshed with fetch
 #   2. A small copy downloaded from GitHub into .session/playbook (not committed)
 # It always reads a branch of the playbook on GitHub, never a clone's unsaved edits:
@@ -18,11 +21,14 @@
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 0
 
-URL=${PLAYBOOK_URL:-https://github.com/leo-hyde/claude-playbook.git}   # tests point it elsewhere
+PLAYBOOK_WEB=$(printf '%s' "$PLAYBOOK_URL" | sed -E 's#^[a-z]+://##; s#\.git$##')   # for messages
 # playbook file : this project's copy
 FILES="shared/ai-dev-rules.md:.claude/rules/playbook.md
+owner/profile.md:.claude/rules/owner.md
 shared/session.sh:scripts/session.sh
-shared/playbook-sync.sh:scripts/playbook-sync.sh"
+shared/playbook-sync.sh:scripts/playbook-sync.sh
+templates/.claude/agents/scout.md:.claude/agents/scout.md
+templates/.claude/agents/checker.md:.claude/agents/checker.md"
 
 # The playbook itself doesn't sync from itself.
 [ -f shared/ai-dev-rules.md ] && exit 0
@@ -30,7 +36,7 @@ shared/playbook-sync.sh:scripts/playbook-sync.sh"
 # Never wait for a password or a dead connection.
 export GIT_TERMINAL_PROMPT=0
 G=(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=15)
-# On Leo's Mac, the GitHub CLI holds the login for the private repo.
+# On the Mac, the GitHub CLI holds the login for private repos.
 GH=/opt/homebrew/bin/gh
 [ -x "$GH" ] && G+=(-c credential.helper= -c "credential.helper=!$GH auth git-credential")
 
@@ -39,7 +45,7 @@ channel=$( [ -f .claude/playbook-channel ] && tr -d ' \t\r\n' <.claude/playbook-
 case "$channel" in
   main|stable) ;;
   "") channel=stable ;;
-  *) echo "SETUP: .claude/playbook-channel should read main or stable, not '$channel'. Using stable. Tell Leo."
+  *) echo "SETUP: .claude/playbook-channel should read main or stable, not '$channel'. Using stable. Tell the user."
      channel=stable ;;
 esac
 # Explicit refspecs, so a single-branch clone still records origin/stable.
@@ -57,7 +63,7 @@ if [ -n "$src" ] && [ "$channel" = stable ]; then
 fi
 [ -n "$src" ] || for d in "${PLAYBOOK_DIR:-}" "$HOME/.claude/skills/new-app" "../claude-playbook" ".session/playbook"; do
   [ -n "$d" ] && [ -d "$d/.git" ] || continue
-  depth=""; [ "$d" = .session/playbook ] && depth=1   # keep Leo's own clones whole
+  depth=""; [ "$d" = .session/playbook ] && depth=1   # keep the user's own clones whole
   fetch_branch "$d" main $depth || continue
   # No stable yet is fine (main is used). If fetching it fails, the last one fetched is
   # kept: an older release is safe, and stable is never deleted or rewound.
@@ -67,13 +73,13 @@ done
 if [ -z "$src" ]; then
   rm -rf .session/playbook
   mkdir -p .session
-  "${G[@]}" clone -q --depth 1 --branch main "$URL" .session/playbook 2>/dev/null && src=.session/playbook &&
+  "${G[@]}" clone -q --depth 1 --branch main "$PLAYBOOK_URL" .session/playbook 2>/dev/null && src=.session/playbook &&
     { [ "$channel" = main ] || fetch_branch "$src" stable 1 || true; }
 fi
 if [ -z "$src" ]; then
   last=$(git log -1 --format=%cs --grep='^Playbook: update' 2>/dev/null)
-  echo "PLAYBOOK NOT SYNCED: couldn't reach github.com/leo-hyde/claude-playbook, so this session uses the copy"
-  echo "already in .claude/rules/playbook.md (last updated ${last:-never}). Tell Leo; retry later with: bash scripts/playbook-sync.sh"
+  echo "PLAYBOOK NOT SYNCED: couldn't reach $PLAYBOOK_WEB, so this session uses the copy"
+  echo "already in .claude/rules/playbook.md (last updated ${last:-never}). Tell the user; retry later with: bash scripts/playbook-sync.sh"
   exit 0
 fi
 
@@ -98,7 +104,7 @@ $FILES
 EOF
 
 if [ -n "$changed" ]; then
-  # A commit of only these files, named "Playbook: …" so session.sh doesn't ask for a STATUS update.
+  # A commit of only these files, named "Playbook: …" so a push of it needs no STATUS update.
   git add -f -- $changed && git commit -q -m "Playbook: update shared files from claude-playbook" -- $changed
   echo "Playbook: updated$changed from claude-playbook (committed, not yet pushed)."
   if [ "$ref" = origin/stable ]; then
@@ -110,8 +116,8 @@ if [ -n "$changed" ]; then
   else
     echo "Playbook: read from the playbook's main ($( [ "$channel" = main ] && echo "canary" || echo "no stable branch yet")), not a release."
   fi
-  case "$changed" in *playbook.md*)
-    echo "Playbook: the shared rules changed; read .claude/rules/playbook.md again before starting." ;;
+  case "$changed" in *.claude/rules/*)
+    echo "Playbook: the shared rules changed; read .claude/rules/ again before starting." ;;
   esac
   # This script just replaced itself: run the new version now, so anything it
   # adds (a new check, like catch-ups) works this session, not only the next.
@@ -184,18 +190,18 @@ if [ -n "$fixed" ]; then
   esac
 fi
 for f in $(printf '%s\n' "$setup" | sed -n 's/^file //p'); do
-  [ -e "$f" ] || echo "SETUP: $f is missing. Tell Leo and offer to add it (playbook reference/phone-and-computer.md)."
+  [ -e "$f" ] || echo "SETUP: $f is missing. Tell the user and offer to add it (playbook reference/phone-and-computer.md)."
 done
 
 # Catch-ups (shared/catch-up.md): rule changes that this project's existing files
 # need too. Each "## <id>: <title>" section is due until docs/playbook-catch-up.md
-# mentions its id.
+# mentions its id. One line each here; Claude reads the entry itself when applying it.
 due=$(git -C "$src" show "$ref:shared/catch-up.md" 2>/dev/null | awk '
   BEGIN { while ((getline line < "docs/playbook-catch-up.md") > 0) done = done "\n" line }
-  /^## / { id = $2; sub(/:$/, "", id); show = (index(done, id) == 0); started = 1 }
-  started && show')
+  /^## / { id = $2; sub(/:$/, "", id); if (index(done, id) == 0) { sub(/^## /, "  "); print } }')
 if [ -n "$due" ]; then
-  echo "Playbook: CATCH-UP DUE. These rule changes also apply to files this project already has."
-  echo "Tell Leo, apply them (or offer a separate session if big), then record each id in docs/playbook-catch-up.md:"
+  echo "Playbook: CATCH-UP DUE (rule changes for files this project already has). Tell the user, apply each"
+  echo "(or offer a separate session if big), then record its id in docs/playbook-catch-up.md. Read each entry with:"
+  echo "  git -C '$src' show $ref:shared/catch-up.md"
   echo "$due"
 fi
