@@ -7,7 +7,10 @@
 #   1. $PLAYBOOK_DIR, ~/.claude/skills/new-app (Leo's Mac), or ../claude-playbook
 #      (a cloud session with the playbook attached): any clone, refreshed with fetch
 #   2. A small copy downloaded from GitHub into .session/playbook (not committed)
-# It always reads the playbook's GitHub `main`, never a clone's unsaved edits.
+# It always reads a branch of the playbook on GitHub, never a clone's unsaved edits:
+# `stable` (moved on by each release), or `main` for a canary project, whose
+# committed .claude/playbook-channel reads "main". If `stable` doesn't exist yet,
+# it reads `main` (the change-over from before releases).
 # If the playbook can't be reached, the copies already committed here are used.
 #
 # This file comes from the playbook (shared/playbook-sync.sh): edit it there.
@@ -15,7 +18,7 @@
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 0
 
-URL=https://github.com/leo-hyde/claude-playbook.git
+URL=${PLAYBOOK_URL:-https://github.com/leo-hyde/claude-playbook.git}   # tests point it elsewhere
 # playbook file : this project's copy
 FILES="shared/ai-dev-rules.md:.claude/rules/playbook.md
 shared/session.sh:scripts/session.sh
@@ -31,18 +34,41 @@ G=(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=15)
 GH=/opt/homebrew/bin/gh
 [ -x "$GH" ] && G+=(-c credential.helper= -c "credential.helper=!$GH auth git-credential")
 
-# Second run after this script updated itself (see below): the playbook is already fetched.
+# Which playbook branch: .claude/playbook-channel holds one word, main or stable.
+channel=$( [ -f .claude/playbook-channel ] && tr -d ' \t\r\n' <.claude/playbook-channel)
+case "$channel" in
+  main|stable) ;;
+  "") channel=stable ;;
+  *) echo "SETUP: .claude/playbook-channel should read main or stable, not '$channel'. Using stable. Tell Leo."
+     channel=stable ;;
+esac
+# Explicit refspecs, so a single-branch clone still records origin/stable.
+fetch_branch() {  # dir branch [depth]
+  "${G[@]}" -C "$1" fetch -q ${3:+--depth "$3"} origin "+refs/heads/$2:refs/remotes/origin/$2" 2>/dev/null &&
+    "${G[@]}" -C "$1" rev-parse -q --verify "origin/$2" >/dev/null
+}
+
+# Second run after this script updated itself (see below): the playbook's main is already
+# fetched. Fetch stable too: an older script that ran first didn't know about it.
 src="${PLAYBOOK_SYNC_SRC:-}"
+if [ -n "$src" ] && [ "$channel" = stable ]; then
+  depth=""; [ "$src" = .session/playbook ] && depth=1
+  fetch_branch "$src" stable $depth || true
+fi
 [ -n "$src" ] || for d in "${PLAYBOOK_DIR:-}" "$HOME/.claude/skills/new-app" "../claude-playbook" ".session/playbook"; do
   [ -n "$d" ] && [ -d "$d/.git" ] || continue
-  depth=""; [ "$d" = .session/playbook ] && depth="--depth 1"   # keep Leo's own clones whole
-  "${G[@]}" -C "$d" fetch -q $depth origin main 2>/dev/null &&
-    "${G[@]}" -C "$d" rev-parse -q --verify origin/main >/dev/null && { src=$d; break; }
+  depth=""; [ "$d" = .session/playbook ] && depth=1   # keep Leo's own clones whole
+  fetch_branch "$d" main $depth || continue
+  # No stable yet is fine (main is used). If fetching it fails, the last one fetched is
+  # kept: an older release is safe, and stable is never deleted or rewound.
+  [ "$channel" = stable ] && { fetch_branch "$d" stable $depth || true; }
+  src=$d; break
 done
 if [ -z "$src" ]; then
   rm -rf .session/playbook
   mkdir -p .session
-  "${G[@]}" clone -q --depth 1 --branch main "$URL" .session/playbook 2>/dev/null && src=.session/playbook
+  "${G[@]}" clone -q --depth 1 --branch main "$URL" .session/playbook 2>/dev/null && src=.session/playbook &&
+    { [ "$channel" = main ] || fetch_branch "$src" stable 1 || true; }
 fi
 if [ -z "$src" ]; then
   last=$(git log -1 --format=%cs --grep='^Playbook: update' 2>/dev/null)
@@ -51,10 +77,14 @@ if [ -z "$src" ]; then
   exit 0
 fi
 
+# The branch to read: the channel's, or main while there's no stable yet.
+ref=origin/main
+[ "$channel" = stable ] && git -C "$src" rev-parse -q --verify origin/stable >/dev/null && ref=origin/stable
+
 changed=""
 while IFS=: read -r from to; do
   new=$(mktemp) || exit 0
-  git -C "$src" show "origin/main:$from" >"$new" 2>/dev/null || { rm -f "$new"; continue; }
+  git -C "$src" show "$ref:$from" >"$new" 2>/dev/null || { rm -f "$new"; continue; }
   if ! cmp -s "$new" "$to"; then
     mkdir -p "$(dirname "$to")"
     case "$to" in *.sh) chmod +x "$new" ;; *) chmod 644 "$new" ;; esac
@@ -71,6 +101,15 @@ if [ -n "$changed" ]; then
   # A commit of only these files, named "Playbook: …" so session.sh doesn't ask for a STATUS update.
   git add -f -- $changed && git commit -q -m "Playbook: update shared files from claude-playbook" -- $changed
   echo "Playbook: updated$changed from claude-playbook (committed, not yet pushed)."
+  if [ "$ref" = origin/stable ]; then
+    # The newest release note: its heading (the tag) and first line. Claude passes it on.
+    note=$(git -C "$src" show "$ref:RELEASES.md" 2>/dev/null | awk '
+      /^## release-/ { if (tag) exit; tag = $2; next }
+      tag && NF { print tag ": " $0; exit }')
+    [ -n "$note" ] && echo "Playbook: updated to $note"
+  else
+    echo "Playbook: read from the playbook's main ($( [ "$channel" = main ] && echo "canary" || echo "no stable branch yet")), not a release."
+  fi
   case "$changed" in *playbook.md*)
     echo "Playbook: the shared rules changed; read .claude/rules/playbook.md again before starting." ;;
   esac
@@ -88,7 +127,7 @@ fi
 
 # Set-up (shared/setup.txt): what every project needs besides the copied files.
 # Missing .gitignore lines and hooks are added and committed; missing files are reported.
-setup=$(git -C "$src" show origin/main:shared/setup.txt 2>/dev/null | sed -n 's/^\([a-z]*\): *\(.*[^ ]\) *$/\1 \2/p')
+setup=$(git -C "$src" show "$ref:shared/setup.txt" 2>/dev/null | sed -n 's/^\([a-z]*\): *\(.*[^ ]\) *$/\1 \2/p')
 fixed=""
 want=$(printf '%s\n' "$setup" | sed -n 's/^gitignore //p')
 if [ -n "$want" ]; then
@@ -102,7 +141,7 @@ if [ -n "$want" ]; then
 fi
 for f in $(printf '%s\n' "$setup" | sed -n 's/^hooks //p'); do
   tmpl=$(mktemp) || break
-  git -C "$src" show "origin/main:$f" >"$tmpl" 2>/dev/null || { rm -f "$tmpl"; continue; }
+  git -C "$src" show "$ref:$f" >"$tmpl" 2>/dev/null || { rm -f "$tmpl"; continue; }
   if ! command -v python3 >/dev/null 2>&1; then
     echo "SETUP: can't check the hooks in .claude/settings.json (no python3). Compare it with the playbook's $f."
   else
@@ -151,7 +190,7 @@ done
 # Catch-ups (shared/catch-up.md): rule changes that this project's existing files
 # need too. Each "## <id>: <title>" section is due until docs/playbook-catch-up.md
 # mentions its id.
-due=$(git -C "$src" show origin/main:shared/catch-up.md 2>/dev/null | awk '
+due=$(git -C "$src" show "$ref:shared/catch-up.md" 2>/dev/null | awk '
   BEGIN { while ((getline line < "docs/playbook-catch-up.md") > 0) done = done "\n" line }
   /^## / { id = $2; sub(/:$/, "", id); show = (index(done, id) == 0); started = 1 }
   started && show')

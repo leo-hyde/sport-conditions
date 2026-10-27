@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
-# Keeps phone and desktop Claude sessions in sync through GitHub.
+# Keeps Leo's Claude sessions (phone/cloud and Mac, often several at once) in step
+# through GitHub. Git itself is the safety net: worktrees and cloud branches keep
+# sessions' files apart, and GitHub refuses a push that would overwrite newer work.
+# This script makes sure each session starts up to date, sees other unfinished
+# work, and doesn't end with work that only it can see.
 #
-# The lock means "Claude is working on a reply right now", not "a session is open".
-# It is claimed when Leo sends a message and released as soon as Claude finishes
-# its reply, so a session left open (or closed without saying goodbye) holds no lock.
-#
-#   scripts/session.sh start          a session opens: pull main, show the lock and the handover
-#   scripts/session.sh busy [--force] Leo sends a message: pull main, claim the lock
-#   scripts/session.sh check          Claude finishes a reply: refuse if work is unsaved, else release
-#   scripts/session.sh end            release the lock by hand (same as a clean check)
-#   scripts/session.sh status         show the lock and git state
+#   scripts/session.sh start          a session opens: pull main, list other unfinished work, issues, handover
+#   scripts/session.sh busy           Leo sends a message: count it, for the coaching tips (nothing else)
+#   scripts/session.sh check          Claude finishes a reply: cloud blocks on work not on GitHub; the Mac
+#                                     shows Leo a reminder; work on main must have its docs updated
+#   scripts/session.sh end            the same checks, printed, before switching device
+#   scripts/session.sh status         git state, and other unfinished work
 #   scripts/session.sh visibility-ok  after a privacy review, record the repo's visibility as reviewed
 #
-# The lock is a file called `lock` on its own branch, `session-lock`, so it doesn't
-# clutter main's history or republish the site. Because GitHub only accepts a push
-# that builds on the latest version of a branch, two devices can't both claim it.
+# There used to be a lock on a `session-lock` branch (Oct 2026). It tracked devices,
+# not sessions, so it couldn't handle several sessions at once; git does the real job.
 # Claude Code runs start, busy and check automatically (see .claude/settings.json).
-#
-# `start` also runs scripts/playbook-sync.sh (shared rules from claude-playbook), and
-# `busy` counts Leo's messages so Claude can suggest a fresh session when one gets long.
+# `start` also runs scripts/playbook-sync.sh (shared rules from claude-playbook).
 # This file comes from github.com/leo-hyde/claude-playbook (shared/session.sh): edit it there.
 
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 0
 
-LOCK_BRANCH=session-lock
-STALE_HOURS=2  # a busy lock older than this was left behind by a crash
-COACH_EVERY=15 # remind Claude about session length every this many messages (a judgement call)
+COACH_EVERY=15  # remind Claude about session length every this many messages (a judgement call)
+RECENT_DAYS=14  # other branches with no commit for longer than this are treated as abandoned
 
 # Which device is this? Cloud sessions (phone, web) set CLAUDE_CODE_REMOTE.
 if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || [ "$(uname -s)" != "Darwin" ]; then
@@ -35,54 +32,16 @@ else
   DEVICE=desktop
 fi
 
-now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 branch() { git rev-parse --abbrev-ref HEAD; }
-
-# Hours since an ISO time; works on macOS and Linux date.
-hours_since() {
-  local t
-  t=$(date -u -j -f %Y-%m-%dT%H:%M:%SZ "$1" +%s 2>/dev/null || date -u -d "$1" +%s 2>/dev/null) || { echo 999; return; }
-  echo $(( ( $(date -u +%s) - t ) / 3600 ))
-}
-
-# ---------- The lock (on the session-lock branch) ----------
-
-fetch_lock() {
-  git fetch -q origin "+refs/heads/$LOCK_BRANCH:refs/remotes/origin/$LOCK_BRANCH" 2>/dev/null
-}
-lock_text() { git show "origin/$LOCK_BRANCH:lock" 2>/dev/null; }
-field() { lock_text | sed -n "s/^$1=//p" | head -1; }
-
-# Is another device busy right now? Prints a description if so.
-other_busy() {
-  local state device since age
-  state=$(field state); device=$(field device); since=$(field since)
-  [ "$state" = "busy" ] && [ "$device" != "$DEVICE" ] || return 1
-  age=$(hours_since "$since")
-  [ "$age" -lt "$STALE_HOURS" ] || return 1
-  echo "$device has been working on a reply since $since"
-}
-
-# Write the lock file straight onto the session-lock branch and push it, without
-# touching the files you're working on. (These are git's "plumbing" commands:
-# store the file, make a folder listing, make a commit, push it.) Never forces.
-write_lock() {  # state
-  local blob tree parent commit
-  blob=$(printf 'state=%s\ndevice=%s\nsince=%s\nbranch=%s\n' "$1" "$DEVICE" "$(now)" "$(branch)" | git hash-object -w --stdin)
-  tree=$(printf '100644 blob %s\tlock\n' "$blob" | git mktree)
-  parent=$(git rev-parse -q --verify "origin/$LOCK_BRANCH")
-  commit=$(echo "Lock $1: $DEVICE" | git commit-tree "$tree" ${parent:+-p "$parent"})
-  if git push -q origin "$commit:refs/heads/$LOCK_BRANCH" 2>/dev/null; then
-    fetch_lock; return 0
-  fi
-  echo "LOCK NOT UPDATED: the other device changed it at the same moment, or GitHub can't be reached."
-  return 1
-}
 
 # ---------- Git state ----------
 
 unsaved() { git status --porcelain; }
-unpushed() { git log --oneline origin/main..HEAD 2>/dev/null; }
+# Commits on no branch on GitHub: only this checkout has them.
+unpushed() { git log --oneline HEAD --not --remotes=origin 2>/dev/null; }
+# Is this checkout's work on main? Docs are checked only then: mid-step work on a
+# session's own branch keeps its notes in its spec, and STATUS.md changes at step end.
+on_main() { git merge-base --is-ancestor HEAD origin/main 2>/dev/null; }
 
 # Commits since STATUS.md was last changed. Playbook syncs don't count, nor do
 # commits by GitHub Action bots (a daily data run isn't a step to record).
@@ -105,6 +64,26 @@ unplanned() {
     awk '$2 !~ /\[bot\]@/ { print $1 }'
 }
 
+# Other sessions' unfinished work: branches (on GitHub, or local ones, which Mac
+# worktrees share) with commits not on main, touched in the last RECENT_DAYS days.
+# One line each: "name: N commits not on main, last <when>".
+other_work() {
+  local me ref name n when seen=" "
+  me=$(branch)
+  git for-each-ref --sort=-committerdate --format='%(refname) %(committerdate:unix)' refs/heads refs/remotes/origin |
+  while read -r ref t; do
+    name=${ref#refs/heads/}; name=${name#refs/remotes/origin/}
+    case "$name" in main|HEAD|session-lock|"$me") continue ;; esac
+    case "$seen" in *" $name "*) continue ;; esac
+    seen="$seen$name "
+    [ $(( $(date +%s) - t )) -lt $(( RECENT_DAYS * 86400 )) ] || continue
+    n=$(git rev-list --count origin/main.."$ref" 2>/dev/null) || continue
+    [ "$n" -gt 0 ] || continue
+    when=$(git log -1 --format=%cr "$ref")
+    echo "  $name: $n commit(s) not on main, last $when"
+  done
+}
+
 # Other repos attached to the same cloud session sit next to this one. Hooks only
 # run in the repo the session opened in, so start and check look after the others.
 siblings() {
@@ -119,7 +98,7 @@ siblings() {
 
 # Bring in the latest main, whatever branch we're on.
 pull_main() {
-  git fetch -q origin main || { echo "WARNING: could not reach GitHub. Work may be out of date."; return; }
+  git fetch -q --prune origin || { echo "WARNING: could not reach GitHub. Work may be out of date."; return; }
   if ! git merge -q --no-edit origin/main 2>/dev/null; then
     git merge --abort 2>/dev/null
     echo "CONFLICT: could not merge the latest main into $(branch). Stop and tell Leo."
@@ -169,19 +148,39 @@ check_visibility() {
   fi
 }
 
+# Open GitHub Issues, so every session sees them without being asked. Uses the GitHub
+# CLI where it exists (Leo's Mac); cloud sessions have none and use their GitHub tools.
+list_issues() {
+  local gh out
+  gh=$(command -v gh || { [ -x /opt/homebrew/bin/gh ] && echo /opt/homebrew/bin/gh; })
+  if [ -z "$gh" ]; then
+    echo "ISSUES: no GitHub CLI here. List open issues with the GitHub tools and tell Leo."
+    return
+  fi
+  if ! out=$("$gh" issue list --state open --limit 20 --json number,title,author,labels \
+      -q '.[] | "  #\(.number) \(.title) (from \(.author.login)\(if (.labels|length)>0 then ", "+([.labels[].name]|join(", ")) else "" end))"' 2>/dev/null); then
+    echo "ISSUES: couldn't read them (offline or not signed in). Try again before telling Leo."
+  elif [ -n "$out" ]; then
+    echo "ISSUES: open on GitHub. Tell Leo, and follow the rules for issues:"
+    echo "$out"
+  else
+    echo "Issues: none open."
+  fi
+}
+
 # ---------- Commands ----------
 
 cmd_start() {
   echo "=== Session start ($DEVICE, branch $(branch)) ==="
   [ -n "$(unsaved)" ] && { echo "WARNING: uncommitted changes already in this checkout:"; unsaved; }
   pull_main
-  fetch_lock
-  local busy
-  if busy=$(other_busy); then
-    echo "!!! ANOTHER DEVICE IS WORKING: $busy."
-    echo "!!! Tell Leo straight away and change nothing until that reply has finished."
+  local others
+  others=$(other_work)
+  if [ -n "$others" ]; then
+    echo "OTHER WORK not on main yet (other sessions, maybe still running). Avoid editing the same files; tell Leo if it overlaps:"
+    echo "$others"
   else
-    echo "No other device is working. (The lock is claimed automatically when Leo sends a message.)"
+    echo "No other unfinished work on other branches."
   fi
   [ -f scripts/playbook-sync.sh ] && bash scripts/playbook-sync.sh
   check_visibility
@@ -193,6 +192,7 @@ cmd_start() {
       echo "NOT SET UP: $(basename "$d") doesn't follow the playbook yet. Tell Leo and offer to set it up."
     fi
   done
+  list_issues
   echo
   echo "--- Handover from docs/STATUS.md ---"
   sed -n '/^## Handover/,/^## Where we are/p' docs/STATUS.md | sed '$d'
@@ -219,78 +219,82 @@ coach() {
 cmd_busy() {
   local input=""; [ -t 0 ] || input=$(cat)
   coach "$input"
-  pull_main
-  fetch_lock
-  local busy
-  if busy=$(other_busy) && [ "${1:-}" != "--force" ]; then
-    echo "!!! ANOTHER DEVICE IS WORKING: $busy."
-    echo "!!! Tell Leo before changing anything. Read-only work is fine."
-    echo "!!! If Leo says that session has finished, run: scripts/session.sh busy --force"
-    exit 0
-  fi
-  write_lock busy >/dev/null || echo "Note: could not claim the session lock (GitHub unreachable or busy)."
 }
+
+# Fills $block (must be fixed before the reply ends) and $remind (Leo is told).
+# Work not on GitHub blocks in the cloud, where it's lost when the session closes;
+# on the Mac it's safe in its folder, so Leo gets a reminder instead.
+find_problems() {
+  block=""; remind=""
+  git fetch -q origin 2>/dev/null
+  local lost=""
+  [ -n "$(unsaved)" ] && lost="$lost
+- Uncommitted changes. Commit them."
+  [ -n "$(unpushed)" ] && lost="$lost
+- Commits on no branch on GitHub. Push this branch (git push origin HEAD), or, if the step is finished, merge into main and push (git push origin HEAD:main)."
+  if [ "$DEVICE" = phone/cloud ]; then block="$lost"; else remind="$lost"; fi
+  if on_main; then
+    [ -n "$(unlogged)" ] && block="$block
+- Work reached main since docs/STATUS.md was last updated. Update STATUS.md (Handover block, where we are) and push. If the plan, scope or a choice changed, SPEC.md and docs/decisions.md too ('Keeping the docs true' in .claude/rules/playbook.md)."
+    [ -n "$(unplanned)" ] && block="$block
+- specs/ changed on main since SPEC.md was last updated. Make SPEC.md match (steps and their status, a link to each spec), log any change of plan in docs/decisions.md, and push."
+  fi
+  local d
+  for d in $(siblings); do
+    [ -n "$(git -C "$d" status --porcelain 2>/dev/null)" ] && block="$block
+- $(basename "$d") (also attached) has uncommitted changes. Commit them."
+    [ -n "$(git -C "$d" log --oneline HEAD --not --remotes=origin 2>/dev/null)" ] && block="$block
+- $(basename "$d") (also attached) has commits on no branch on GitHub. Push them: git -C $d push origin HEAD"
+  done
+  return 0
+}
+
+# A JSON string, for the reminder Claude Code shows Leo.
+json_str() { printf '%s' "$1" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' 2>/dev/null ||
+             printf '"%s"' "$(printf '%s' "$1" | tr '\n"\\' " '/")"; }
 
 cmd_check() {
   # Claude Code passes JSON on stdin; if it is already retrying after a block, don't loop.
   local input=""; [ -t 0 ] || input=$(cat)
   case "$input" in *'"stop_hook_active":true'*|*'"stop_hook_active": true'*) exit 0 ;; esac
-
-  local problems=""
-  [ -n "$(unsaved)" ] && problems="$problems
-- Uncommitted changes. Commit them."
-  [ -n "$(unlogged)" ] && problems="$problems
-- Work committed since docs/STATUS.md was last updated. Update STATUS.md (Handover block, where we are) and commit. If the plan, scope or a choice changed, SPEC.md and docs/decisions.md too ('Keeping the docs true' in .claude/rules/playbook.md)."
-  [ -n "$(unplanned)" ] && problems="$problems
-- specs/ changed since SPEC.md was last updated. Make SPEC.md match (goal, scope, steps and their status, a link to each spec), log any change of plan in docs/decisions.md, and commit."
-  git fetch -q origin main 2>/dev/null
-  [ -n "$(unpushed)" ] && problems="$problems
-- Commits not on GitHub main. Push with: git push origin HEAD:main (or merge this branch into main and push)."
-  local d
-  for d in $(siblings); do
-    [ -n "$(git -C "$d" status --porcelain 2>/dev/null)" ] && problems="$problems
-- $(basename "$d") (also attached) has uncommitted changes. Commit them."
-    [ -n "$(git -C "$d" log --oneline origin/main..HEAD 2>/dev/null)" ] && problems="$problems
-- $(basename "$d") (also attached) has commits not on GitHub main. Push them with: git -C $d push origin HEAD:main"
-  done
-
-  if [ -n "$problems" ]; then
-    echo "Not finished: the other device would not see this work yet.$problems" >&2
+  local block remind
+  find_problems
+  if [ -n "$block" ]; then
+    echo "Not finished: other sessions and devices would not see this work.$block" >&2
     exit 2   # tells Claude Code to keep going and fix these
   fi
-  release
+  if [ -n "$remind" ]; then
+    echo "{\"systemMessage\": $(json_str "Not on GitHub yet (safe on this Mac):$remind")}"
+  fi
   exit 0
 }
 
-# Free the lock, if this device holds it.
-release() {
-  fetch_lock
-  [ "$(field state)" = "busy" ] && [ "$(field device)" = "$DEVICE" ] && write_lock free >/dev/null
-  return 0
-}
-
 cmd_end() {
-  local problems
-  problems=$(cmd_check </dev/null 2>&1) || { echo "$problems"; exit 1; }
-  echo "Lock released. Safe to switch device."
+  local block remind
+  find_problems
+  if [ -n "$block$remind" ]; then
+    echo "Not ready to switch device:$block$remind"
+    exit 1
+  fi
+  echo "All saved on GitHub. Safe to switch device."
 }
 
 cmd_status() {
-  fetch_lock
-  echo "Device: $DEVICE   Branch: $(branch)"
-  lock_text || echo "No lock yet."
+  git fetch -q origin 2>/dev/null
+  echo "Device: $DEVICE   Branch: $(branch)   On main: $(on_main && echo yes || echo no)"
   echo "Unsaved:";  unsaved
-  echo "Unpushed:"; unpushed
-  echo "Unlogged:"; unlogged
+  echo "Not on GitHub:"; unpushed
+  echo "Not in STATUS.md:"; unlogged
   echo "Spec changed, SPEC.md not:"; unplanned
+  echo "Other unfinished work:"; other_work
 }
 
 case "${1:-status}" in
   start)  cmd_start ;;
-  busy)   cmd_busy "${2:-}" ;;
+  busy)   cmd_busy ;;   # an old "busy --force" from the lock days is harmless
   check)  cmd_check ;;
   end)    cmd_end ;;
   status) cmd_status ;;
   visibility-ok) v=$(visibility) && record_visibility "$v" && echo "Recorded: this repo is $v (reviewed)." ;;
-  *) echo "Usage: $0 start | busy [--force] | check | end | status | visibility-ok"; exit 1 ;;
+  *) echo "Usage: $0 start | busy | check | end | status | visibility-ok"; exit 1 ;;
 esac

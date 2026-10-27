@@ -41,8 +41,9 @@ Leo is not a developer: if he can't follow it, it hasn't been said.
 - **Never let a model guess facts** (dates, prices, API fields, web
   addresses): take them from data, documentation or a real test, or mark them
   as unverified.
-- **Open GitHub Issues** (to-do notes on the repo): at session start, list
-  them (GitHub tools, or `gh issue list` on the Mac) and tell Leo. After his
+- **Open GitHub Issues** (to-do notes on the repo): session start lists
+  them (`ISSUES:` line; with no GitHub CLI, list them with the GitHub tools):
+  tell Leo. After his
   request, fix the small, clear ones he or his apps opened: a commit each, then
   comment on the issue what changed and close it. Anything bigger waits for
   his yes, with your recommendation: a change to what the app does or shows,
@@ -89,7 +90,7 @@ session plans from it. So, **in the same commit as the change**:
 - Every finished step → STATUS.md.
 Before calling a step done, ask: "would a fresh session reading only the
 docs plan the same next step, for the same reasons?" If not, fix the docs
-first. The end-of-reply check blocks if `specs/` changed but SPEC.md didn't.
+first. Once work reaches main, the end-of-reply check blocks if `specs/` changed but SPEC.md didn't.
 
 ## Safety and responsibility (flag as they come up)
 Secrets never in browser code or the repo (Worker or GitHub secrets). Collect
@@ -118,18 +119,24 @@ exact lines and ask before pushing.
   `22234407+leo-hyde@users.noreply.github.com` (`git config user.email` per repo).
 
 ## Git and the phone/Mac handover
-- The repo is the only memory shared by Leo's phone (cloud) and Mac sessions.
-  `scripts/session.sh` (run by hooks) pulls main, holds a lock while Claude is
-  replying, and blocks finishing a reply with unsaved, unpushed or unrecorded work.
-- If a message comes with `ANOTHER DEVICE IS WORKING`, **tell Leo straight
-  away**: read-only work is fine, change nothing until he confirms. Then run
-  `scripts/session.sh busy --force`.
-- One branch: `main`. Push with `git push origin HEAD:main`; if the session
-  started on a `claude/...` branch, say the work landed on main. Never
-  force-push. If a push is rejected or a merge conflicts, stop and tell Leo
-  (unless the project's CLAUDE.md names an Action that pushes: then pull and carry on).
-- **Commit and push after every working step**, plain-English messages. After
-  every finished step, overwrite the STATUS.md Handover block and "Where we are".
+- The repo is the only memory shared by Leo's sessions: phone (cloud) and
+  Mac, often several at once. `scripts/session.sh` (run by hooks) pulls main
+  at session start and lists other sessions' unfinished branches. When a
+  reply ends, a cloud session must have its work on GitHub; a Mac session
+  shows Leo a reminder; work that reached main must have its docs updated.
+- **`OTHER WORK` at session start**: another session may be busy there. Don't
+  edit the same files; if your task overlaps, tell Leo before changing anything.
+- **Branches**: commit and push working steps to the session's own branch
+  (`git push origin HEAD`). When a step is finished, merge it into `main` and
+  push (`git push origin HEAD:main`), and say the work landed on main. A small
+  one-commit change can go straight to main. Never force-push. If a push is
+  rejected or a merge conflicts, stop and tell Leo (unless the project's
+  CLAUDE.md names an Action that pushes: then pull and carry on).
+- **Commit and push after every working step**, plain-English messages.
+  Progress notes during a step go in its spec (`specs/<step>.md`, a
+  "Progress" section), not STATUS.md, so parallel sessions don't clash. When
+  a step is finished, overwrite the STATUS.md Handover block and "Where we
+  are" once, as it lands on main.
 - Session start runs only in the repo the session opened in. Before changing
   any other repo (attached later, or listed as "Also attached"), run
   `scripts/session.sh start` in it; do the same if hooks didn't fire.
