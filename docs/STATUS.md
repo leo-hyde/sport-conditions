@@ -1,16 +1,16 @@
 # Live status
 
-The current state, shared between Leo's phone and computer sessions. **Every Claude session reads this first, and updates it after every finished step.** Then it commits (saves a snapshot) and pushes (uploads) the change. This file holds the current state only: overwrite it, don't add to the end. The history is in `git log` (the record of every saved change); decisions are in `docs/decisions.md`.
+The current state, shared between Leo's phone and computer sessions. **Every Claude session reads this first, and updates it when a step is finished** (as the work lands on `main`). Then it commits (saves a snapshot) and pushes (uploads) the change. This file holds the current state only: overwrite it, don't add to the end. The history is in `git log` (the record of every saved change); decisions are in `docs/decisions.md`.
 
-## Handover (overwrite this block every session)
+## Handover (overwrite this block when a step finishes)
 
 | | |
 |---|---|
-| Last session | Mac, 26 Oct 2026 |
+| Last session | Mac, 27 Oct 2026 (playbook second release trial, no app changes) |
 | Ended cleanly? | Yes, all pushed to `main` |
 | Work in progress | None |
 | Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
-| Check first | Feedback 26 Oct: #8 (map location) and #5 (voice pause) built and closed. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Leo to try both new buttons on his phone |
+| Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Feedback 26 Oct: #8 (map location) and #5 (voice pause) built and closed. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Leo to try both new buttons on his phone |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
