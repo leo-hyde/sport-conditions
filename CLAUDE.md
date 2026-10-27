@@ -6,7 +6,7 @@ project. It says *how* we work; [SPEC.md](SPEC.md) says *what* we're building;
 says how it's built.
 
 Leo's general rules (how we work, explaining and checking the work, the
-phone/Mac handover, coaching on sessions and credits) are in
+phone/Mac handover, cost notes on sessions and credits) are in
 `.claude/rules/playbook.md`, synced from github.com/leo-hyde/claude-playbook at
 each session start: don't repeat them here, and don't edit that copy. This
 file holds only what's specific to this project. Where we are:

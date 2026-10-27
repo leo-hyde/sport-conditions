@@ -6,6 +6,12 @@ the old one "Replaced by <date>". (I moved these here from docs/STATUS.md on
 23 Oct 2026. The earlier entries give the reason, but not the other options
 we turned down.)
 
+## 27 Oct 2026: Trial of the `opusplan` model setting for one week
+- **Why:** `opusplan` uses the strongest model for planning and a cheaper one for building, which may cut credits. Leo agreed to try it in this project (the playbook's canary). Set as `"model": "opusplan"` in `.claude/settings.json`. The playbook's monthly review compares it with before; ends about 3 Nov 2026, when we keep or remove it. Rejected: switching every project at once, before we know it helps.
+
+## 27 Oct 2026: Playbook second release applied here first (canary): no session lock; cost notes and a push-to-main docs check
+- **Why:** The playbook's catch-ups `2026-10-27-no-lock` and `2026-10-27-tokens`. Sessions now work on their own branch and merge to `main` when a step finishes. Docs are checked when pushing to `main` (`session.sh push-check`), not at the end of each reply.
+
 ## 23 Oct 2026: Next steps: Leo checks Surfing, then automated tests of the rating rules
 - **Why:** The surf spots' details are Claude's rough guesses, so Leo checks them first. Tests are the main weak spot in docs/ARCHITECTURE.md. (Recorded late, on 26 Oct 2026, from docs/STATUS.md and docs/BACKLOG.md.)
 
@@ -43,7 +49,7 @@ we turned down.)
 ## 22 Oct 2026: No version numbers: "Beta", `CHANGELOG.md` by date, git tags (named bookmarks) for big milestones
 - **Why:** There are lots of small changes, and git already keeps every version.
 
-## 22 Oct 2026: The lock is held only while Claude is replying (claimed on each message, freed when the reply ends), on a `session-lock` branch
+## 22 Oct 2026: (Replaced by 27 Oct 2026: no lock any more) The lock is held only while Claude is replying (claimed on each message, freed when the reply ends), on a `session-lock` branch
 - **Why:** A session left open but idle kept blocking the other device. Saving the lock on main cluttered its history.
 
 ## 22 Oct 2026: By hour: a time strip ("8h 9h…"), speeds only on good and OK hours; the page always opens on Overview → By day

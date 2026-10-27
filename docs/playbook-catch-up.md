@@ -19,3 +19,12 @@ what changed. Session start stops asking about an id once it's listed here.
   the "Later" ideas already built. Three late entries in docs/decisions.md.
   STATUS.md's next steps point at SPEC.md's step numbers. No spec files
   exist in `specs/` yet.
+- **2026-10-27-no-lock** (27 Oct 2026): STATUS.md heading and intro now say the
+  handover is updated when a step finishes; ARCHITECTURE.md no longer mentions
+  the lock; the 22 Oct lock decision is marked replaced. No other mention of
+  the lock in CLAUDE.md or docs. The old `session-lock` branch on GitHub was
+  last changed 18 hours ago, so it is **not deleted**: left for Leo to delete.
+- **2026-10-27-tokens** (27 Oct 2026): CLAUDE.md and ARCHITECTURE.md now say
+  cost notes instead of coaching/message counting, and mention the push-to-main
+  docs check. `grep -rn COACH CLAUDE.md docs` finds nothing and
+  `.claude/settings.json` has the `push-check` hook.

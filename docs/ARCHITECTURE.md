@@ -114,7 +114,7 @@ Rules about the **site** (directions, tide rule) live on the site.
 | `worker/weather-proxy.js` | The Cloudflare Worker (Leo puts it live in Cloudflare) |
 | `tools/build_sites.py` | Checks the CSV files (spreadsheets) for mistakes and builds the guides |
 | `tools/preview.js` | Opens the app with made-up forecasts and saves a screenshot, for checking changes |
-| `scripts/session.sh`, `.claude/settings.json` | Keeping phone and Mac sessions in step (the lock), and counting messages so Claude suggests fresh sessions |
+| `scripts/session.sh`, `.claude/settings.json` | Keeping phone and Mac sessions in step (start-up sync, unfinished-branch list), noting when a conversation has grown costly (`COST:` lines), and checking docs before work is pushed to `main` |
 | `scripts/playbook-sync.sh`, `.claude/rules/playbook.md` | Leo's shared rules, copied from claude-playbook at each session start (don't edit them here) |
 | `.github/workflows/site-guide.yml` | The GitHub Action that rebuilds the guides when a CSV file changes |
 
