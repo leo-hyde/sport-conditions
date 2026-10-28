@@ -6,11 +6,11 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 | | |
 |---|---|
-| Last session | Cloud, 28 Oct 2026 (fixed every finding of the 28 Oct design review, plus a deeper check: specs/design-fixes-2026-10-28.md) |
+| Last session | Cloud, 28 Oct 2026 evening (feedback #9, #6, #7, #14, #15: map clusters, surf size factor, beep-free voice tip, theme issue #16) |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Work in progress | None. Design fixes live: green now only means "good" (buttons are near-black), softer OK cells on the Overview, ✕ and sticky buttons in dialogs, 44px taps, keyboard compass, plainer words, shorter Settings, tidier map names, honest "No forecasts loaded" message. Leo to look on his phone. Open to discuss: #9, #7, #6, #4 (docs/BACKLOG.md) |
-| Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
-| Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Product question left open by the review: should the default OK wave range (2–8 ft) be narrower? (docs/decisions.md, 28 Oct) |
+| Work in progress | None. Leo to look on his phone: grouped pins on the map, surf "Wave size here" (Claude's guesses: please correct), the keyboard 🎤 tip. Leo wanted #12 (Met Office vs Windy) checked again at the end of this session |
+| Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site (and checks the size factors) |
+| Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Still to do: #4 overview across sports (SPEC.md step 5, spec first), #16 theme setting (where should the switch come from?). Product question: should the default OK wave range (2–8 ft) be narrower? |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
@@ -26,9 +26,11 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 See SPEC.md "What's next": step 1 (Leo checks Surfing), then step 2
 (automated rating tests, spec first).
 The 28 Oct design review is fixed (SPEC.md step 4); Leo to look on his phone.
+Step 5 (overview across all sports) gets its spec in a fresh session.
 
 ## Open questions
 
+- **Surf size factors:** each spot's "Wave size here" (Towan 0.6, Porth 0.6, Tolcarne 0.7, …) is Claude's guess. Please correct them.
 - **Surf spots:** the locations, and the swell and offshore directions, are Claude's rough guesses: please check them. Little Fistral is often called a low-tide spot, and Lusty Glaze's beach is covered at high tide. Yet both have the rule "not near low water".
 - **Sending feedback directly:** skipped for now (Leo, 23 Oct). When you want it: add the `GITHUB_TOKEN` and `FEEDBACK_CODE` secrets to the Worker and put it live again.
 - **Phone on its side (landscape):** it works, but the header fills the short screen. A smaller header in landscape? (In docs/BACKLOG.md.)

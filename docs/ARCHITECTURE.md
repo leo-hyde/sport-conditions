@@ -94,7 +94,7 @@ Rules about the **site** (directions, tide rule) live on the site.
 | `app.js` | The core: `state`, fetching, preparing the hours (`siteDays`), drawing site cards, handling taps |
 | `sports.js` | The list of sports, and `sportSites()` (your sites for the current sport) |
 | `weather.js` | Wind forecasts from Open-Meteo, keeping them for 30 min, and the parakiting checks |
-| `surf.js` | Surf settings, wave forecasts, surf checks, words for wave size, Surfline links |
+| `surf.js` | Surf settings, wave forecasts (scaled by each spot's size factor in `withWaves`), surf checks, words for wave size, Surfline links |
 | `tides.js` | Tides (Admiralty through the Worker, or a model), high and low water, tide rules |
 | `sun.js` | Sunrise, sunset and twilight, for the daylight hours |
 | `units.js` | Wind speed units (mph, km/h, knots, m/s) |
@@ -137,6 +137,7 @@ Rules about the **site** (directions, tide rule) live on the site.
 | aviationweather.gov | Live airport wind | Free, but it blocks web pages, so it goes through the Worker |
 | Cloudflare Workers + KV | The Worker, sync storage | Free plan |
 | GitHub Pages, Actions, Issues | Hosting, rebuilding guides, feedback | Free for public projects |
+| Leaflet.markercluster 1.5.3 (unpkg) | Groups your map pins when zoomed out | Free (MIT licence). If it doesn't load, pins show one by one |
 | Leaflet, OpenTopoMap | The map | Free. OpenTopoMap asks for light use and a credit (shown on the map) |
 | Surfline | **Linked only, not copied** | No public API (no official way for apps to fetch its data); its terms forbid copying its forecasts |
 | Flybubble | The parakiting site guide | Published here; we still need to check we have permission (STATUS.md) |
@@ -173,10 +174,13 @@ Rules about the **site** (directions, tide rule) live on the site.
 - **Surf data is rough.** Spot locations and directions came from Claude's
   general knowledge (marked in `data/surf-spots.csv`). Wave heights are
   open-sea computer forecasts, not the height of breaking waves.
-- **Map pins overlap** where spots are close together (Newquay's town beaches)
-  until you zoom in. Since 28 Oct, names that would overlap are hidden
-  (`declutterLabels` in map.js) and good pins sit on top, but the pins
-  themselves still pile up.
+- **Map pins overlap** less: since 28 Oct your pins group into numbered
+  circles where they'd overlap (Leaflet.markercluster), and names that would
+  overlap are hidden (`declutterLabels` in map.js). Guide-site dots aren't
+  grouped and can still pile up.
+- **Surf size factors are guesses.** Each spot's factor (how big waves are
+  there compared with the open sea) started as Claude's estimate; until Leo
+  corrects them, sheltered spots' heights may be too big or too small.
 - **All script files share one global scope.** Two files using the same name
   would clash (see the playbook's gotchas).
 - `app.js` is the biggest file and does several jobs. It could be split up.

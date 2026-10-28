@@ -12,8 +12,9 @@ are "yes" or blank:
   starter  - one of the sites a new device starts with
 Surf spots: swell_good / swell_ok are swell directions, offshore is the
 wind directions that blow offshore there, tide is blank (any tide), "not low",
-"not high", "only low" or "only high", with tide_hours either side, and
-surfline is the spot's Surfline page address (optional).
+"not high", "only low" or "only high", with tide_hours either side, size
+is how big the waves are there compared with the open sea (blank = 1, e.g.
+0.6 for a sheltered beach), and surfline is the spot's Surfline page address (optional).
 On GitHub this runs automatically whenever either CSV changes
 (.github/workflows/site-guide.yml).
 """
@@ -131,6 +132,12 @@ def check_surf(row, line):
                 problems.append("tide_hours should be between 0 and 6")
         except ValueError:
             problems.append("tide_hours should be a number of hours, e.g. 2")
+    if row["size"]:
+        try:
+            if not 0.1 <= float(row["size"]) <= 2:
+                problems.append("size should be between 0.1 and 2")
+        except ValueError:
+            problems.append("size should be a number, e.g. 0.6")
     if row["surfline"] and not row["surfline"].startswith("https://www.surfline.com/"):
         problems.append("surfline should be a https://www.surfline.com/… address")
     if row["starter"] not in ("", "yes"):
@@ -158,6 +165,7 @@ def build_surf_spots():
             "okDirections": row["swell_ok"].split(),
             "offshore": row["offshore"].split(),  # wind directions that blow offshore
             "tideRule": {"mode": rule[0], "water": rule[1], "hours": float(row["tide_hours"])} if rule else None,
+            "sizeFactor": float(row["size"] or 1),  # waves here compared with the open sea
             "surfline": row["surfline"],
             "beach": True,
         }

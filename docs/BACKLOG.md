@@ -11,14 +11,11 @@ in CHANGELOG.md) · not doing (with the reason).
 
 | Idea | From | State | Notes |
 |---|---|---|---|
-| Voice notes: stop the beeping | Leo, #5 | discuss | Android beeps each time listening restarts after a pause. The browser can't turn that off. The fix would be recording audio and sending it to a paid transcription service |
-| Surf: wave size for each spot (for example Towan smaller than Fistral, behind the headland) | Leo, #7 | discuss | Now: the same open-sea forecast 2.5 km out, not adjusted for shelter. Could add a size factor for each spot. Surfline-level quality isn't possible from free data |
-| Surf: drop the swell compass for each spot? | Leo, #6 | discuss | Leo says big swells wrap in anyway. Pulls against #7, which wants more spot detail |
-| Overview across all sports: which sport, where, on which day | Leo, #4 | discuss | Not in SPEC.md, so it needs a spec. Loads both sports' forecasts, so more calls towards the daily limit |
+| Overview across all sports: which sport, where, on which day | Leo, #4 | later | Agreed 28 Oct: spec it in a fresh session (SPEC.md step 5). Loads both sports' forecasts, so more calls towards the daily limit |
+| Theme setting: Light, Dark or Phone default | Leo, #14 → #16 | discuss | The playbook has no switch yet either; decide where it comes from (issue #16) |
+| Surf size factors: check Claude's guesses | Claude, 28 Oct | discuss | Leo to correct each spot's "Wave size here" from local knowledge |
 | Automated tests of the rating rules | Claude, 23 Oct | easy | The next step for quality (ARCHITECTURE.md "Weak spots") |
 | Check the Newquay surf spots' locations, directions and tide rules | Claude, 23 Oct | discuss | They came from Claude's general knowledge. Check the tide rules for Little Fistral and Lusty Glaze especially |
-| Map: group nearby pins when zoomed out (clusters) | Leo, #9 | discuss | Not in SPEC.md. Would add a CDN library (Leaflet.markercluster); also replaces the older "Surf map: pins overlap" row below |
-| Surf map: pins overlap around Newquay | Claude, 23 Oct | later | Fine once you zoom in |
 | Tides on the map, done better | Leo, 23 Oct | later | Tide labels on pins were too crowded, so I removed them. Arrows for tidal currents (like SailGrib WR) need a source of data |
 | Send feedback straight to GitHub (Worker secrets) | Leo, 23 Oct | later | Built. Leo chose not to set up the secrets for now |
 | Smaller header when the phone is on its side | Leo, 22 Oct | discuss | It works now, but the header fills the short screen |
@@ -28,6 +25,10 @@ in CHANGELOG.md) · not doing (with the reason).
 
 | Idea | From | Done | Notes |
 |---|---|---|---|
+| Map: group nearby pins when zoomed out (clusters) | Leo, #9 | 28 Oct | Your pins only, coloured by the best rating inside |
+| Surf: wave size for each spot (Towan smaller than Fistral) | Leo, #7 | 28 Oct | A size factor for each spot; starting values are guesses. Surfline-level quality isn't possible from free data |
+| Surf: drop the swell compass for each spot? | Leo, #6 | not doing | Kept: the size factor answers the wrapping point (#7) |
+| Voice notes: stop the beeping | Leo, #5, #15 | 28 Oct | A hint to use the phone keyboard's 🎤 instead; the browser can't stop the beep |
 | Met Office reads lower than Windy (Fistral) | Leo, #12 | 28 Oct | Same model; 1–2 knots from the grid square chosen. Kept as is (specs/forecast-validation.md) |
 | Voice note text scrolls as you speak | Leo, #10 | 28 Oct | |
 | Fold the feedback buttons away | Leo, #11 | 28 Oct | › tab; dragging them was left out |

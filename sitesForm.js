@@ -44,6 +44,8 @@ function showSurfFields(site) {
   document.getElementById("compass-label").textContent = surf ? "Swell directions (where the waves come from)" : "Wind directions";
   document.getElementById("offshore-field").hidden = !surf;
   document.getElementById("surfline-field").hidden = !surf;
+  document.getElementById("size-field").hidden = !surf;
+  siteForm.sizeFactor.value = site ? sizeFactor(site) : 1;
   document.getElementById("beach-field").hidden = surf;
   siteForm.surfline.value = (site && site.surfline) || "";
   pickedOffshore = directionRatings({ goodDirections: (site && site.offshore) || [], okDirections: [] });
@@ -242,6 +244,8 @@ siteForm.addEventListener("submit", async event => {
   if (surf) {
     site.offshore = COMPASS.filter(point => pickedOffshore[point] === "good");
     site.surfline = surfline;
+    const size = Number(siteForm.sizeFactor.value);
+    site.sizeFactor = size >= 0.1 && size <= 2 ? size : 1;
   }
 
   if (editingId) {

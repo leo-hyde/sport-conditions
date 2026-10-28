@@ -74,10 +74,22 @@ async function fetchWaves(spot) {
   return waves;
 }
 
-// A surf spot's hour, with that hour's waves added (if we have them).
+// A surf spot's hour, with that hour's waves added (if we have them). The
+// forecast is for the open sea, so the height is scaled by the spot's size
+// factor (smaller on a sheltered beach).
 function withWaves(site, hour) {
   if (site.sport !== "surfing") return hour;
-  return { ...hour, wave: (state.waves[site.id] || {})[hour.key] };
+  const wave = (state.waves[site.id] || {})[hour.key];
+  return { ...hour, wave: wave && { ...wave, feet: wave.feet * sizeFactor(site) } };
+}
+
+// How big the waves are at this spot compared with the open sea (1 = the
+// same). Spots saved before 28 Oct 2026 have none, so they take the
+// guide's value for a spot of the same name.
+function sizeFactor(site) {
+  if (site.sizeFactor) return site.sizeFactor;
+  const guide = SURF_SPOTS.find(spot => spot.name === site.name);
+  return (guide && guide.sizeFactor) || 1;
 }
 
 // ---------- Describing waves ----------
@@ -176,6 +188,7 @@ function surfSiteCopy(spot) {
     okDirections: [...spot.okDirections],
     offshore: [...spot.offshore],
     tideRule: spot.tideRule ? { ...spot.tideRule } : null,
+    sizeFactor: spot.sizeFactor || 1,
     surfline: spot.surfline,
     beach: true,
     custom: false,

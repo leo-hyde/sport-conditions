@@ -50,7 +50,23 @@ function setupMap() {
   }).addTo(map);
   libraryLayer = L.layerGroup().addTo(map);
   ratedLibraryLayer = L.layerGroup().addTo(map);
-  pinLayer = L.layerGroup().addTo(map);
+  // Your pins group into one numbered circle where they'd overlap
+  // (zoomed out); tap it to zoom in. Its colour is the best rating inside.
+  // (If the grouping add-on didn't load, the pins just show one by one.)
+  const group = L.markerClusterGroup || (() => L.layerGroup());
+  pinLayer = group({
+    maxClusterRadius: 40,
+    showCoverageOnHover: false,
+    iconCreateFunction: cluster => {
+      const best = cluster.getAllChildMarkers().map(marker => marker.options.rating)
+        .sort((a, b) => RATING_LAYER[b] - RATING_LAYER[a])[0];
+      return L.divIcon({
+        html: `<div class="map-pin mine cluster ${best}"><span>${cluster.getChildCount()}</span><small>sites</small></div>`,
+        className: "", iconSize: [44, 44], iconAnchor: [22, 22],
+      });
+    },
+  }).addTo(map);
+  pinLayer.on("animationend", declutterLabels);
 
   fitMapToSites();
   addMapKey();
@@ -328,7 +344,8 @@ const RATING_LAYER = { good: 4000, ok: 3000, no: 2000, night: 1000 };
 // Good sites keep their names first.
 function declutterLabels() {
   if (!map || !document.getElementById("map").offsetWidth) return;
-  const markers = pinLayer.getLayers().filter(marker => marker.getTooltip() && marker.getTooltip().getElement())
+  // Only pins on show: those inside a cluster have no name to tidy.
+  const markers = pinLayer.getLayers().filter(marker => map.hasLayer(marker) && marker.getTooltip() && marker.getTooltip().getElement())
     .sort((a, b) => RATING_LAYER[b.options.rating] - RATING_LAYER[a.options.rating]);
   const labels = markers.map(marker => marker.getTooltip().getElement());
   labels.forEach(label => label.classList.remove("pin-label-hidden"));

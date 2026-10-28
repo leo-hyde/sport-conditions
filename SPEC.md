@@ -200,6 +200,13 @@ Worker, with a personal code for each approved tester). Collaborators
 working through pull requests (proposed changes that Leo reviews before they
 go in).
 
+**Changes from feedback (28 Oct, issues #9, #6, #7, #14, #15):** your map
+pins group into numbered circles when zoomed out (coloured by the best
+rating inside); each surf spot has a size factor (see Version 1.3); a hint
+in Settings and the typing box points to the phone keyboard's 🎤 for voice
+notes without beeps; a Light / Dark / Phone default setting is filed as
+issue #16.
+
 **Changes from feedback (26 Oct, issues #5 and #8):** a ◎ button on the map
 shows where you are; a ⏸ button pauses a voice note.
 
@@ -234,6 +241,11 @@ good, OK or no, like parakiting, with a link to Surfline for each spot.
   open water, not Surfline's hand-tuned heights of breaking waves, so treat
   them as a guide. Each spot is one call, and it counts towards the same
   daily limit.
+- **Size factor for each spot** (28 Oct, issue #7): the open-sea height is
+  multiplied by how big waves are at that spot compared with the open sea
+  (1 = the same; Towan, behind the headland, starts at 0.6). The starting
+  values in `data/surf-spots.csv` are Claude's guesses for Leo to correct
+  (Edit → Wave size here). The factor changes the height shown and rated.
 - **Wind and tides:** the same as for parakiting (the chosen model; Admiralty
   tides).
 
@@ -291,7 +303,9 @@ The steps we've agreed, in order. docs/STATUS.md points at these numbers.
 | 4 | **Fixes from the 28 Oct design review:** all 11 findings plus a deeper check (failed forecasts no longer look like bad weather, focus rings, map labels, "green means good") (`specs/design-fixes-2026-10-28.md`) | Done 28 Oct |
 | 3 | **Design review fixes (issue #13).** All three steps are live: tap sizes, 16px dropdowns, contrast, plain tide words, grey past hours, table marks, and clearer site cards (today and tomorrow, more space between sites) (`specs/compact-site-cards.md`) | Done 28 Oct |
 
-Open feedback issues (#4–#8) are sorted when Leo says "check feedback";
+| 5 | **Overview across all sports** (issue #4): which sport, where, on which day. Spec first in a fresh session: `specs/all-sports-overview.md` | Not started |
+
+Open feedback issues are sorted when Leo says "check feedback";
 anything agreed from them is added here.
 
 ---

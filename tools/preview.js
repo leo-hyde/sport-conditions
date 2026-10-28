@@ -101,7 +101,7 @@ function cachedLibrary(name, version, file) {
     if (url.includes("marine-api.open-meteo.com")) {
       return route.fulfill({ contentType: "application/json", body: JSON.stringify(fakeMarine(lats()[0])) });
     }
-    const library = url.match(/unpkg\.com\/(leaflet(?:-velocity)?)@([\d.]+)\/(.*)$/);
+    const library = url.match(/unpkg\.com\/(leaflet(?:-velocity|\.markercluster)?)@([\d.]+)\/(.*)$/);
     if (library) {
       try { return route.fulfill({ path: cachedLibrary(library[1], library[2], library[3]) }); } catch { return route.abort(); }
     }

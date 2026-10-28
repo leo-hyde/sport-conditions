@@ -1,13 +1,13 @@
-name,lat,lon,swell_good,swell_ok,offshore,tide,tide_hours,surfline,starter,notes
-Fistral North,50.4200,-5.1010,W WNW NW,WSW NNW,E ESE SE,not low,2,,yes,Location and directions approximate (Claude); check and edit
-Fistral South,50.4125,-5.0990,W WNW NW,WSW NNW,ESE SE SSE,not low,2,,yes,Location and directions approximate (Claude); check and edit
-Little Fistral,50.4235,-5.1005,W WNW NW,NNW,E ESE SE,not low,2,,yes,Often described as a low-tide spot: check its tide rule
-Towan,50.4168,-5.0850,NW NNW N,WNW,SSE S SSW SW,not low,2,,yes,Town beach: sheltered; needs a bigger swell to wrap in
-Great Western,50.4160,-5.0800,NW NNW N,WNW,SSE S SSW SW,not low,2,,yes,Town beach: sheltered; needs a bigger swell to wrap in
-Tolcarne,50.4165,-5.0745,NW NNW N,WNW,SSE S SSW SW,not low,2,,yes,Town beach: sheltered; needs a bigger swell to wrap in
-Lusty Glaze,50.4200,-5.0660,NW WNW NNW,W N,SE SSE S,not low,2,,yes,The beach covers at high tide: check its tide rule
-Porth,50.4260,-5.0590,NW WNW,W NNW,E ESE SE,not low,2,,yes,Sheltered bay
-Watergate Bay,50.4430,-5.0450,W WNW NW,WSW NNW,E ESE SE,,,,yes,Works at any tide (Leo)
-Mawgan Porth,50.4650,-5.0380,W WNW NW,WSW,E ESE SE,not low,2,,yes,Location and directions approximate (Claude); check and edit
-Crantock,50.4060,-5.1150,NW WNW W,NNW,SE SSE S,not low,2,,yes,Location and directions approximate (Claude); check and edit
-Holywell Bay,50.3925,-5.1480,W WNW NW,WSW,E ESE SE,not low,2,,yes,Location and directions approximate (Claude); check and edit
+name,lat,lon,swell_good,swell_ok,offshore,tide,tide_hours,size,surfline,starter,notes
+Fistral North,50.4200,-5.1010,W WNW NW,WSW NNW,E ESE SE,not low,2,1,,yes,Location and directions approximate (Claude); check and edit
+Fistral South,50.4125,-5.0990,W WNW NW,WSW NNW,ESE SE SSE,not low,2,0.9,,yes,Location and directions approximate (Claude); check and edit
+Little Fistral,50.4235,-5.1005,W WNW NW,NNW,E ESE SE,not low,2,0.8,,yes,Often described as a low-tide spot: check its tide rule
+Towan,50.4168,-5.0850,NW NNW N,WNW,SSE S SSW SW,not low,2,0.6,,yes,Town beach: sheltered; needs a bigger swell to wrap in
+Great Western,50.4160,-5.0800,NW NNW N,WNW,SSE S SSW SW,not low,2,0.6,,yes,Town beach: sheltered; needs a bigger swell to wrap in
+Tolcarne,50.4165,-5.0745,NW NNW N,WNW,SSE S SSW SW,not low,2,0.7,,yes,Town beach: sheltered; needs a bigger swell to wrap in
+Lusty Glaze,50.4200,-5.0660,NW WNW NNW,W N,SE SSE S,not low,2,0.7,,yes,The beach covers at high tide: check its tide rule
+Porth,50.4260,-5.0590,NW WNW,W NNW,E ESE SE,not low,2,0.6,,yes,Sheltered bay
+Watergate Bay,50.4430,-5.0450,W WNW NW,WSW NNW,E ESE SE,,,1,,yes,Works at any tide (Leo)
+Mawgan Porth,50.4650,-5.0380,W WNW NW,WSW,E ESE SE,not low,2,0.9,,yes,Location and directions approximate (Claude); check and edit
+Crantock,50.4060,-5.1150,NW WNW W,NNW,SE SSE S,not low,2,0.9,,yes,Location and directions approximate (Claude); check and edit
+Holywell Bay,50.3925,-5.1480,W WNW NW,WSW,E ESE SE,not low,2,1,,yes,Location and directions approximate (Claude); check and edit

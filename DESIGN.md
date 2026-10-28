@@ -84,6 +84,9 @@ defined in `:root` in style.css.
 - **Map pins:** round, in the rating colour, with the wind arrow and speed
   inside and the site name underneath. Where names would overlap, the less
   good site's name is hidden until you zoom in; good pins sit on top.
+- **Map clusters:** where your pins would overlap (zoomed out), they become
+  one pin of the same size and gold ring, showing the number of sites and
+  "sites", coloured by the best rating inside. Tap it to zoom in.
 - **Compass picker:** a ring of 16 segments. Tap one to cycle it through
   no → OK → good. With a keyboard: Tab to the ring, arrow keys to go round
   it, Enter or Space to change one (a thick outline shows which).

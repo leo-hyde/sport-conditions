@@ -7,6 +7,7 @@
   <title>Sport Conditions</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -105,7 +106,7 @@
     <div id="feedback-bar" class="feedback-bar" hidden>
       <span class="feedback-live" aria-hidden="true"></span>
       <p id="feedback-text" class="feedback-text" aria-live="polite"></p>
-      <input id="feedback-input" type="text" placeholder="Type your note" aria-label="Your note">
+      <input id="feedback-input" type="text" placeholder="Type, or tap 🎤 on your keyboard" aria-label="Your note">
       <button type="button" id="feedback-pause" class="btn small" aria-label="Pause">⏸</button>
       <button type="button" id="feedback-cancel" class="btn small" aria-label="Cancel note">✕</button>
       <button type="button" id="feedback-done" class="btn small primary">Send</button>
@@ -295,6 +296,7 @@
         <div class="checks-row">
           <label><input id="feedback-switch" type="checkbox"> Feedback mode: 🎙 buttons to speak or type notes about the app</label>
         </div>
+        <p class="hint">On Android, 🎙 beeps each time it starts listening again after a pause, and the app can't stop that. To speak with pauses and no beeps, tap ✎ and then the 🎤 on your phone's keyboard.</p>
         <label class="field">
           Send code (optional)
           <input id="feedback-code" type="text" autocomplete="off" placeholder="Sends notes straight to GitHub">
@@ -356,6 +358,11 @@
         <div id="offshore-compass" class="compass"></div>
         <p class="hint">Tap the directions the wind comes from when it blows offshore here (from the land out to sea).</p>
       </div>
+      <label class="field" id="size-field" hidden>
+        Wave size here, compared with the open sea
+        <input name="sizeFactor" type="number" inputmode="decimal" min="0.1" max="2" step="0.1">
+        <p class="hint">1 is the same as the forecast out at sea. Less for a sheltered beach (0.6 means waves about 60% as big), more where swell is focused.</p>
+      </label>
       <label class="field" id="surfline-field" hidden>
         Surfline page (optional)
         <input name="surfline" type="url" placeholder="https://www.surfline.com/surf-report/…">
@@ -403,6 +410,7 @@
   <script src="overview.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="map.js"></script>
   <script src="stations.js"></script>
   <script src="windChart.js"></script>

@@ -5,6 +5,19 @@ so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
 ## 28 October 2026
+- **From your feedback (evening):**
+  - **Map: your pins group together** when you zoom out, into one circle
+    showing how many sites are inside. Its colour is the best rating among
+    them; tap it to zoom in (#9).
+  - **Surf: each spot has its own wave size.** The forecast is for the
+    open sea, so sheltered spots now show smaller waves (for example Towan
+    about 60% of the open-sea height, behind the headland). The starting
+    sizes are my guesses: correct them in Edit → "Wave size here" (#7). The
+    swell compass stays (#6).
+  - **Voice notes without beeps:** Android beeps each time listening starts
+    again, and the app can't stop that. Settings and the typing box now
+    point to the 🎤 on your phone's keyboard, which copes with pauses and
+    doesn't beep (#15).
 - **Design review fixes** (everything in the 28 Oct review, plus a deeper check):
   - **Green now only means "good".** Buttons and the selected pill are
     near-black (near-white in dark mode), so a button can't be mistaken for a
