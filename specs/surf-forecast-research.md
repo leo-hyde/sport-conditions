@@ -97,6 +97,38 @@ sells: the per-spot tuning, the reports and the cameras.
 **My recommendation: B**, keeping the Surfline link for checking against.
 Ask Surfline about A separately if Leo wants it.
 
+## 5. Update, later on 28 Oct: Surfline's API is closed, and alternatives
+**Leo chose to use Surfline's unofficial API (option A), but it doesn't
+work.** With the real Fistral North ID (`584204214e65fad6a7709cec`), Leo's
+phone got "404 Not Found" (the address no longer exists). From this session,
+Cloudflare (Surfline's security service) refused every request with "403"
+and a bot check, which would block our Worker too. Leo has Surfline Pro, but
+that comes with no API or data export ⚠️ (none found).
+
+Leo doesn't want to build our own model. Here are the other sources, for
+spots around Cornwall:
+
+| Source | What it gives | Cost | Fit |
+|---|---|---|---|
+| **SurfMap API** (surf-map.com/api) | Hourly forecasts for 5,000+ named spots, rated by surfer level, with waves, wind and tide ✅ | Free "Developer" plan: 3 days, 50 calls a day, for 60 days. Then $39 a month (500 calls a day) ✅. Early access: you apply | **Closest to what Leo wants.** Unknown: whether it has the Newquay spots, how it makes its ratings, how good it is |
+| **Swellcloud API** (api.swellcloud.net) | Wave height, period, direction, wind, secondary swell at a point; 16 days (0.25°), or Copernicus 10 days ✅ | Free key ✅ (may change) | Offshore numbers, like Open-Meteo. No spot surf heights |
+| **Windy Point Forecast API** | NOAA's wave model only (no ECMWF), swell and swell 2 ✅ | €990 a year; the free tier gives scrambled test data ✅ | Expensive, offshore only |
+| **Stormglass** | Several models, offshore | 10 calls a day free; €19 a month ✅ | Offshore only |
+| **MetOcean / MetService point APIs** | ECMWF and WAVEWATCH III waves ✅ | From $30 a month ✅ | Offshore only |
+| **Surf-forecast.com** (Meteo365, UK) | Per-break forecasts, 7,000 breaks | No API found ✅ | Could ask them about a licence |
+| **Windguru** | Wind and waves per spot | No official API found ✅ | Scraping only, no |
+| **Plymouth University's OWWL model** | A nearshore wave model for the South West coast at 1 km (Delft3D, driven by Met Office data), 3-day forecast, checked daily against buoys ✅ | Free to view ✅; no download or API found | **The best open nearshore model for Cornwall.** Built for flooding, not surf. Could ask the researchers for data |
+| **Met Office North West Shelf wave model** (Copernicus) | Waves at 1.5 km, hourly, 7 days ✅ | Free with sign-up ⚠️ (licence not read) | Closer to the coast than Open-Meteo, but needs a daily download job, and it's still before the waves break |
+
+**Honest bottom line.** Nobody offers free, spot-by-spot surf heights for
+Cornwall the way Surfline did. The free sources all stop before the waves
+break. Turning their swell into "Fistral is 3–4 ft and good" is the per-spot
+tuning that every surf site does for itself. The only ready-made service
+that does that tuning is SurfMap (paid after 60 days, quality unknown).
+
+**Recommendation:** try SurfMap's free plan on the Newquay spots and compare
+it with Surfline for a couple of weeks, before paying anything.
+
 ## Sources
 - Surfline, LOTUS: https://www.surfline.com/lp/whatsnew/features/lotus-swell-model
 - Surfline, forecast feedback: https://www.surfline.com/lp/whatsnew/features/forecast-feedback
@@ -109,3 +141,11 @@ Ask Surfline about A separately if Leo wants it.
 - Stormglass pricing: https://stormglass.io/
 - Komar and Gaughan: https://trid.trb.org/View/14064
 - Magicseaweed closure: https://breakfinder.surf/blog/magicseaweed-shutdown-where-surfers-went
+- SurfMap API: https://surf-map.com/api/
+- Swellcloud API: https://api.swellcloud.net/
+- Windy Point Forecast pricing: https://api.windy.com/point-forecast/pricing
+- MetOcean point API: https://metocean.co.nz/weather-forecast-api
+- Plymouth OWWL: https://www.plymouth.ac.uk/news/university-wave-model-to-enable-preparation-for-storm-events-in-the-south-west and https://sweep.ac.uk/tools/owwl
+- Met Office NW Shelf waves: https://data.marine.copernicus.eu/product/NWSHELF_ANALYSISFORECAST_WAV_004_014/description
+- Surfline alternatives: https://lazysurfer.app/compare/surfline-alternatives.html
+- Windguru comparison: https://breakfinder.surf/it/blog/breakfinder-vs-windguru
