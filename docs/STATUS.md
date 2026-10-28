@@ -25,6 +25,8 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 See SPEC.md "What's next": step 1 (Leo checks Surfing), then step 2
 (automated rating tests, spec first).
+Step 3 (design review, issue #13): Leo approves or changes
+`specs/compact-site-cards.md`, then it is built in a fresh session.
 
 ## Open questions
 
