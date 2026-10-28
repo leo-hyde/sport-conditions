@@ -105,7 +105,7 @@ Rules about the **site** (directions, tide rule) live on the site.
 | `details.js` | The hour details panel |
 | `settings.js` | The Settings panel (a section for each sport) |
 | `sitesForm.js` | Adding and editing a site: compasses, tide rule, place search |
-| `compass.js` | Drawing the 16-direction compass |
+| `compass.js` | Drawing the 16-direction compass (small dials, and the site form's pickers, which also work by keyboard) |
 | `stations.js`, `windChart.js` | Live airport wind on the map, and its 24-hour chart |
 | `windFlow.js` | The animated wind on the map |
 | `tideChart.js` | The tide curve panel |

@@ -79,5 +79,9 @@ repo; the script above covers the same checks).
   No axe violations left. Small targets left on purpose: checkboxes (the 44px
   row around them is the target), the map credits' links (Leaflet's own), and
   the dense rows listed in step 5.
+- 28 Oct: the checker found two bugs, both fixed and re-tested: after a tap,
+  the compass lost its keyboard stop; at the first or last hour, the keyboard
+  fell off the hour panel (it now goes to ✕). Map names are also re-checked
+  when the screen turns.
 - Not checked: a real screen reader; a real phone (Leo); real forecasts (the
   checks used made-up data, to save the daily limit).

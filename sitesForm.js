@@ -52,8 +52,8 @@ function showSurfFields(site) {
 
 // ---------- Compass picker ----------
 
-// `focus` is the direction to keep the keyboard on after a change.
-function drawCompass(focus) {
+// `focus` is the wedge Tab lands on; `moveKeyboard` puts the keyboard there now.
+function drawCompass(focus = "N", moveKeyboard = false) {
   const name = state.sport === "surfing" ? "Swell directions" : "Wind directions";
   document.getElementById("compass").innerHTML = `
     ${compassSvg(pickedDirections, { labels: true, name, focus })}
@@ -62,26 +62,26 @@ function drawCompass(focus) {
       <span><i class="ok"></i>OK</span>
       <span><i style="background: var(--surface-2); border: 1px solid var(--border)"></i>No</span>
     </div>`;
-  if (focus) focusWedge("compass", focus);
+  if (moveKeyboard) focusWedge("compass", focus);
 }
 
 // The offshore compass is just on (green) or off.
-function drawOffshoreCompass(focus) {
+function drawOffshoreCompass(focus = "N", moveKeyboard = false) {
   document.getElementById("offshore-compass").innerHTML = compassSvg(pickedOffshore,
     { labels: true, size: 220, name: "Offshore wind directions", focus, states: { good: "offshore", no: "not offshore" } });
-  if (focus) focusWedge("offshore-compass", focus);
+  if (moveKeyboard) focusWedge("offshore-compass", focus);
 }
 
 // Tapping a wedge cycles it: no → OK → good → no.
 function cycleDirection(direction, fromKeyboard) {
   const next = { no: "ok", ok: "good", good: "no" };
   pickedDirections[direction] = next[pickedDirections[direction]];
-  drawCompass(fromKeyboard && direction);
+  drawCompass(direction, fromKeyboard);
 }
 
 function toggleOffshore(direction, fromKeyboard) {
   pickedOffshore[direction] = pickedOffshore[direction] === "good" ? "no" : "good";
-  drawOffshoreCompass(fromKeyboard && direction);
+  drawOffshoreCompass(direction, fromKeyboard);
 }
 
 // Moves the keyboard to one wedge (the only one Tab stops on).

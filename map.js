@@ -59,7 +59,7 @@ function setupMap() {
   setupStations();
   setupWindFlow();
 
-  map.on("zoomend", declutterLabels);
+  map.on("zoomend resize", declutterLabels);  // also when the phone turns
 
   // When the map stops moving, fetch forecasts for the guide sites in view.
   map.on("moveend", () => {

@@ -79,8 +79,10 @@ document.getElementById("hour-dialog").addEventListener("click", event => {
   if (!button) return;
   const label = button.getAttribute("aria-label");
   showHourDetails(button.dataset.stepSite, button.dataset.stepKey);
-  // The buttons are drawn again, so keep the keyboard on the same one.
-  document.querySelector(`#hour-dialog .hour-steps [aria-label="${label}"]`)?.focus();
+  // The buttons are drawn again, so keep the keyboard on the same one
+  // (or on ✕ at the first or last hour, where it's switched off).
+  const same = document.querySelector(`#hour-dialog .hour-steps [aria-label="${label}"]`);
+  (same && !same.disabled ? same : document.querySelector("#hour-dialog .close-x")).focus();
 });
 
 document.getElementById("hour-dialog").addEventListener("keydown", event => {
