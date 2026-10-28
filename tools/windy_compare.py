@@ -4,9 +4,9 @@ Usage: python3 tools/windy_compare.py <windy.json>
 
 <windy.json> holds one entry per site: {"Fistral": {"lat": .., "lon": ..,
 "windy": <what tools/windy_read.js returned>}, ...}. For each site this asks
-Open-Meteo for the same models twice, at the nearest land grid square (what the
-app uses now) and the nearest sea square, and prints how far each is from
-Windy on average (knots; + means Open-Meteo is higher). Two calls per site.
+Open-Meteo for the same models three times: Open-Meteo's default "land" square
+(what the app uses), the square nearest the site, and the nearest sea square, and prints how far each is from
+Windy on average (knots; + means Open-Meteo is higher). Three calls per site.
 See specs/forecast-validation.md.
 """
 import datetime
@@ -55,13 +55,13 @@ def main(path):
     sites = json.load(open(path))
     today = datetime.date.today()
     print("Average gap to Windy, knots (+ = Open-Meteo higher), first %d hours" % HOURS_AHEAD)
-    print("%-14s %-9s %8s %8s   %s" % ("site", "model", "land", "sea", "closer"))
+    print("%-14s %-9s %8s %8s %8s" % ("site", "model", "land", "nearest", "sea"))
     for name, site in sites.items():
         windy = site["windy"]
         times = windy_times(windy, today)
         start = times[0]
         cells = {}
-        for cell in ("land", "sea"):
+        for cell in ("land", "nearest", "sea"):
             data = open_meteo(site["lat"], site["lon"], cell)
             hourly = data["hourly"]
             index = {t: i for i, t in enumerate(hourly["time"])}
@@ -79,9 +79,8 @@ def main(path):
                     if value is not None:
                         diffs.append(value - windy_value)
                 gaps[cell] = sum(diffs) / len(diffs) if diffs else None
-            closer = "-" if None in gaps.values() else ("land" if abs(gaps["land"]) <= abs(gaps["sea"]) else "sea")
-            print("%-14s %-9s %8s %8s   %s" % (name, model,
-                  *("%+.1f" % gaps[c] if gaps[c] is not None else "n/a" for c in ("land", "sea")), closer))
+            print("%-14s %-9s %8s %8s %8s" % (name, model,
+                  *("%+.1f" % gaps[c] if gaps[c] is not None else "n/a" for c in ("land", "nearest", "sea"))))
         for cell, (_, _, lat, lon) in cells.items():
             print("%-14s %s square at %.3f, %.3f" % ("", cell, lat, lon))
 

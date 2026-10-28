@@ -63,9 +63,16 @@ Average gap to Windy, knots (+ = Open-Meteo higher):
 Limits: one evening's forecast, four sites, Windy's 3-hour table (whole
 knots). Windy may have used a slightly different model run.
 
-## Recommendation
-For sites marked coastal in `data/sites.csv`, ask Open-Meteo for the sea
-square (`cell_selection=sea`) when the Met Office model is chosen; leave
-everything else as it is. Coastal and inland sites would then need separate
-requests (the app fetches many sites in one request). Re-run this check
-afterwards on the same four sites.
+## Decision (28 Oct 2026)
+Keep Open-Meteo's default grid square. Leo first asked for "the square the
+site is in" (`cell_selection=nearest`); re-running the check showed it's the
+same square at all three coastal sites (no change to the gap) and further from
+Windy at Cox Tor (Met Office −1.1) and Woolacombe (ECMWF +3.5). The default
+also picks a land square at a similar height, which suits hill sites. The sea
+square for coastal sites (Met Office only) was the one change that closed the
+gap at Fistral; not done, as 1–2 knots on average isn't worth the extra
+requests and special case. Windy appears to blend nearby squares, which would
+cost four times the calls to copy.
+
+**Tip when comparing on Windy:** set "Source:" under the forecast table to
+UKV; it defaults to "meteoblue AI".

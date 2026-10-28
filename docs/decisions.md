@@ -6,6 +6,11 @@ the old one "Replaced by <date>". (I moved these here from docs/STATUS.md on
 23 Oct 2026. The earlier entries give the reason, but not the other options
 we turned down.)
 
+## 28 Oct 2026: Keep Open-Meteo's default grid square for wind
+- **What:** the app keeps asking Open-Meteo for its default ("land") grid square at each site.
+- **Why:** issue #12 (Met Office lower than Windy at Fistral). Same model as Windy's UKV 2 km; the app reads 1–2 knots lower at coastal sites because Windy appears to blend nearby squares. The default square is chosen at a similar height to the site, which suits hill sites. Evidence: specs/forecast-validation.md.
+- **Rejected:** the square nearest the site (no change at the coast, further from Windy at Cox Tor and Woolacombe); the sea square for coastal sites, Met Office only (closed the Fistral gap, but a special case and extra requests for 1–2 knots); blending four squares like Windy (four times the daily calls).
+
 ## 28 Oct 2026: App restyled with the Mint style
 - **Why:** Leo asked for the playbook's Mint style. Applied by hand: Mint isn't in the library proper (a candidate, no tokens file), and this app has extra tokens (`--good`, `--ok`, `--no`).
 - **Known trade-offs:** the accent (buttons) and the "good" rating are the same green, so a green button can be mistaken for "good"; a new `--link` token holds the darker green for text (the accent is 1.9:1 on white). Mint's Figtree font was not added (Google Fonts would tell Google each visitor's address on a public app). Light `--surface-2` is #f6f6f6, not Mint's #fafafa, so the selected tab passes 4.5:1.
