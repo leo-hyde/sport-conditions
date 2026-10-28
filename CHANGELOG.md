@@ -5,6 +5,15 @@ so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
 ## 28 October 2026
+- **Feedback buttons out of the way:** on phones, 🎙 and ✎ now sit at the
+  end of the bottom tab bar (or a panel's button bar), so they never cover
+  the page. On a computer they fade while you scroll. 📝 only appears while
+  notes are waiting to send; "Your requests" is also in Settings → Feedback.
+  While you speak or type a note, the page moves down below the note bar,
+  and ✎/🎙 in the bar swaps between typing and speaking without losing words.
+- **Edit site:** "Delete this site" moved away from Save.
+- **Small fixes:** site names on the computer Overview and the guide sites'
+  map pins are easier to click.
 - **From your feedback (evening):**
   - **Map: your pins group together** when you zoom out, into one circle
     showing how many sites are inside. Its colour is the best rating among

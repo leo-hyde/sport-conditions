@@ -101,21 +101,23 @@
   </main>
 
   <!-- Feedback mode (feedback.js): the bar at the top while you speak or type a
-       note, and the floating buttons. Moved into any open dialog so they still work. -->
+       note, and the 🎙 ✎ buttons. On phones the buttons sit in the tab bar (or a
+       panel's button bar), so they never cover anything. Moved into any open
+       dialog so they still work. -->
   <div id="feedback-tools" hidden>
     <div id="feedback-bar" class="feedback-bar" hidden>
       <span class="feedback-live" aria-hidden="true"></span>
       <p id="feedback-text" class="feedback-text" aria-live="polite"></p>
       <input id="feedback-input" type="text" placeholder="Type, or tap 🎤 on your keyboard" aria-label="Your note">
       <button type="button" id="feedback-pause" class="btn small" aria-label="Pause">⏸</button>
+      <button type="button" id="feedback-switch-mode" class="btn small" aria-label="Type instead">✎</button>
       <button type="button" id="feedback-cancel" class="btn small" aria-label="Cancel note">✕</button>
       <button type="button" id="feedback-done" class="btn small primary">Send</button>
     </div>
     <div class="feedback-fabs" id="feedback-fabs">
-      <button type="button" id="feedback-fold" class="fab tiny" aria-label="Hide the feedback buttons" aria-expanded="true">›</button>
-      <button type="button" id="feedback-open" class="fab small" aria-label="Your requests">📝<span id="feedback-count" class="fab-count" hidden></span></button>
-      <button type="button" id="feedback-type" class="fab small" aria-label="Type a note">✎</button>
-      <button type="button" id="feedback-mic" class="fab" aria-label="Speak a note">🎙</button>
+      <button type="button" id="feedback-open" class="fab" aria-label="Notes waiting to send" hidden>📝<span id="feedback-count" class="fab-count"></span></button>
+      <button type="button" id="feedback-type" class="fab" aria-label="Type a note">✎</button>
+      <button type="button" id="feedback-mic" class="fab mic" aria-label="Speak a note">🎙</button>
     </div>
   </div>
 
@@ -294,8 +296,9 @@
       <details class="settings-section fold">
         <summary><h3>Feedback</h3></summary>
         <div class="checks-row">
-          <label><input id="feedback-switch" type="checkbox"> Feedback mode: 🎙 buttons to speak or type notes about the app</label>
+          <label><input id="feedback-switch" type="checkbox"> Feedback mode: 🎙 and ✎ buttons to speak or type notes about the app</label>
         </div>
+        <button type="button" id="feedback-requests" class="btn small">📝 Your requests</button>
         <p class="hint">On Android, 🎙 beeps each time it starts listening again after a pause, and the app can't stop that. To speak with pauses and no beeps, tap ✎ and then the 🎤 on your phone's keyboard.</p>
         <label class="field">
           Send code (optional)
@@ -384,9 +387,9 @@
         </div>
       </div>
       <p id="site-error" class="error" hidden></p>
+      <!-- Away from Save, so it isn't tapped by mistake -->
+      <button type="button" id="delete-site" class="btn ghost danger delete-site" hidden>Delete this site</button>
       <div class="dialog-actions sticky-actions">
-        <button type="button" id="delete-site" class="btn ghost danger" hidden>Delete</button>
-        <span class="spacer"></span>
         <button type="button" class="btn" data-close>Cancel</button>
         <button type="submit" class="btn primary">Save</button>
       </div>

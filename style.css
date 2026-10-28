@@ -792,7 +792,7 @@ details .compare { margin-top: 8px; }
   justify-content: center;
   gap: 1px;
   min-width: 40px;
-  height: 22px;
+  height: 24px;  /* the smallest tap size WCAG allows */
   padding: 0 4px;
   border-radius: 999px;
   border: 1.5px solid rgba(255, 255, 255, 0.9);
@@ -1049,7 +1049,9 @@ dialog { overflow: auto; overscroll-behavior: contain; }
 
 /* ---------- Feedback mode (feedback.js) ---------- */
 
-/* Floating buttons, bottom right; above the tab bar on phones */
+/* The 🎙 ✎ buttons: a small pill. On a computer it floats bottom right and
+   fades while you scroll; on phones it sits in the tab bar (or a panel's
+   button bar), in space kept free for it, so it never covers anything. */
 .feedback-fabs {
   position: fixed;
   right: 16px;
@@ -1057,38 +1059,27 @@ dialog { overflow: auto; overscroll-behavior: contain; }
   z-index: 2500;  /* above the map */
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: opacity 0.2s;
 }
+.feedback-fabs.scrolling { opacity: 0; pointer-events: none; }
 .fab {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-size: 24px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-}
-.fab.small {
   width: 44px;
   height: 44px;
-  font-size: 18px;
-  background: var(--surface);
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-2);
   color: var(--text);
-  border: 1px solid var(--border);
-}
-.fab.tiny {
-  width: 28px;
-  height: 44px;
-  border-radius: 14px;
   font-size: 18px;
-  background: var(--surface);
-  color: var(--muted);
-  border: 1px solid var(--border);
+  cursor: pointer;
 }
-.feedback-fabs.folded .fab:not(.tiny) { display: none; }
+.fab.mic { background: var(--accent); color: var(--accent-text); }
 .fab-count {
   position: absolute;
   top: -4px;
@@ -1151,9 +1142,27 @@ dialog { overflow: auto; overscroll-behavior: contain; }
 .feedback-status a { color: var(--link); font-weight: 600; }
 .link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--link); cursor: pointer; text-decoration: underline; }
 
+/* Room at the end of the page, so the last things can scroll clear of the buttons */
+.feedback-on main { padding-bottom: 72px; }
+
+/* While the note bar is open at the top, the page and panels move down below it */
+.feedback-recording { padding-top: 76px; }
+.feedback-recording .tabs { top: 76px; }
+.feedback-recording dialog { max-height: calc(100vh - 92px); margin-top: 84px; }
+
 @media (max-width: 600px) {
-  .feedback-fabs { right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); }
-  .feedback-on .toast { bottom: calc(148px + env(safe-area-inset-bottom)); }  /* clear of the buttons */
+  /* Docked at the right-hand end of the tab bar, and of a panel's button bar */
+  .feedback-fabs, dialog .feedback-fabs {
+    right: 8px;
+    bottom: calc(7px + env(safe-area-inset-bottom));
+    box-shadow: none;
+  }
+  .feedback-fabs.scrolling { opacity: 1; pointer-events: auto; }  /* docked: nothing to fade from */
+  .feedback-on .tabs { padding-right: 112px; }
+  .feedback-on dialog .sticky-actions { padding-right: 116px; }
+  .feedback-on main { padding-bottom: 0; }
+  .feedback-recording .tabs { top: auto; }  /* the tab bar is at the bottom on phones */
+  .feedback-recording dialog { margin: auto 0 0; max-height: calc(100vh - 84px); }
 }
 .hint a { color: var(--link); }
 
@@ -1205,3 +1214,5 @@ label.inline input { width: 76px; }
 
 /* Read out by screen readers, but not shown */
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.delete-site { align-self: flex-start; padding-left: 0; }
+@media (min-width: 601px) { .site-link { min-height: 24px; } }  /* WCAG's smallest tap size on computers (44px on phones) */

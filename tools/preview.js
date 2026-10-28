@@ -81,15 +81,9 @@ function cachedLibrary(name, version, file) {
   return path.join(folder, "package", file);
 }
 
-(async () => {
-  const server = await serve();
-  const { chromium } = findPlaywright();
-  const browser = await chromium.launch(fs.existsSync("/opt/pw-browsers/chromium") ? { executablePath: "/opt/pw-browsers/chromium" } : {});
-  const page = await browser.newPage({ viewport: { width: opt.width, height: opt.height }, colorScheme: opt.dark ? "dark" : "light",
-    hasTouch: opt.width < 600 });
-  const errors = [];
-  page.on("pageerror", error => errors.push(error.message));
-
+// Answers the forecast services with made-up data and keeps everything else
+// offline (map tiles, the Worker…). Used by this tool and tools/ux-check.js.
+async function useFakeData(page) {
   await page.route("**/*", async route => {
     const url = route.request().url();
     if (url.startsWith("http://127.0.0.1")) return route.continue();
@@ -107,6 +101,20 @@ function cachedLibrary(name, version, file) {
     }
     return route.abort();  // everything else (map tiles, the Worker…) stays offline
   });
+}
+
+module.exports = { serve, findPlaywright, useFakeData };
+
+if (require.main === module) (async () => {
+  const server = await serve();
+  const { chromium } = findPlaywright();
+  const browser = await chromium.launch(fs.existsSync("/opt/pw-browsers/chromium") ? { executablePath: "/opt/pw-browsers/chromium" } : {});
+  const page = await browser.newPage({ viewport: { width: opt.width, height: opt.height }, colorScheme: opt.dark ? "dark" : "light",
+    hasTouch: opt.width < 600 });
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+
+  await useFakeData(page);
   await page.addInitScript(o => {
     if (localStorage.getItem("sc.preview")) return;  // only the first load
     localStorage.setItem("sc.preview", "1");

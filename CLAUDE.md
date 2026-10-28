@@ -29,7 +29,10 @@ file holds only what's specific to this project. Where we are:
 - **Build from SPEC.md.** If something isn't in the spec, or the spec is
   unclear, ask before building it. If the spec needs to change, propose the
   edit to SPEC.md first. Bigger features also get `specs/<feature>.md`.
-- **Follow DESIGN.md** for anything visual. New components get added to it.
+- **Follow DESIGN.md** for anything visual, above all its "Rules every screen
+  must pass". New components get added to it. **Before pushing any visual
+  change, run `node tools/ux-check.js` and get PASS** (fix the problems, or
+  add a reasoned exception to DESIGN.md and the tool). Say so in the reply.
 - **Keep it opening by double-click:** plain `<script>` tags (no ES modules),
   and libraries loaded from a CDN. No frameworks or build tools unless the
   spec says so.

@@ -50,9 +50,12 @@ function renderFeedbackTools() {
   feedbackTools.hidden = !feedbackOn();
   document.body.classList.toggle("feedback-on", feedbackOn());
   document.getElementById("feedback-mic").hidden = !Recognition;
+  document.getElementById("feedback-switch-mode").hidden = !Recognition;
+  // 📝 only shows while notes are waiting to send (Settings → Feedback has
+  // "Your requests" too), so the buttons stay small.
   const count = notes.filter(note => !note.sent).length;
   document.getElementById("feedback-count").textContent = count;
-  document.getElementById("feedback-count").hidden = count === 0;
+  document.getElementById("feedback-open").hidden = count === 0;
 }
 
 // While a dialog is open, the browser ignores taps outside it. So the
@@ -185,7 +188,11 @@ async function keepScreenOn(on) {
 // (at the top, so the keyboard doesn't cover it).
 function showBar(mode, text = "") {
   feedbackBar.hidden = false;
+  document.body.classList.add("feedback-recording");  // moves the page down, clear of the bar
   feedbackBar.dataset.mode = mode;
+  const modeButton = document.getElementById("feedback-switch-mode");
+  modeButton.textContent = mode === "typing" ? "🎙" : "✎";
+  modeButton.setAttribute("aria-label", mode === "typing" ? "Speak instead" : "Type instead");
   feedbackText.textContent = mode === "listening" ? text : "";
   feedbackInput.value = mode === "typing" ? text : "";
   if (mode === "typing") {
@@ -197,6 +204,7 @@ function showBar(mode, text = "") {
 function hideBar() {
   stopListening();
   feedbackBar.hidden = true;
+  document.body.classList.remove("feedback-recording");
   feedbackInput.blur();  // closes the phone's keyboard
   save("sc.feedbackDraft", "");
 }
@@ -359,22 +367,37 @@ function renderRequests() {
 
 // ---------- Buttons ----------
 
-// › folds the three buttons away, leaving one small tab; remembered between visits.
-const feedbackFabs = document.getElementById("feedback-fabs");
-const feedbackFold = document.getElementById("feedback-fold");
-function setFolded(folded) {
-  feedbackFabs.classList.toggle("folded", folded);
-  feedbackFold.textContent = folded ? "‹" : "›";
-  feedbackFold.setAttribute("aria-expanded", String(!folded));
-  feedbackFold.setAttribute("aria-label", folded ? "Show the feedback buttons" : "Hide the feedback buttons");
-  save("sc.feedbackFolded", folded);
+// ✎ / 🎙 in the bar swaps between typing and speaking, keeping the words so far.
+function switchMode() {
+  if (feedbackBar.dataset.mode === "listening") {
+    const sofar = feedbackText.textContent;
+    stopListening();
+    showBar("typing", sofar);
+  } else {
+    heard = feedbackInput.value.trim();
+    showBar("listening", heard);
+    listening = true;
+    setPaused(false);
+    keepScreenOn(true);
+    listenOnce();
+  }
 }
-feedbackFold.addEventListener("click", () => setFolded(!feedbackFabs.classList.contains("folded")));
-setFolded(loadSaved("sc.feedbackFolded", false) === true);
+
+// On a computer the buttons float over the page, so they fade away while you
+// scroll and come back when you stop.
+const feedbackFabs = document.getElementById("feedback-fabs");
+let fabTimer = null;
+document.addEventListener("scroll", () => {
+  feedbackFabs.classList.add("scrolling");
+  clearTimeout(fabTimer);
+  fabTimer = setTimeout(() => feedbackFabs.classList.remove("scrolling"), 600);
+}, { capture: true, passive: true });
 
 document.getElementById("feedback-mic").addEventListener("click", startListening);
 document.getElementById("feedback-type").addEventListener("click", () => showBar("typing"));
 document.getElementById("feedback-open").addEventListener("click", openFeedbackDialog);
+document.getElementById("feedback-requests").addEventListener("click", openFeedbackDialog);
+document.getElementById("feedback-switch-mode").addEventListener("click", switchMode);
 document.getElementById("feedback-done").addEventListener("click", sendNote);
 document.getElementById("feedback-cancel").addEventListener("click", hideBar);
 document.getElementById("feedback-pause").addEventListener("click", togglePause);

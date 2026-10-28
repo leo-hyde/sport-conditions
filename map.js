@@ -406,8 +406,8 @@ function drawRatedLibrary() {
       icon: L.divIcon({
         className: "",
         html: `<div class="lib-pin ${rating}">${arrow(hour.degrees)}${hour.speed}</div>`,
-        iconSize: [40, 22],
-        iconAnchor: [20, 11],
+        iconSize: [40, 24],
+        iconAnchor: [20, 12],
       }),
       title: site.name,
     })

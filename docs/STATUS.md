@@ -6,9 +6,9 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 | | |
 |---|---|
-| Last session | Cloud, 28 Oct 2026 evening (feedback #9, #6, #7, #14, #15: map clusters, surf size factor, beep-free voice tip, theme issue #16) |
+| Last session | Cloud, 28 Oct 2026 late (design rules built in: DESIGN.md "Rules every screen must pass" + `tools/ux-check.js`, required by CLAUDE.md; feedback buttons docked in the tab bar) |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Work in progress | None. Leo to look on his phone: grouped pins on the map, surf "Wave size here" (Claude's guesses: please correct), the keyboard 🎤 tip. Leo wanted #12 (Met Office vs Windy) checked again at the end of this session |
+| Work in progress | None. Leo to look on his phone: grouped map pins, surf "Wave size here" (Claude's guesses: please correct), the keyboard 🎤 tip, and the new docked 🎙 ✎ buttons |
 | Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site (and checks the size factors) |
 | Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Still to do: #4 overview across sports (SPEC.md step 5, spec first), #16 theme setting (where should the switch come from?). Product question: should the default OK wave range (2–8 ft) be narrower? |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |

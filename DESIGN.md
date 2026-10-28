@@ -20,6 +20,30 @@ near-black (near-white in dark mode), so a button never looks like a rating.
 - **XC Weather** (a wind forecast site): a good page for a single site. Avoid
   its dated look and its cluttered home page.
 
+## Rules every screen must pass
+
+Every visual change follows these, and `node tools/ux-check.js` checks them
+on every screen (both sports, light and dark, phone and desktop) before it's
+pushed. An exception needs a reason, written here and in that tool.
+
+1. **Contrast:** text at least 4.5:1 (WCAG); no faded text; nothing under 12px.
+2. **Tap size:** 44px tall on phones; 24px minimum anywhere (see "Tap sizes"
+   below for the few dense rows allowed between the two).
+3. **Names:** every button, field and picker has a name a screen reader can
+   say, and a visible label where you type.
+4. **Keyboard:** everything works with Tab, arrows and Enter, with a visible
+   focus ring.
+5. **Nothing covers what you need:** floating things (like the feedback
+   buttons) never sit over content you can't scroll clear of; on phones they
+   dock in the tab bar or a panel's button bar.
+6. **Buttons you need stay in view:** long panels keep Close (or Cancel and
+   Save) stuck to the bottom; destructive buttons sit away from Save.
+7. **Green means good:** green only for the "good" rating and links.
+8. **Honest states:** loading, empty and failed say so in words; a failure
+   never looks like bad weather.
+9. **Plain words:** UK plain English, no unexplained jargon.
+10. **Fits the phone:** nothing wider than the screen at 375px.
+
 ## Principles
 1. **Glance first.** You should be able to answer "where can I fly, and
    when?" in under 2 seconds. Detail comes when you tap.
@@ -122,15 +146,21 @@ defined in `:root` in style.css.
 - **Tide line:** small muted text under each day's strip ("🌊 HW … · LW … ·
   Springs"). HW and LW mean high and low water.
 
-- **Feedback mode buttons:** they float at the bottom right (above the tab bar
-  on phones). There's a 56px round `--accent` 🎙 button, and 44px `--surface`
-  ✎ and 📝 buttons. 📝 ("Your requests") shows a red count of notes not sent
-  yet. The buttons only show in feedback mode.
+- **Feedback mode buttons** (only in feedback mode): a small `--surface` pill
+  with 44px ✎ (type) and `--accent` 🎙 (speak) buttons. On phones it's
+  **docked** at the right-hand end of the tab bar, or of an open panel's
+  button bar, in space kept free for it, so it never covers anything. On a
+  computer it floats bottom right and fades while you scroll. A 📝 button
+  with a red count joins it only while notes are waiting to send; "📝 Your
+  requests" is always in Settings → Feedback. (Replaced the four floating
+  buttons and the › fold on 28 Oct: they covered the screen.)
 - **Feedback bar:** fixed to the **top** of the screen, because the phone
-  keyboard covers the bottom. It sits on `--surface` with a 2px `--accent`
+  keyboard covers the bottom. The page and any panel move down below it while
+  it's open, so it hides nothing. It sits on `--surface` with a 2px `--accent`
   border. It shows a pulsing red dot and your words as you speak, or a text
   box. It has ⏸ (while speaking; becomes ▶ when paused, and the dot turns
-  grey and stops), ✕ and **Send** (one tap).
+  grey and stops), ✎/🎙 to swap between typing and speaking (keeping the
+  words), ✕ and **Send** (one tap).
 - **"Show where I am":** a ◎ button in the map's own button style, under
   + and −. Your position is a blue (`#2563eb`) dot with a white ring, inside
   a faint blue circle showing how accurate it is. The ◎ pulses while
