@@ -280,7 +280,7 @@ function drawPins() {
   const sun = sportSites()[0] ? flyingWindow(sportSites()[0], date, state.settings) : null;
   document.getElementById("map-time").innerHTML =
     `${dayLabel(date)} · ${state.mapTime.slice(11)}:00` +
-    (sun ? `<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)} · ${tideRange(date)} tides</small>` : "");
+    (sun ? `<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)} · ${tideRange(date)}</small>` : "");
 
   pinLayer.clearLayers();
   for (const site of sportSites()) {

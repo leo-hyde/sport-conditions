@@ -26,7 +26,7 @@ function showTideDetails(siteId, date) {
     </div>
     <div>
       <h2>🌊 ${esc(site.name)} tides</h2>
-      <p class="muted">${dayLabel(date)} · ${tideRange(date)} tides${tideRangeHint(date)}</p>
+      <p class="muted">${dayLabel(date)} · ${tideRange(date)}${tideRangeHint(date)}</p>
     </div>
     <p id="tide-readout" class="chart-readout"></p>
     ${tideChartSvg(site, tides, date)}
@@ -44,8 +44,8 @@ function showTideDetails(siteId, date) {
 // A few words on what springs and neaps mean for the day.
 function tideRangeHint(date) {
   const range = tideRange(date);
-  if (range === "Springs") return " (biggest range: the highest highs)";
-  if (range === "Neaps") return " (smallest range)";
+  if (range === "Big tides") return " (springs: the sea goes furthest up and down)";
+  if (range === "Small tides") return " (neaps: the sea moves least)";
   return "";
 }
 
@@ -104,7 +104,7 @@ function tideChartSvg(site, tides, date) {
   // High and low water: a dot and its time.
   const marks = turns.map(turn => `
     <circle class="turn ${turn.type}" cx="${x(turn.hours)}" cy="${y(turn.height)}" r="5"/>
-    <text class="turn-label" x="${x(turn.hours)}" y="${y(turn.height) + (turn.type === "high" ? -10 : 18)}" text-anchor="middle">${turn.type === "high" ? "HW" : "LW"} ${formatHours(turn.hours)}</text>`).join("");
+    <text class="turn-label" x="${x(turn.hours)}" y="${y(turn.height) + (turn.type === "high" ? -10 : 18)}" text-anchor="middle">${turn.type === "high" ? "High" : "Low"} ${formatHours(turn.hours)}</text>`).join("");
 
   // "Now", if this is today.
   let now = "";
@@ -159,11 +159,11 @@ document.addEventListener("click", event => {
   if (button) showTideDetails(button.dataset.tideSite, button.dataset.tideDate);
 });
 
-// What the tide is doing right now, e.g. "Rising · HW 17:10", for site cards.
+// What the tide is doing right now, e.g. "Tide rising · high at 17:10", for site cards.
 function tideNow(tides) {
   const now = londonNowKey();
   const tide = tideAt(tides, now);
   const next = tides.turns.find(turn => turn.at > hourNumber(now) + new Date().getMinutes() / 60);
   if (!tide || !next) return "";
-  return `${tide.rising ? "Rising" : "Falling"} · ${next.type === "high" ? "HW" : "LW"} ${formatHours(next.hours)}`;
+  return `Tide ${tide.rising ? "rising" : "falling"} · ${next.type === "high" ? "high" : "low"} at ${formatHours(next.hours)}`;
 }

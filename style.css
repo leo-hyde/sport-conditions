@@ -33,7 +33,7 @@
     --accent-text: #0b1020;
     --good: #2fd36b;
     --ok: #f5c04a;
-    --no: #222833;
+    --no: #2d3644;  /* lifted so "no" cells stand out from the card (#171b22) */
     --on-no: #a3acb9;
     --danger: #f87171;
     --shadow: none;
@@ -264,7 +264,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; 
 .good { background: var(--good); color: var(--on-good); }
 .ok   { background: var(--ok);   color: var(--on-ok); }
 .no   { background: var(--no);   color: var(--on-no); }
-.past { opacity: 0.35; }
+.hour.past { background: var(--no); color: var(--on-no); }  /* over: calm grey, never a faded good or OK */
+.cell-note { font-size: 12px; font-weight: 500; }
 .hour:hover { filter: brightness(0.95); }
 
 /* ---------- Dialogs ---------- */

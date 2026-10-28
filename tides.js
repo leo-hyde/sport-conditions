@@ -144,7 +144,7 @@ function tideRuleText(rule) {
 // The same, short enough for a tag on a site card: "Avoid low ±2h".
 function tideRuleTag(rule) {
   if (!rule) return "";
-  return `${rule.mode === "avoid" ? "Avoid" : "Only"} ${rule.water} ±${rule.hours}h`;
+  return `${rule.mode === "avoid" ? "Avoid" : "Only"} ${rule.water} tide ±${rule.hours}h`;
 }
 
 // The stretches of a day (in hours, 0–24) a tide rule rules out.
@@ -174,7 +174,7 @@ function tideRange(date) {
   const phase = (((days - 1.5) % halfMonth) + halfMonth) % halfMonth / halfMonth;
   const springness = Math.cos(phase * 2 * Math.PI);  // 1 = springs, −1 = neaps
 
-  if (springness > 0.6) return "Springs";
-  if (springness < -0.6) return "Neaps";
-  return phase < 0.5 ? "Mid (shrinking)" : "Mid (growing)";
+  if (springness > 0.6) return "Big tides";
+  if (springness < -0.6) return "Small tides";
+  return phase < 0.5 ? "Medium tides, getting smaller" : "Medium tides, getting bigger";
 }

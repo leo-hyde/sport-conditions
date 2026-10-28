@@ -12,6 +12,14 @@ has every change. Newest first.
   screen readers now announce them ("Sport", "Forecast model").
 - **Easier to read:** the "updated" line and other grey text are a little
   darker. The Overview heading now says "Overview", like its tab.
+- **Plainer words:** tides now read "High 05:56 · Low 12:22 · Big tides"
+  instead of "HW", "LW" and "Springs", and "Tide rising · high at 18:20".
+  A line on My sites explains the small wind dial. The top line just says
+  "Updated 17:27", and each site card says whether its numbers are mph or ft.
+- **Clearer table marks:** hours that have already passed are grey instead of
+  faded yellow or green. In the Overview table, "–" means no good hours,
+  "Over" means the day has finished and "No data" means no forecast arrived;
+  the key explains this. In dark mode the "No" cells show up better.
 - **The Overview table shows a soft shadow at the edge** while there are
   more days to scroll to.
 
