@@ -106,6 +106,17 @@ EOF
 if [ -n "$changed" ]; then
   # A commit of only these files, named "Playbook: …" so a push of it needs no STATUS update.
   git add -f -- $changed && git commit -q -m "Playbook: update shared files from claude-playbook" -- $changed
+  # This script just replaced itself: run the new version now, so anything it adds (a
+  # new check, like catch-ups) works this session, not only the next. It reports both runs.
+  case "$changed" in *scripts/playbook-sync.sh*)
+    if [ -z "${PLAYBOOK_SYNC_SRC:-}" ]; then
+      export PLAYBOOK_SYNC_SRC="$src" PLAYBOOK_SYNC_CHANGED="$changed"
+      exec bash scripts/playbook-sync.sh
+    fi ;;
+  esac
+fi
+changed="${PLAYBOOK_SYNC_CHANGED:-}$changed"
+if [ -n "$changed" ]; then
   echo "Playbook: updated$changed from claude-playbook (committed, not yet pushed)."
   if [ "$ref" = origin/stable ]; then
     # The newest release note: its heading (the tag) and first line. Claude passes it on.
@@ -119,13 +130,8 @@ if [ -n "$changed" ]; then
   case "$changed" in *.claude/rules/*)
     echo "Playbook: the shared rules changed; read .claude/rules/ again before starting." ;;
   esac
-  # This script just replaced itself: run the new version now, so anything it
-  # adds (a new check, like catch-ups) works this session, not only the next.
-  case "$changed" in *scripts/playbook-sync.sh*)
-    if [ -z "${PLAYBOOK_SYNC_SRC:-}" ]; then
-      export PLAYBOOK_SYNC_SRC="$src"
-      exec bash scripts/playbook-sync.sh
-    fi ;;
+  case "$changed" in *.claude/agents/*)
+    echo "Playbook: subagents (.claude/agents/) changed; the new ones load from the next session." ;;
   esac
 else
   echo "Playbook: shared rules are up to date."

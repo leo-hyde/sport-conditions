@@ -23,3 +23,5 @@ would, before the user sees the walkthrough. You never edit files or commit.
      elsewhere.
    - **Not checked**: what you couldn't verify, and how it could be.
    Lead with the most important. Don't list style nits, and don't praise.
+5. If the step adds or reworks a screen, also do the design pass in the
+   playbook's `reference/design-review.md` and add its findings.
