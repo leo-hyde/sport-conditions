@@ -8,7 +8,7 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 |---|---|
 | Last session | Mac, 27 Oct 2026 (playbook second release trial, no app changes) |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Work in progress | None |
+| Work in progress | Issue #13: step 1 (tap sizes, 16px dropdowns, contrast) done; step 2 (grid wording and marks) and step 3 (compact cards, needs spec approval) to do |
 | Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
 | Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Feedback 26 Oct: #8 (map location) and #5 (voice pause) built and closed. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Leo to try both new buttons on his phone |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |

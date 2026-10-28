@@ -4,6 +4,17 @@ Sport Conditions is in **Beta**: it's still being tested and changes often,
 so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
+## 28 October 2026
+- **Easier to tap on a phone:** the refresh and settings buttons, "By day /
+  By hour", site names and stars are now all at least 44 pixels, the size a
+  thumb can hit reliably. (Design review, issue #13.)
+- **The two dropdowns no longer make iPhones zoom in** when you tap them, and
+  screen readers now announce them ("Sport", "Forecast model").
+- **Easier to read:** the "updated" line and other grey text are a little
+  darker. The Overview heading now says "Overview", like its tab.
+- **The Overview table shows a soft shadow at the edge** while there are
+  more days to scroll to.
+
 ## 26 October 2026
 - **"Show where I am" on the map:** tap ◎ under the + and − buttons. The map
   moves to you and shows a blue dot. Your phone asks for permission the first
