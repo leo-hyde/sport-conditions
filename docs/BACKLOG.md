@@ -18,7 +18,7 @@ in CHANGELOG.md) · not doing (with the reason).
 | Automated tests of the rating rules | Claude, 23 Oct | easy | The next step for quality (ARCHITECTURE.md "Weak spots") |
 | Check the Newquay surf spots' locations, directions and tide rules | Claude, 23 Oct | discuss | They came from Claude's general knowledge. Check the tide rules for Little Fistral and Lusty Glaze especially |
 | Map: group nearby pins when zoomed out (clusters) | Leo, #9 | discuss | Not in SPEC.md. Would add a CDN library (Leaflet.markercluster); also replaces the older "Surf map: pins overlap" row below |
-| Met Office forecast reads lower than Windy for the same hour (Fistral) | Leo, #12 | discuss | Needs a check against live data first: may be the model (Met Office vs Windy's default), gust vs mean wind, or height of the reading. Not a bug until compared |
+| Met Office forecast reads lower than Windy for the same hour (Fistral) | Leo, #12 | discuss | Checked 28 Oct (specs/forecast-validation.md): same model, but the app uses the nearest land grid square, 1–2 knots lower at coastal sites. Fix proposed: sea square for coastal sites, Met Office only. Also: Windy's table defaults to "meteoblue AI", not UKV |
 | Surf map: pins overlap around Newquay | Claude, 23 Oct | later | Fine once you zoom in |
 | Tides on the map, done better | Leo, 23 Oct | later | Tide labels on pins were too crowded, so I removed them. Arrows for tidal currents (like SailGrib WR) need a source of data |
 | Send feedback straight to GitHub (Worker secrets) | Leo, 23 Oct | later | Built. Leo chose not to set up the secrets for now |
