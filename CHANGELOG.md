@@ -5,15 +5,16 @@ so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
 ## 28 October 2026
+- **New look: Mint.** White and near-black with one fresh green, in light and dark. Buttons and the selected pill are green; green text is a darker green so it can be read. Corners are a little tighter. The wind rating colours are now Mint's green and yellow.
 - **Voice notes scroll:** the words you speak now scroll up as you go, so you
   always see the newest. (Feedback #10.)
 - **Hide the feedback buttons:** a small › tab folds the mic, pencil and notes
   buttons out of the way; ‹ brings them back. It remembers your choice.
   (Feedback #11.)
-- **Shorter site cards (My sites):** each card now shows only today, so you
-  can see more sites at once. Tap "Show tomorrow and later" for the rest of the
-  week; the button still says how many good hours are coming. (Design review,
-  issue #13.)
+- **Clearer site cards (My sites):** cards show today and tomorrow, as before.
+  "Show all 7 days" now opens the later days on every site at once, so you can
+  compare them. Each site has a blue edge and more space under it so they read
+  as separate places. (Design review, issue #13.)
 - **Easier to tap on a phone:** the refresh and settings buttons, "By day /
   By hour", site names and stars are now all at least 44 pixels, the size a
   thumb can hit reliably. (Design review, issue #13.)

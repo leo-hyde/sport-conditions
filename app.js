@@ -275,9 +275,10 @@ function showView(view) {
   render();
 }
 
-// Cards show only today; tapping "Show tomorrow and later" opens the rest.
-const SHOWN_DAYS = 1;
-const expandedSites = new Set();  // ids of cards showing all days
+// Cards show today and tomorrow; tapping "Show all 7 days" on any card opens
+// the later days on every card, so the sites stay easy to compare.
+const SHOWN_DAYS = 2;
+let showAllDays = false;
 
 // One card per site, with one strip of hour blocks per day.
 function renderSiteCards() {
@@ -289,13 +290,13 @@ function renderSiteCards() {
   cards.innerHTML = sportSites().map(site => {
     const tides = state.tides[site.id];
     const allDays = Object.entries(siteDays(site));
-    const expanded = expandedSites.has(site.id);
+    const expanded = showAllDays;
     const days = expanded ? allDays : allDays.slice(0, SHOWN_DAYS);
     // A hint of what's hidden: how many good hours tomorrow and later have.
     const laterGood = allDays.slice(SHOWN_DAYS).flatMap(([, hours]) => hours).filter(hour => hour.rating === "good").length;
     const toggle = allDays.length > SHOWN_DAYS
-      ? `<button class="show-more" data-expand-site="${site.id}" aria-expanded="${expanded}">
-          ${expanded ? "Show today only ▴" : "Show tomorrow and later ▾"}
+      ? `<button class="show-more" data-expand-sites aria-expanded="${expanded}">
+          ${expanded ? "Show today and tomorrow only ▴" : `Show all ${allDays.length} days ▾`}
           ${!expanded && laterGood ? `<span class="badge good">${laterGood}h good later</span>` : ""}
         </button>`
       : "";
@@ -346,11 +347,8 @@ document.addEventListener("click", event => {
   const block = event.target.closest("[data-key]");
   if (block) showHourDetails(block.dataset.site, block.dataset.key);
 
-  const expandButton = event.target.closest("[data-expand-site]");
-  if (expandButton) {
-    const id = expandButton.dataset.expandSite;
-    if (expandedSites.has(id)) expandedSites.delete(id);
-    else expandedSites.add(id);
+  if (event.target.closest("[data-expand-sites]")) {
+    showAllDays = !showAllDays;
     renderSiteCards();
     return;
   }

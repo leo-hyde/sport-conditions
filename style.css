@@ -1,41 +1,43 @@
 /* Design tokens: see DESIGN.md. Change colours here and they change everywhere. */
 :root {
-  --bg: #eef1f5;
+  --bg: #fafafa;
   --surface: #ffffff;
-  --surface-2: #f4f6f9;
-  --text: #111827;
-  --muted: #5b6472;  /* 5:1 on the page background (the old grey was 4.2:1) */
-  --border: #e3e7ee;
-  --accent: #2563eb;
-  --accent-text: #ffffff;
-  --good: #22c55e;
-  --ok: #fbbf24;
-  --no: #eceff3;  /* calm grey: "no" hours shouldn't shout */
-  --on-good: #052e14;
-  --on-ok: #3b2a00;
-  --on-no: #5b6472;
-  --danger: #dc2626;
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 6px 20px rgba(15, 23, 42, 0.06);
-  --radius: 14px;
+  --surface-2: #f6f6f6;
+  --text: #171717;
+  --muted: #5c5c5c;
+  --border: #dfdfdf;
+  --accent: #3ecf8e;  /* buttons and highlights. Too pale for text: use --link for green text */
+  --accent-text: #171717;
+  --link: #1a7f56;
+  --good: #3ecf8e;
+  --ok: #ffdb13;
+  --no: #ededed;  /* calm grey: "no" hours shouldn't shout */
+  --on-good: #0a2a1b;
+  --on-ok: #2b2400;
+  --on-no: #5c5c5c;
+  --danger: #d01c00;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --radius: 8px;
   --radius-sm: 6px;
 }
 
 /* Dark theme: used automatically when the phone or computer is in dark mode. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e1116;
-    --surface: #171b22;
-    --surface-2: #202631;
-    --text: #e8ecf2;
-    --muted: #98a2b3;
-    --border: #2a313c;
-    --accent: #5b8cff;
-    --accent-text: #0b1020;
-    --good: #2fd36b;
-    --ok: #f5c04a;
-    --no: #2d3644;  /* lifted so "no" cells stand out from the card (#171b22) */
-    --on-no: #a3acb9;
-    --danger: #f87171;
+    --bg: #1c1c1c;
+    --surface: #202020;
+    --surface-2: #2a2a2a;
+    --text: #ededed;
+    --muted: #9a9a9a;
+    --border: #2e2e2e;
+    --accent: #3ecf8e;
+    --accent-text: #171717;
+    --link: #3ecf8e;
+    --good: #3ecf8e;
+    --ok: #ffdb13;
+    --no: #333333;  /* a step lighter than the card (#202020) so "no" cells stand out */
+    --on-no: #a8a8a8;
+    --danger: #ff6a55;
     --shadow: none;
   }
 }
@@ -154,7 +156,7 @@ p { margin: 0; }
 .btn { padding: 0 18px; }
 .btn.small { min-height: 34px; padding: 0 12px; font-size: 14px; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-.btn.ghost { border-color: transparent; background: transparent; color: var(--accent); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--link); }
 .btn.danger { color: var(--danger); }
 .icon-btn { width: 44px; font-size: 20px; }
 .btn:hover, .icon-btn:hover { filter: brightness(0.97); }
@@ -205,6 +207,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; 
   gap: 8px;
   margin-bottom: 10px;
 }
+
+/* Site cards: clear space between sites, and a blue edge so each one reads as its own place */
+#site-cards .card.site { margin-bottom: 24px; border-left: 4px solid var(--accent); }
 
 .summary { display: flex; flex-direction: column; gap: 6px; }
 
@@ -402,7 +407,7 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 .by-day td.cell { border-radius: 10px; padding: 8px 10px; font-size: 14px; font-weight: 600; width: 26%; }
 .by-day td.cell small { display: block; font-weight: 500; opacity: 0.8; font-size: 12px; }
 .site-link { background: none; border: none; padding: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.site-link:hover { color: var(--accent); }
+.site-link:hover { color: var(--link); }
 
 /* B: by hour (heatmap) */
 .heatmap { display: grid; gap: 2px; align-items: center; margin-bottom: 4px; }
@@ -541,8 +546,8 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 .section-title { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
 .compare { width: 100%; border-collapse: collapse; font-size: 14px; }
 .compare td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
-.compare tr.current td { font-weight: 700; color: var(--accent); }
-.links a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.compare tr.current td { font-weight: 700; color: var(--link); }
+.links a { color: var(--link); font-weight: 600; text-decoration: none; }
 
 .checks-row { display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
 .checks-row input, .map-toggles input { width: 18px; height: 18px; vertical-align: -3px; accent-color: var(--accent); }
@@ -703,19 +708,19 @@ dialog.wide { width: min(720px, calc(100vw - 32px)); }
 .wind-chart .band.ok { fill: var(--ok); opacity: 0.18; }
 .wind-chart .grid { stroke: var(--border); stroke-width: 1; }
 .wind-chart .axis { fill: var(--muted); font-size: 11px; }
-.wind-chart .speed-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.wind-chart .speed-line { fill: none; stroke: var(--link); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .wind-chart .gust { fill: #f97316; stroke: var(--surface); stroke-width: 2; }
 .wind-chart .dir-arrow { fill: var(--muted); font-size: 14px; font-weight: 700; }
 .wind-chart .crosshair { stroke: var(--text); stroke-width: 1; stroke-dasharray: 3 3; }
 .wind-chart .hit-area { fill: transparent; cursor: crosshair; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
 .chart-legend i { display: inline-block; vertical-align: middle; margin-right: 6px; }
-.key-line { width: 16px; height: 2px; background: var(--accent); }
+.key-line { width: 16px; height: 2px; background: var(--link); }
 .key-dot { width: 8px; height: 8px; border-radius: 50%; background: #f97316; }
 .key-band { width: 14px; height: 10px; border-radius: 2px; }
 .key-band.good { background: var(--good); opacity: 0.45; }
 .key-band.ok { background: var(--ok); opacity: 0.4; }
-details summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px; }
+details summary { cursor: pointer; color: var(--link); font-weight: 600; font-size: 14px; }
 details .compare { margin-top: 8px; }
 .map-pin small { font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 1px; }
 
@@ -834,7 +839,7 @@ details .compare { margin-top: 8px; }
     border-radius: 12px;
     font-size: 12px;
   }
-  .tabs button.active { background: var(--surface-2); box-shadow: none; color: var(--accent); }
+  .tabs button.active { background: var(--surface-2); box-shadow: none; color: var(--link); }
   .tab-icon { display: block; font-size: 20px; line-height: 1; }
 
   /* Site cards: the day name sits above its strip, so the hours get the full width */
@@ -871,7 +876,7 @@ details .compare { margin-top: 8px; }
 
 /* Map: "show where I am" button (the blue dot itself is drawn in map.js) */
 .locate-btn { font-size: 18px; line-height: 30px !important; }
-.locate-btn.busy { color: var(--accent) !important; animation: feedback-pulse 1s ease-in-out infinite; }
+.locate-btn.busy { color: var(--link) !important; animation: feedback-pulse 1s ease-in-out infinite; }
 
 /* Map key */
 .map-key {
@@ -907,7 +912,7 @@ button.tide-line {
   text-align: left;
   cursor: pointer;
 }
-button.tide-line .more { color: var(--accent); font-weight: 600; white-space: nowrap; }
+button.tide-line .more { color: var(--link); font-weight: 600; white-space: nowrap; }
 button.tide-line:hover { color: var(--text); }
 .tide-chart .tide-line { fill: none; stroke: #0ea5e9; stroke-width: 2.5; stroke-linejoin: round; }
 .tide-chart .band.fly { fill: var(--good); opacity: 0.12; }
@@ -916,8 +921,8 @@ button.tide-line:hover { color: var(--text); }
 .tide-chart .turn.high { fill: #0369a1; }
 .tide-chart .turn.low { fill: #7dd3fc; }
 .tide-chart .turn-label { fill: var(--text); font-size: 11px; font-weight: 700; }
-.tide-chart .now-line { stroke: var(--accent); stroke-width: 1.5; }
-.tide-chart .now-label { fill: var(--accent); font-size: 11px; font-weight: 700; }
+.tide-chart .now-line { stroke: var(--link); stroke-width: 1.5; }
+.tide-chart .now-label { fill: var(--link); font-size: 11px; font-weight: 700; }
 .key-line.tide { background: #0ea5e9; }
 .key-band.fly { background: var(--good); opacity: 0.35; }
 .key-band.avoid { background: var(--danger); opacity: 0.35; }
@@ -973,7 +978,7 @@ button.tide-line:hover { color: var(--text); }
   border-top: 1px solid var(--border);
   width: 100%;
   background: none;
-  color: var(--accent);
+  color: var(--link);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -1130,20 +1135,20 @@ dialog { overflow: auto; overscroll-behavior: contain; }
 #feedback-send { margin-top: 10px; }
 .feedback-sent-text { margin: 0 0 4px; }
 .feedback-status { margin: 0 0 2px; font-size: 14px; }
-.feedback-status a { color: var(--accent); font-weight: 600; }
-.link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.feedback-status a { color: var(--link); font-weight: 600; }
+.link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--link); cursor: pointer; text-decoration: underline; }
 
 @media (max-width: 600px) {
   .feedback-fabs { right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); }
   .feedback-on .toast { bottom: calc(148px + env(safe-area-inset-bottom)); }  /* clear of the buttons */
 }
-.hint a { color: var(--accent); }
+.hint a { color: var(--link); }
 
 /* Site form: "within [2] h" next to the tide rule */
 .tide-rule .row { flex-wrap: wrap; align-items: center; }
 .tide-rule select { flex: 1 1 180px; }
 label.inline { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 label.inline input { width: 76px; }
-.tag.link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.tag.link { color: var(--link); font-weight: 600; text-decoration: none; }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { white-space: nowrap; }
