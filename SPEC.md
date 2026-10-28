@@ -288,6 +288,7 @@ The steps we've agreed, in order. docs/STATUS.md points at these numbers.
 |---|---|---|
 | 1 | **Leo tries Surfing on the live site** (sport menu → Surfing) and checks the Newquay spots' locations, directions and tide rules | Waiting for Leo |
 | 2 | **Automated tests of the rating rules** (see docs/ARCHITECTURE.md "Weak spots"). Spec first: `specs/rating-tests.md` (not written yet), then build it in a fresh session | Not started |
+| 3 | **Design review fixes (issue #13).** Steps 1 and 2 (tap sizes, 16px dropdowns, contrast, plain tide words, grey past hours, table marks) are live. Step 3, compact site cards: `specs/compact-site-cards.md` | Spec waiting for Leo to approve |
 
 Open feedback issues (#4–#8) are sorted when Leo says "check feedback";
 anything agreed from them is added here.
