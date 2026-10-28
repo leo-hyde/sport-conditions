@@ -4,7 +4,7 @@
   --surface: #ffffff;
   --surface-2: #f4f6f9;
   --text: #111827;
-  --muted: #6b7280;
+  --muted: #596273;
   --border: #e3e7ee;
   --accent: #2563eb;
   --accent-text: #ffffff;
@@ -123,7 +123,7 @@ p { margin: 0; }
 }
 
 .segmented button {
-  min-height: 34px;
+  min-height: 38px;
   padding: 0 14px;
   border: none;
   border-radius: 999px;
@@ -792,11 +792,11 @@ details .compare { margin-top: 8px; }
   .topbar { padding: 12px 0 8px; }
   h1 { font-size: 20px; }
   .topbar #status { font-size: 12px; }
-  .icon-btn { width: 40px; min-height: 40px; font-size: 18px; }
+  .icon-btn { width: 44px; min-height: 44px; font-size: 18px; }
 
   /* Pickers: two equal halves, no details text */
   .model-bar label { display: none; }
-  .model-bar .pill-select { flex: 1; min-width: 0; font-size: 14px; }
+  .model-bar .pill-select { flex: 1; min-width: 0; font-size: 16px; }  /* 16px stops iPhones zooming in */
   .model-detail { display: none; }
 
   /* Tabs become an app-style bar fixed to the bottom of the screen */
@@ -1047,6 +1047,16 @@ dialog { overflow: auto; overscroll-behavior: contain; }
   color: var(--text);
   border: 1px solid var(--border);
 }
+.fab.tiny {
+  width: 28px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 18px;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.feedback-fabs.folded .fab:not(.tiny) { display: none; }
 .fab-count {
   position: absolute;
   top: -4px;

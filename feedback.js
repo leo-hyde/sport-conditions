@@ -147,6 +147,7 @@ function listenOnce() {
 // is closed or reloaded before you tap Done.
 function showWords(text) {
   feedbackText.textContent = text;
+  feedbackText.scrollTop = feedbackText.scrollHeight;  // keep the newest words in view
   save("sc.feedbackDraft", text);
 }
 
@@ -357,6 +358,19 @@ function renderRequests() {
 }
 
 // ---------- Buttons ----------
+
+// › folds the three buttons away, leaving one small tab; remembered between visits.
+const feedbackFabs = document.getElementById("feedback-fabs");
+const feedbackFold = document.getElementById("feedback-fold");
+function setFolded(folded) {
+  feedbackFabs.classList.toggle("folded", folded);
+  feedbackFold.textContent = folded ? "‹" : "›";
+  feedbackFold.setAttribute("aria-expanded", String(!folded));
+  feedbackFold.setAttribute("aria-label", folded ? "Show the feedback buttons" : "Hide the feedback buttons");
+  save("sc.feedbackFolded", folded);
+}
+feedbackFold.addEventListener("click", () => setFolded(!feedbackFabs.classList.contains("folded")));
+setFolded(loadSaved("sc.feedbackFolded", false) === true);
 
 document.getElementById("feedback-mic").addEventListener("click", startListening);
 document.getElementById("feedback-type").addEventListener("click", () => showBar("typing"));

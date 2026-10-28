@@ -23,9 +23,9 @@
 
   <div class="model-bar">
     <label for="sport-select">Sport</label>
-    <select id="sport-select" class="pill-select"></select>
+    <select id="sport-select" class="pill-select" aria-label="Sport"></select>
     <label for="model-select">Forecast</label>
-    <select id="model-select" class="pill-select"></select>
+    <select id="model-select" class="pill-select" aria-label="Forecast source"></select>
     <span id="model-detail" class="model-detail"></span>
   </div>
 
@@ -41,7 +41,7 @@
     <!-- The JavaScript files fill these in -->
     <section id="view-overview">
       <div class="view-head">
-        <h2>Where &amp; when</h2>
+        <h2>Overview</h2>
         <div id="overview-switch" class="segmented">
           <button data-layout="days">By day</button>
           <button data-layout="hours">By hour</button>
@@ -109,7 +109,8 @@
       <button type="button" id="feedback-cancel" class="btn small" aria-label="Cancel note">✕</button>
       <button type="button" id="feedback-done" class="btn small primary">Send</button>
     </div>
-    <div class="feedback-fabs">
+    <div class="feedback-fabs" id="feedback-fabs">
+      <button type="button" id="feedback-fold" class="fab tiny" aria-label="Hide the feedback buttons" aria-expanded="true">›</button>
       <button type="button" id="feedback-open" class="fab small" aria-label="Your requests">📝<span id="feedback-count" class="fab-count" hidden></span></button>
       <button type="button" id="feedback-type" class="fab small" aria-label="Type a note">✎</button>
       <button type="button" id="feedback-mic" class="fab" aria-label="Speak a note">🎙</button>

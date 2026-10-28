@@ -4,6 +4,18 @@ Sport Conditions is in **Beta**: it's still being tested and changes often,
 so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
+## 28 October 2026
+- **Voice notes scroll:** the words you speak now scroll up as you go, so you
+  always see the newest. (Feedback #10.)
+- **Hide the feedback buttons:** a small › tab folds the mic, pencil and notes
+  buttons out of the way; ‹ brings them back. It remembers your choice.
+  (Feedback #11.)
+- **Design review fixes (part 1):** the Sport and Forecast dropdowns no longer
+  make iPhones zoom in and now have names for screen readers; the refresh and
+  settings buttons and the By day / By hour switch are bigger to tap; the
+  "updated" line is easier to read in light mode; the first tab's heading now
+  says "Overview". (Issue #13, items 1, 2, 3 and 5.)
+
 ## 26 October 2026
 - **"Show where I am" on the map:** tap ◎ under the + and − buttons. The map
   moves to you and shows a blue dot. Your phone asks for permission the first
