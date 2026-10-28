@@ -3,6 +3,10 @@
 How the app looks and feels. Claude follows this for every new screen or
 feature. A design change goes in here first, then in the code.
 
+Before designing a screen, read the playbook's `reference/design-method.md`.
+
+**Style:** own (from before the style library)
+
 ## Inspiration
 - **Windy** (a popular weather map site): modern, full of data but easy to
   read. Bold colours on calm backgrounds, and a map with a time slider. This
