@@ -54,10 +54,9 @@ a dial, a tide tag, today, tomorrow, a tide line each, "Show all 7 days" and a
 - The live site after pushing.
 
 ## Risks and open questions
-- **For Leo to decide:** should the compact card show **today only** (my
-  recommendation: shortest, most scannable), or **today and tomorrow** (as
-  now) with just the tide lines hidden? Today-only loses tomorrow at a
-  glance; the Overview "By day" table still shows tomorrow for every site.
+- **Decided (Leo, 28 Oct 2026): today only.** The compact card shows today
+  only; tomorrow loses its place on the card, but the Overview "By day" table
+  still shows tomorrow for every site. **Approved, ready to build.**
 - "Show all 7 days" is the existing wording. If Leo uses it by habit, the new
   name ("Show tomorrow and later") is a small change to get used to.
 - Best built in a fresh session on a stronger model, because it changes what
