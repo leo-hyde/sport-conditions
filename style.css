@@ -6,11 +6,12 @@
   --text: #171717;
   --muted: #5c5c5c;
   --border: #dfdfdf;
-  --accent: #3ecf8e;  /* buttons and highlights. Too pale for text: use --link for green text */
-  --accent-text: #171717;
+  --accent: #171717;  /* buttons, selected pills, markers: near-black, so green only ever means "good" */
+  --accent-text: #ffffff;
   --link: #1a7f56;
   --good: #3ecf8e;
   --ok: #ffdb13;
+  --ok-soft: #fff3a8;  /* Overview "By day" OK cells: calmer than good */
   --no: #ededed;  /* calm grey: "no" hours shouldn't shout */
   --on-good: #0a2a1b;
   --on-ok: #2b2400;
@@ -30,11 +31,13 @@
     --text: #ededed;
     --muted: #9a9a9a;
     --border: #2e2e2e;
-    --accent: #3ecf8e;
+    --accent: #ededed;
     --accent-text: #171717;
     --link: #3ecf8e;
     --good: #3ecf8e;
     --ok: #ffdb13;
+    --ok-soft: #4d4410;
+    --on-ok-soft: #ffe86b;
     --no: #333333;  /* a step lighter than the card (#202020) so "no" cells stand out */
     --on-no: #a8a8a8;
     --danger: #ff6a55;
@@ -172,8 +175,9 @@ input[type="text"], input[type="number"], input[type="search"], input[type="url"
   font: inherit;
 }
 
-input:focus-visible, textarea:focus-visible, button:focus-visible {
-  outline: 2px solid var(--accent);
+input:focus-visible, textarea:focus-visible, button:focus-visible, select:focus-visible,
+a:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--link);  /* --link, not the pale green: a focus ring needs 3:1 */
   outline-offset: 2px;
 }
 
@@ -209,7 +213,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; 
 }
 
 /* Site cards: clear space between sites, and a blue edge so each one reads as its own place */
-#site-cards .card.site { margin-bottom: 24px; border-left: 4px solid var(--accent); }
+#site-cards .card.site { margin-bottom: 24px; border-left: 4px solid var(--muted); }  /* not green: green means good */
 
 .summary { display: flex; flex-direction: column; gap: 6px; }
 
@@ -232,7 +236,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; 
 }
 
 .day-label {
-  width: 72px;
+  width: 96px;  /* room for the 12px sunrise line */
   flex-shrink: 0;
   font-size: 13px;
   color: var(--muted);
@@ -261,7 +265,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; 
   cursor: pointer;
 }
 
-.hour .time { opacity: 0.7; }
 .hour .speed { font-weight: 700; }
 .arrow { display: inline-block; font-weight: 700; }
 
@@ -524,12 +527,12 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 .tags { display: flex; gap: 4px; margin-top: 2px; }
 .tag { font-size: 11px; color: var(--muted); background: var(--surface-2); border-radius: 999px; padding: 1px 8px; }
 
-.day-label small { display: block; font-size: 10px; opacity: 0.8; }
+.day-label small { display: block; font-size: 12px; color: var(--muted); }
 .day-main { flex: 1; min-width: 0; }
 .tide-line { font-size: 11px; color: var(--muted); margin: 2px 0 6px; }
 .tide-detail { font-size: 14px; color: var(--muted); }
 
-.by-day th small { display: block; font-weight: 500; font-size: 10px; }
+.by-day th small { display: block; font-weight: 500; font-size: 12px; }
 /* Soft edges show there is more to scroll to (they fade as you reach the end) */
 .table-scroll {
   overflow-x: auto;
@@ -547,17 +550,21 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 .compare { width: 100%; border-collapse: collapse; font-size: 14px; }
 .compare td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
 .compare tr.current td { font-weight: 700; color: var(--link); }
-.links a { color: var(--link); font-weight: 600; text-decoration: none; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--link); font-weight: 600; text-decoration: none; }
 
 .checks-row { display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
-.checks-row input, .map-toggles input { width: 18px; height: 18px; vertical-align: -3px; accent-color: var(--accent); }
+.checks-row input, .map-toggles input { width: 22px; height: 22px; flex-shrink: 0; margin: 0; accent-color: var(--accent); }
+/* The whole row is the tap target: at least 44px tall */
+.checks-row label, .map-toggles label { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
 
-.map-toggles { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+.map-toggles { display: flex; column-gap: 16px; flex-wrap: wrap; font-size: 14px; }
 
 
 .lib-popup { display: flex; gap: 10px; align-items: center; font-family: inherit; }
 .lib-popup p { margin: 4px 0 8px; font-size: 12px; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
+.leaflet-container .leaflet-control-attribution { background: var(--surface); color: var(--muted); }
+.leaflet-container .leaflet-control-attribution a { color: var(--link); text-decoration: underline; }
 .timeline-top .segmented { max-width: 100%; overflow-x: auto; }
 .timeline-top .segmented button { flex-shrink: 0; }
 
@@ -621,6 +628,7 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  min-height: 24px;
 }
 
 .tl-day.current .tl-label { color: var(--text); }
@@ -664,7 +672,8 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 }
 
 /* Hour details: previous / next hour */
-.hour-steps { display: flex; justify-content: space-between; gap: 8px; }
+.hour-steps { display: flex; align-items: center; gap: 8px; }
+.hour-steps .close-x { margin-left: auto; font-size: 18px; }  /* close from the top: the panel is long */
 .hour-steps .btn { min-width: 84px; }
 .hour-steps .btn:disabled { opacity: 0.35; cursor: default; }
 
@@ -675,6 +684,7 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
   flex-direction: column;
   align-items: center;
   gap: 1px;
+  min-height: 24px;  /* the smallest tap size WCAG allows */
   padding: 3px 7px 4px;
   border-radius: 4px;
   background: #0f172a;
@@ -875,7 +885,7 @@ details .compare { margin-top: 8px; }
 .sync-code { font-size: 15px; padding: 4px 8px; border-radius: 6px; background: var(--surface-2); user-select: all; }
 
 /* Map: "show where I am" button (the blue dot itself is drawn in map.js) */
-.locate-btn { font-size: 18px; line-height: 30px !important; }
+.locate-btn { font-size: 20px; }
 .locate-btn.busy { color: var(--link) !important; animation: feedback-pulse 1s ease-in-out infinite; }
 
 /* Map key */
@@ -888,7 +898,7 @@ details .compare { margin-top: 8px; }
   font: 12px/1.3 -apple-system, BlinkMacSystemFont, sans-serif;
   max-width: 220px;
 }
-.map-key summary { cursor: pointer; font-weight: 700; }
+.map-key summary { cursor: pointer; font-weight: 700; line-height: 44px; margin: -6px 0; }  /* 44px to tap */
 .key-row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
 .key-mine {
   display: inline-flex; align-items: center; justify-content: center;
@@ -907,10 +917,11 @@ button.tide-line {
   border: none;
   background: none;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   text-align: left;
   cursor: pointer;
+  min-height: 28px;  /* a dense row, so 28px rather than 44px (WCAG asks for 24px) */
 }
 button.tide-line .more { color: var(--link); font-weight: 600; white-space: nowrap; }
 button.tide-line:hover { color: var(--text); }
@@ -965,6 +976,8 @@ button.tide-line:hover { color: var(--text); }
 /* Overview: names wrap instead of being cut off; cells are tighter */
 .name-cell .site-link { white-space: normal; overflow: visible; line-height: 1.2; }
 .by-day td.cell.no { color: var(--on-no); font-weight: 500; }
+/* OK days are a softer yellow than the key, so the good (green) days stand out first */
+.by-day td.cell.ok { background: var(--ok-soft); color: var(--on-ok-soft, var(--on-ok)); }
 
 /* Site cards: "Show all 7 days" */
 .show-more {
@@ -1149,6 +1162,46 @@ dialog { overflow: auto; overscroll-behavior: contain; }
 .tide-rule select { flex: 1 1 180px; }
 label.inline { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 label.inline input { width: 76px; }
-.tag.link { color: var(--link); font-weight: 600; text-decoration: none; }
+.tag.link { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; color: var(--link); font-weight: 600; text-decoration: none; }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { white-space: nowrap; }
+
+/* ---------- Design review, 28 Oct 2026 ---------- */
+
+/* Everything you tap is at least 44px tall on phones and touch screens */
+@media (max-width: 600px), (pointer: coarse) {
+  .btn.small, .pill-select { min-height: 44px; }
+  .leaflet-touch .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
+}
+
+/* Compass pickers: the wedge the keyboard is on gets a thick outline */
+.compass .wedge { outline: none; }
+.compass .wedge:focus-visible path { stroke: var(--text); stroke-width: 4; }
+.compass .wedge[role="button"] { cursor: pointer; }
+
+/* Site form: latitude and longitude side by side, with their own labels */
+.coords .field { min-width: 0; font-weight: 500; }
+
+.tags { align-items: center; }
+
+/* Settings: rarely used sections fold away (tap the heading to open) */
+.settings-section.fold { display: block; }
+.fold summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  margin: -10px 0 -6px;
+  list-style: none;
+  cursor: pointer;
+}
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::after { content: "Show ▾"; font-size: 14px; font-weight: 600; color: var(--link); }
+.fold[open] summary::after { content: "Hide ▴"; }
+.fold > :not(summary) { margin-top: 10px; }
+
+/* Map: names hidden where pins crowd together (map.js) */
+.leaflet-tooltip.pin-label-hidden { visibility: hidden; }
+
+/* Read out by screen readers, but not shown */
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

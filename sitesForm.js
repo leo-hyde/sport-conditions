@@ -41,7 +41,7 @@ function openSiteForm(siteId, place = null) {
 // Surfline link, and are always on a beach.
 function showSurfFields(site) {
   const surf = state.sport === "surfing";
-  document.getElementById("compass-label").textContent = surf ? "Swell directions" : "Wind directions";
+  document.getElementById("compass-label").textContent = surf ? "Swell directions (where the waves come from)" : "Wind directions";
   document.getElementById("offshore-field").hidden = !surf;
   document.getElementById("surfline-field").hidden = !surf;
   document.getElementById("beach-field").hidden = surf;
@@ -52,36 +52,69 @@ function showSurfFields(site) {
 
 // ---------- Compass picker ----------
 
-function drawCompass() {
+// `focus` is the direction to keep the keyboard on after a change.
+function drawCompass(focus) {
+  const name = state.sport === "surfing" ? "Swell directions" : "Wind directions";
   document.getElementById("compass").innerHTML = `
-    ${compassSvg(pickedDirections, { labels: true })}
+    ${compassSvg(pickedDirections, { labels: true, name, focus })}
     <div class="legend">
       <span><i class="good"></i>Good</span>
       <span><i class="ok"></i>OK</span>
       <span><i style="background: var(--surface-2); border: 1px solid var(--border)"></i>No</span>
     </div>`;
+  if (focus) focusWedge("compass", focus);
 }
 
 // The offshore compass is just on (green) or off.
-function drawOffshoreCompass() {
-  document.getElementById("offshore-compass").innerHTML = compassSvg(pickedOffshore, { labels: true, size: 220 });
+function drawOffshoreCompass(focus) {
+  document.getElementById("offshore-compass").innerHTML = compassSvg(pickedOffshore,
+    { labels: true, size: 220, name: "Offshore wind directions", focus, states: { good: "offshore", no: "not offshore" } });
+  if (focus) focusWedge("offshore-compass", focus);
 }
 
-document.getElementById("offshore-compass").addEventListener("click", event => {
-  const wedge = event.target.closest("[data-dir]");
-  if (!wedge) return;
-  pickedOffshore[wedge.dataset.dir] = pickedOffshore[wedge.dataset.dir] === "good" ? "no" : "good";
-  drawOffshoreCompass();
-});
-
 // Tapping a wedge cycles it: no → OK → good → no.
-document.getElementById("compass").addEventListener("click", event => {
-  const wedge = event.target.closest("[data-dir]");
-  if (!wedge) return;
+function cycleDirection(direction, fromKeyboard) {
   const next = { no: "ok", ok: "good", good: "no" };
-  pickedDirections[wedge.dataset.dir] = next[pickedDirections[wedge.dataset.dir]];
-  drawCompass();
-});
+  pickedDirections[direction] = next[pickedDirections[direction]];
+  drawCompass(fromKeyboard && direction);
+}
+
+function toggleOffshore(direction, fromKeyboard) {
+  pickedOffshore[direction] = pickedOffshore[direction] === "good" ? "no" : "good";
+  drawOffshoreCompass(fromKeyboard && direction);
+}
+
+// Moves the keyboard to one wedge (the only one Tab stops on).
+function focusWedge(compassId, direction) {
+  document.querySelectorAll(`#${compassId} [data-dir]`).forEach(wedge => {
+    wedge.setAttribute("tabindex", wedge.dataset.dir === direction ? "0" : "-1");
+  });
+  document.querySelector(`#${compassId} [data-dir="${direction}"]`).focus();
+}
+
+// Taps, and the keyboard: Tab to the ring, arrow keys to go round it,
+// Enter or Space to change the direction.
+function listenToCompass(compassId, change) {
+  const compass = document.getElementById(compassId);
+  compass.addEventListener("click", event => {
+    const wedge = event.target.closest("[data-dir]");
+    if (wedge) change(wedge.dataset.dir, false);
+  });
+  compass.addEventListener("keydown", event => {
+    const wedge = event.target.closest("[data-dir]");
+    if (!wedge) return;
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      change(wedge.dataset.dir, true);
+    } else if (step) {
+      event.preventDefault();
+      focusWedge(compassId, COMPASS[(COMPASS.indexOf(wedge.dataset.dir) + step + 16) % 16]);
+    }
+  });
+}
+listenToCompass("compass", cycleDirection);
+listenToCompass("offshore-compass", toggleOffshore);
 
 // ---------- Tide rule ----------
 

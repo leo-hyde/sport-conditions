@@ -34,6 +34,7 @@ function showHourDetails(siteId, key) {
     <div class="hour-steps">
       ${stepButton(previous, "Previous hour", `‹ ${previous ? previous.hourOfDay + ":00" : ""}`)}
       ${stepButton(next, "Next hour", `${next ? next.hourOfDay + ":00" : ""} ›`)}
+      <button class="icon-btn close-x" data-close aria-label="Close" autofocus>✕</button>
     </div>
     <div class="details-head">
       <div>
@@ -48,8 +49,8 @@ function showHourDetails(siteId, key) {
       ${stat("From", `${arrow(hour.degrees)} ${hour.direction}`)}
       ${stat("Rain", `${hour.rain} <small>mm</small>`)}`}
     </div>
-    ${tide ? `<p class="tide-detail">🌊 Tide ${tide.rising ? "rising" : "falling"} (${tide.height.toFixed(1)} m${tides.approximate ? ", approx." : ""}) ·
-      ${tideSummary(tides, hour.date)} · ${tideRange(hour.date)}<br><small>Tides: ${esc(tides.source)}</small></p>` : ""}
+    ${tide ? `<p class="tide-detail">🌊 Tide ${tide.rising ? "rising" : "falling"}, ${tideHeightText(tide, tides)} ·
+      ${tideSummary(tides, hour.date)} · ${tideRange(hour.date)}<br><small>Tide times: ${esc(tides.source)}${tides.approximate ? " (approximate)" : ""}</small></p>` : ""}
     <ul class="checks">
       ${checks.map(check => `
         <li class="${check.rating}">
@@ -75,7 +76,11 @@ function showHourDetails(siteId, key) {
 // The ‹ › buttons, and the left and right arrow keys, move an hour at a time.
 document.getElementById("hour-dialog").addEventListener("click", event => {
   const button = event.target.closest("[data-step-key]");
-  if (button) showHourDetails(button.dataset.stepSite, button.dataset.stepKey);
+  if (!button) return;
+  const label = button.getAttribute("aria-label");
+  showHourDetails(button.dataset.stepSite, button.dataset.stepKey);
+  // The buttons are drawn again, so keep the keyboard on the same one.
+  document.querySelector(`#hour-dialog .hour-steps [aria-label="${label}"]`)?.focus();
 });
 
 document.getElementById("hour-dialog").addEventListener("keydown", event => {
@@ -90,8 +95,16 @@ function surfStats(site, hour) {
   if (!hour.wave) return stat("Waves", "–") + wind;
   return stat("Waves", `${feetText(hour.wave.feet)} <small>ft · ${sizeWords(hour.wave.feet)}</small>`)
     + stat("Period", `${hour.wave.period} <small>s</small>`)
-    + stat("Swell from", `${arrow(hour.wave.degrees)} ${hour.wave.direction}`)
+    + stat("Waves from", `${arrow(hour.wave.degrees)} ${hour.wave.direction}`)
     + wind;
+}
+
+// Official heights are above the lowest tides ("6.4 m"); the model's are
+// around average sea level, so they can be below zero.
+function tideHeightText(tide, tides) {
+  const metres = Math.abs(tide.height).toFixed(1);
+  if (!tides.approximate) return `${metres} m`;
+  return `${metres} m ${tide.height < 0 ? "below" : "above"} average sea level`;
 }
 
 function stat(label, value) {

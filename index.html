@@ -21,7 +21,7 @@
     </div>
   </header>
 
-  <div class="model-bar">
+  <div class="model-bar" role="region" aria-label="Sport and forecast">
     <label for="sport-select">Sport</label>
     <select id="sport-select" class="pill-select" aria-label="Sport"></select>
     <label for="model-select">Forecast</label>
@@ -62,7 +62,7 @@
         <h2>My sites</h2>
         <button id="add-site" class="btn primary small">+ Add site</button>
       </div>
-      <p class="hint">Dial: green = good wind directions, yellow = OK.</p>
+      <p id="sites-hint" class="hint">Dial: green = good wind directions, yellow = OK.</p>
       <div id="site-cards"></div>
     </section>
 
@@ -138,7 +138,7 @@
   <dialog id="hour-dialog">
     <div class="dialog-inner">
       <div class="dialog-content"></div>
-      <div class="dialog-actions">
+      <div class="dialog-actions sticky-actions">
         <button class="btn" data-close>Close</button>
       </div>
     </div>
@@ -148,7 +148,7 @@
   <dialog id="station-dialog" class="wide">
     <div class="dialog-inner">
       <div class="dialog-content"></div>
-      <div class="dialog-actions">
+      <div class="dialog-actions sticky-actions">
         <button class="btn" data-close>Close</button>
       </div>
     </div>
@@ -158,7 +158,7 @@
   <dialog id="tide-dialog" class="wide">
     <div class="dialog-inner">
       <div class="dialog-content"></div>
-      <div class="dialog-actions">
+      <div class="dialog-actions sticky-actions">
         <button class="btn" data-close>Close</button>
       </div>
     </div>
@@ -189,17 +189,17 @@
           <fieldset>
             <legend><i class="dot good"></i>Good (<span class="unit-label">mph</span>)</legend>
             <div class="range-inputs">
-              <input name="goodMin" type="number" min="0" max="99" required aria-label="Good minimum">
+              <input name="goodMin" type="number" inputmode="numeric" min="0" max="99" required aria-label="Good minimum">
               <span>to</span>
-              <input name="goodMax" type="number" min="0" max="99" required aria-label="Good maximum">
+              <input name="goodMax" type="number" inputmode="numeric" min="0" max="99" required aria-label="Good maximum">
             </div>
           </fieldset>
           <fieldset>
             <legend><i class="dot ok"></i>OK (<span class="unit-label">mph</span>)</legend>
             <div class="range-inputs">
-              <input name="okMin" type="number" min="0" max="99" required aria-label="OK minimum">
+              <input name="okMin" type="number" inputmode="numeric" min="0" max="99" required aria-label="OK minimum">
               <span>to</span>
-              <input name="okMax" type="number" min="0" max="99" required aria-label="OK maximum">
+              <input name="okMax" type="number" inputmode="numeric" min="0" max="99" required aria-label="OK maximum">
             </div>
           </fieldset>
         </div>
@@ -209,7 +209,7 @@
         <h3>Rain</h3>
         <label class="field">
           Rain cutoff (mm per hour)
-          <input name="rainCutoff" type="number" min="0" step="0.1" required>
+          <input name="rainCutoff" type="number" inputmode="decimal" min="0" step="0.1" required>
         </label>
         <p class="hint">Hours with this much rain or more are rated No.</p>
       </section>
@@ -220,47 +220,50 @@
           <fieldset>
             <legend><i class="dot good"></i>Good (ft)</legend>
             <div class="range-inputs">
-              <input name="waveGoodMin" type="number" min="0" max="60" step="0.5" required aria-label="Good waves minimum">
+              <input name="waveGoodMin" type="number" inputmode="decimal" min="0" max="60" step="0.5" required aria-label="Good waves minimum">
               <span>to</span>
-              <input name="waveGoodMax" type="number" min="0" max="60" step="0.5" required aria-label="Good waves maximum">
+              <input name="waveGoodMax" type="number" inputmode="decimal" min="0" max="60" step="0.5" required aria-label="Good waves maximum">
             </div>
           </fieldset>
           <fieldset>
             <legend><i class="dot ok"></i>OK (ft)</legend>
             <div class="range-inputs">
-              <input name="waveOkMin" type="number" min="0" max="60" step="0.5" required aria-label="OK waves minimum">
+              <input name="waveOkMin" type="number" inputmode="decimal" min="0" max="60" step="0.5" required aria-label="OK waves minimum">
               <span>to</span>
-              <input name="waveOkMax" type="number" min="0" max="60" step="0.5" required aria-label="OK waves maximum">
+              <input name="waveOkMax" type="number" inputmode="decimal" min="0" max="60" step="0.5" required aria-label="OK waves maximum">
             </div>
           </fieldset>
         </div>
-        <div class="two-cols">
-          <label class="field">
-            <span><i class="dot good"></i>Good period: at least (s)</span>
-            <input name="periodGood" type="number" min="0" max="30" required>
-          </label>
-          <label class="field">
-            <span><i class="dot ok"></i>OK period: at least (s)</span>
-            <input name="periodOk" type="number" min="0" max="30" required>
-          </label>
-        </div>
+        <fieldset>
+          <legend>Time between waves (the "period")</legend>
+          <div class="two-cols">
+            <label class="field">
+              <span><i class="dot good"></i>Good: at least (seconds)</span>
+              <input name="periodGood" type="number" inputmode="numeric" min="0" max="30" required>
+            </label>
+            <label class="field">
+              <span><i class="dot ok"></i>OK: at least (seconds)</span>
+              <input name="periodOk" type="number" inputmode="numeric" min="0" max="30" required>
+            </label>
+          </div>
+        </fieldset>
         <p class="hint">Wave heights are forecasts for the open sea, in feet like Surfline's. Anything
-          outside the OK range is No. Period is the time between waves. Longer means cleaner, more powerful surf.</p>
+          outside the OK range is No. Longer gaps between waves mean cleaner, more powerful surf.</p>
       </section>
 
       <section class="settings-section" data-sport="surfing">
         <h3>Wind for surfing (<span class="unit-label">mph</span>)</h3>
         <label class="field">
           <span><i class="dot good"></i>Good in any direction, up to</span>
-          <input name="windLight" type="number" min="0" max="99" required>
+          <input name="windLight" type="number" inputmode="numeric" min="0" max="99" required>
         </label>
         <label class="field">
           <span><i class="dot ok"></i>OK onshore or cross-shore, up to</span>
-          <input name="windOk" type="number" min="0" max="99" required>
+          <input name="windOk" type="number" inputmode="numeric" min="0" max="99" required>
         </label>
         <label class="field">
           <span><i class="dot good"></i>Good offshore, up to</span>
-          <input name="offshoreMax" type="number" min="0" max="99" required>
+          <input name="offshoreMax" type="number" inputmode="numeric" min="0" max="99" required>
         </label>
         <p class="hint">Each spot's offshore directions are set on the spot (Edit).</p>
       </section>
@@ -276,19 +279,19 @@
         </label>
         <label class="field">
           Extra minutes either side
-          <input name="extraMinutes" type="number" min="0" max="180" step="5" required>
+          <input name="extraMinutes" type="number" inputmode="numeric" min="0" max="180" step="5" required>
         </label>
         <p class="hint">First and last light ("civil twilight") is while the sun is less than 6° below the horizon.
           That's about 30–45 minutes before sunrise and after sunset, longer in summer.</p>
       </section>
 
-      <section class="settings-section">
-        <h3>Sync between devices</h3>
+      <details class="settings-section fold">
+        <summary><h3>Sync between devices</h3></summary>
         <div id="sync-box" class="sync-box"></div>
-      </section>
+      </details>
 
-      <section class="settings-section">
-        <h3>Feedback</h3>
+      <details class="settings-section fold">
+        <summary><h3>Feedback</h3></summary>
         <div class="checks-row">
           <label><input id="feedback-switch" type="checkbox"> Feedback mode: 🎙 buttons to speak or type notes about the app</label>
         </div>
@@ -299,15 +302,15 @@
         <p class="hint">This works straight away. Without a send code, Send opens GitHub with your note filled in.
           Sport Conditions is in beta (still being tested, and it changes often):
           <a href="https://github.com/leo-hyde/sport-conditions/blob/main/CHANGELOG.md" target="_blank" rel="noopener">see what's changed</a>.</p>
-      </section>
+      </details>
 
-      <section class="settings-section">
-        <h3>Start again</h3>
+      <details class="settings-section fold">
+        <summary><h3>Start again</h3></summary>
         <div class="dialog-actions start">
           <button type="button" id="reset-settings" class="btn small">Reset settings to defaults</button>
           <button type="button" id="reset-sites" class="btn small ghost danger">Reset my sites to the starter list</button>
         </div>
-      </section>
+      </details>
 
       <p id="settings-error" class="error" hidden></p>
       <div class="dialog-actions sticky-actions">
@@ -328,17 +331,23 @@
       <div class="field">
         Location
         <div class="row">
-          <input id="place-search" type="search" placeholder="Search a place, e.g. Newquay">
+          <input id="place-search" type="search" placeholder="Search a place, e.g. Newquay" aria-label="Search for a place">
           <button type="button" id="place-search-btn" class="btn">Search</button>
         </div>
         <div id="search-results" class="search-results"></div>
-        <div class="row">
-          <input name="lat" type="number" step="any" min="-90" max="90" required placeholder="Latitude" aria-label="Latitude">
-          <input name="lon" type="number" step="any" min="-180" max="180" required placeholder="Longitude" aria-label="Longitude">
+        <div class="row coords">
+          <label class="field">Latitude (north–south)
+            <input name="lat" type="number" step="any" min="-90" max="90" required placeholder="e.g. 50.42">
+          </label>
+          <label class="field">Longitude (east–west)
+            <input name="lon" type="number" step="any" min="-180" max="180" required placeholder="e.g. -5.10">
+          </label>
         </div>
+        <p class="hint">Filled in when you pick a place above or a spot on the map. You can also paste them, e.g. from Google Maps.</p>
       </div>
       <div class="field">
         <span id="compass-label">Wind directions</span>
+        <p class="hint">Tap a direction to change it: no → OK → good. With a keyboard, use the arrow keys and Enter.</p>
         <div id="compass" class="compass"></div>
       </div>
       <!-- Surf spots only (sitesForm.js) -->
@@ -364,11 +373,11 @@
             <option value="only-low">Only near low water</option>
             <option value="only-high">Only near high water</option>
           </select>
-          <label class="inline">within <input name="tideHours" type="number" min="0.5" max="6" step="0.5" aria-label="Hours either side"> h</label>
+          <label class="inline">within <input name="tideHours" type="number" inputmode="decimal" min="0.5" max="6" step="0.5" aria-label="Hours either side"> h</label>
         </div>
       </div>
       <p id="site-error" class="error" hidden></p>
-      <div class="dialog-actions">
+      <div class="dialog-actions sticky-actions">
         <button type="button" id="delete-site" class="btn ghost danger" hidden>Delete</button>
         <span class="spacer"></span>
         <button type="button" class="btn" data-close>Cancel</button>

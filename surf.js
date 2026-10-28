@@ -95,8 +95,8 @@ function sizeWords(feet) {
   if (feet < 4) return "waist to chest";
   if (feet < 5) return "chest to head";
   if (feet < 6.5) return "head high";
-  if (feet < 9) return "overhead";
-  return "well overhead";
+  if (feet < 9) return "over head height";
+  return "well over head height";
 }
 
 // Only real Surfline page addresses are used as links (so a typed or synced
@@ -132,9 +132,9 @@ function checkPeriod(wave, settings) {
 }
 
 function checkSwellDirection(wave, site) {
-  if (site.goodDirections.includes(wave.direction)) return { rating: "good", text: `Swell from ${wave.direction}: a good direction here` };
-  if (site.okDirections.includes(wave.direction)) return { rating: "ok", text: `Swell from ${wave.direction}: only OK here` };
-  return { rating: "no", text: `Swell from ${wave.direction}: doesn't reach this spot well` };
+  if (site.goodDirections.includes(wave.direction)) return { rating: "good", text: `Waves from ${wave.direction}: a good direction here` };
+  if (site.okDirections.includes(wave.direction)) return { rating: "ok", text: `Waves from ${wave.direction}: only OK here` };
+  return { rating: "no", text: `Waves from ${wave.direction}: they don't reach this spot well` };
 }
 
 // Offshore wind (blowing from the land out to sea) holds waves up and keeps
@@ -145,7 +145,7 @@ function checkSurfWind(hour, site, settings) {
     if (hour.speed <= settings.offshoreMax) return { rating: "good", text: `Offshore wind (${hour.direction}, ${speed}): clean waves` };
     return { rating: "ok", text: `Strong offshore wind (${hour.direction}, ${speed}): hard to paddle into waves` };
   }
-  if (hour.speed <= settings.windLight) return { rating: "good", text: `Light wind (${hour.direction}, ${speed}): glassy` };
+  if (hour.speed <= settings.windLight) return { rating: "good", text: `Light wind (${hour.direction}, ${speed}): smooth, glassy water` };
   if (hour.speed <= settings.windOk) return { rating: "ok", text: `Onshore or cross-shore wind (${hour.direction}, ${speed}): a bit choppy` };
   return { rating: "no", text: `Onshore or cross-shore wind (${hour.direction}, ${speed}): blown out` };
 }

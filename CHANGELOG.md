@@ -5,6 +5,30 @@ so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
 ## 28 October 2026
+- **Design review fixes** (everything in the 28 Oct review, plus a deeper check):
+  - **Green now only means "good".** Buttons and the selected pill are
+    near-black (near-white in dark mode), so a button can't be mistaken for a
+    good rating. On the Overview table, OK days are a softer yellow, so the
+    good (green) days stand out first.
+  - **Easier to read:** past hours' times are no longer faded, and the
+    sunrise line on site cards is bigger and darker.
+  - **Hour details has a ✕ at the top**, and every pop-up keeps its Close
+    (or Cancel and Save) buttons in view as you scroll.
+  - **Easier to tap:** buttons, dropdowns, map buttons, map switches, the
+    tide line and the Surfline tag are all bigger on phones.
+  - **Add a site:** the compass works with a keyboard too, latitude and
+    longitude say what they are, and Cancel and Save stay in view.
+  - **Plainer words:** "Time between waves", "smooth, glassy water", "over
+    head height", "Waves from", and the tide in hour details now reads e.g.
+    "Tide falling, 2.0 m below average sea level".
+  - **Shorter Settings:** Sync, Feedback and Start again fold away; number
+    boxes bring up the number keyboard.
+  - **Map:** names no longer pile on top of each other (some hide until you
+    zoom in), good sites sit on top, the wind streaks are fainter, the map
+    switches remember your choice, and the key moved to the top right.
+  - **When forecasts don't load,** the Overview now says so ("No forecasts
+    loaded… tap ↻"), instead of "Nothing flyable in the next 7 days".
+  - **Keyboard users** see a clear focus ring.
 - **New look: Mint.** White and near-black with one fresh green, in light and dark. Buttons and the selected pill are green; green text is a darker green so it can be read. Corners are a little tighter. The wind rating colours are now Mint's green and yellow.
 - **Voice notes scroll:** the words you speak now scroll up as you go, so you
   always see the newest. (Feedback #10.)

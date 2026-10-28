@@ -283,6 +283,8 @@ let showAllDays = false;
 // One card per site, with one strip of hour blocks per day.
 function renderSiteCards() {
   const cards = document.getElementById("site-cards");
+  document.getElementById("sites-hint").textContent =
+    `Dial: green = good ${state.sport === "surfing" ? "swell" : "wind"} directions, yellow = OK.`;
   if (sportSites().length === 0) {
     cards.innerHTML = '<p class="muted">No sites yet. Add one, or pick from the map.</p>';
     return;

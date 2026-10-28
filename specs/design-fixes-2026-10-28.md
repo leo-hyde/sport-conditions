@@ -71,4 +71,13 @@ repo; the script above covers the same checks).
 - The live site after pushing.
 
 ## Progress
-- 28 Oct: deep check done, plan written. Building.
+- 28 Oct: deep check done, plan written.
+- 28 Oct: all 10 plan steps built. Checked with the audit script (axe-core,
+  tap sizes, Tab order and focus rings, the compass by keyboard) on every
+  screen: Surfing and Parakiting, 375px light and dark, and 1100px desktop;
+  also failed forecasts (500 and 429), an empty site list and feedback mode.
+  No axe violations left. Small targets left on purpose: checkboxes (the 44px
+  row around them is the target), the map credits' links (Leaflet's own), and
+  the dense rows listed in step 5.
+- Not checked: a real screen reader; a real phone (Leo); real forecasts (the
+  checks used made-up data, to save the daily limit).

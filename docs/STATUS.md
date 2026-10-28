@@ -6,11 +6,11 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 | | |
 |---|---|
-| Last session | Mac, 28 Oct 2026 (design review of every screen after Mint: findings in docs/design-review-2026-10-28.md, Leo to choose) |
+| Last session | Cloud, 28 Oct 2026 (fixed every finding of the 28 Oct design review, plus a deeper check: specs/design-fixes-2026-10-28.md) |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Work in progress | #12 closed 28 Oct: Met Office vs Windy checked, kept as is (specs/forecast-validation.md). Leo to choose which design-review findings to fix (docs/design-review-2026-10-28.md). Open to discuss: #9, #7, #6, #4 (docs/BACKLOG.md). Issue #13 done; site cards changed to today and tomorrow with one "Show all 7 days" button (28 Oct), Mint style applied (Leo to look on his phone; the accent and "good" are the same green) |
+| Work in progress | None. Design fixes live: green now only means "good" (buttons are near-black), softer OK cells on the Overview, ✕ and sticky buttons in dialogs, 44px taps, keyboard compass, plainer words, shorter Settings, tidier map names, honest "No forecasts loaded" message. Leo to look on his phone. Open to discuss: #9, #7, #6, #4 (docs/BACKLOG.md) |
 | Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
-| Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Feedback 26 Oct: #8 (map location) and #5 (voice pause) built and closed. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Leo to try both new buttons on his phone |
+| Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Product question left open by the review: should the default OK wave range (2–8 ft) be narrower? (docs/decisions.md, 28 Oct) |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
 
 ## Where we are
@@ -25,7 +25,7 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 See SPEC.md "What's next": step 1 (Leo checks Surfing), then step 2
 (automated rating tests, spec first).
-Issue #13 design review is finished; Leo to look at My sites on his phone.
+The 28 Oct design review is fixed (SPEC.md step 4); Leo to look on his phone.
 
 ## Open questions
 

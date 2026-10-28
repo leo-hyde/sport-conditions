@@ -8,8 +8,9 @@ Measured with axe-core (an accessibility checker, loaded in the page),
 element sizes and scroll widths. The playbook's `page-check.js` was **not**
 run (no Node.js on the Mac). Leo picks which findings to fix.
 
-Nothing here is fixed yet. Leo's choices are recorded in docs/STATUS.md and
-SPEC.md when made.
+**All fixed on 28 Oct 2026** (Leo asked for every finding to be fixed). What
+was done, a deeper second check and its extra findings are in
+specs/design-fixes-2026-10-28.md; the choices are in docs/decisions.md.
 
 ## Findings, most important first
 1. **Past-hour times are too faint** (My sites): "08, 09…" on grey hours are

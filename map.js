@@ -20,6 +20,17 @@ const MAX_RATED_GUIDE_SITES = 60;
 const GUIDE_MIN_ZOOM = 9;  // only fetch guide-site forecasts once zoomed in this far
 const GUIDE_BATCH = 40;
 
+// The three map switches (guide sites, live wind, wind flow) remember your choice.
+const MAP_SWITCHES = ["show-library", "show-stations", "show-flow"];
+const savedSwitches = loadSaved("sc.mapSwitches", {});
+for (const id of MAP_SWITCHES) {
+  const box = document.getElementById(id);
+  if (id in savedSwitches) box.checked = savedSwitches[id];
+  box.addEventListener("change", () => {
+    save("sc.mapSwitches", Object.fromEntries(MAP_SWITCHES.map(other => [other, document.getElementById(other).checked])));
+  });
+}
+
 // The map is only created the first time the Map tab is opened, because
 // Leaflet needs to be able to see how big its box is.
 function setupMap() {
@@ -47,6 +58,8 @@ function setupMap() {
   drawLibrary();
   setupStations();
   setupWindFlow();
+
+  map.on("zoomend", declutterLabels);
 
   // When the map stops moving, fetch forecasts for the guide sites in view.
   map.on("moveend", () => {
@@ -82,9 +95,10 @@ function fitMapToSites() {
 }
 
 // A small key in the corner explaining the different markers. It starts
-// closed on phones, where space is tight.
+// closed on phones, where space is tight. Top right, because on phones the
+// map credits fill the bottom.
 function addMapKey() {
-  const key = L.control({ position: "bottomleft" });
+  const key = L.control({ position: "topright" });
   key.onAdd = () => {
     const box = L.DomUtil.create("details", "map-key");
     box.open = window.innerWidth > 600;
@@ -289,19 +303,45 @@ function drawPins() {
     // Your sites are big pins with a gold ring and star, so they stand out.
     // They show the wind speed, or for surf spots the wave height.
     const shown = hour && hourValue(site, hour);
+    const rating = hour ? rateHour(hour, site, state.settings, state.tides[site.id]) : "night";
     const html = hour
-      ? `<div class="map-pin mine ${rateHour(hour, site, state.settings, state.tides[site.id])}">${shown.degrees === null ? "" : arrow(shown.degrees)}<span>${shown.value}</span><small>${shown.unit}</small><i class="pin-star">★</i></div>`
+      ? `<div class="map-pin mine ${rating}">${shown.degrees === null ? "" : arrow(shown.degrees)}<span>${shown.value}</span><small>${shown.unit}</small><i class="pin-star">★</i></div>`
       : '<div class="map-pin mine night">–<i class="pin-star">★</i></div>';
 
     L.marker([site.lat, site.lon], {
       icon: L.divIcon({ html, className: "", iconSize: [44, 44], iconAnchor: [22, 22] }),
       title: site.name,
-      zIndexOffset: 1000,
+      zIndexOffset: RATING_LAYER[rating],  // good pins sit on top where they overlap
+      rating,
     })
       .bindTooltip(esc(site.name), { permanent: true, direction: "bottom", offset: [0, 20], className: "pin-label" })
       .on("click", () => { if (hour) showHourDetails(site.id, hour.key); })
       .addTo(pinLayer);
   }
+  declutterLabels();
+}
+
+const RATING_LAYER = { good: 4000, ok: 3000, no: 2000, night: 1000 };
+
+// Where pins crowd together (like the Newquay spots), a name that would
+// cover another name is hidden; tapping the pin still shows its details.
+// Good sites keep their names first.
+function declutterLabels() {
+  if (!map || !document.getElementById("map").offsetWidth) return;
+  const markers = pinLayer.getLayers().filter(marker => marker.getTooltip() && marker.getTooltip().getElement())
+    .sort((a, b) => RATING_LAYER[b.options.rating] - RATING_LAYER[a.options.rating]);
+  const labels = markers.map(marker => marker.getTooltip().getElement());
+  labels.forEach(label => label.classList.remove("pin-label-hidden"));
+  const taken = [];
+  const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+  labels.forEach(label => {
+    const box = label.getBoundingClientRect();
+    if (taken.some(other => overlaps(box, other))) {
+      label.classList.add("pin-label-hidden");
+    } else {
+      taken.push(box);
+    }
+  });
 }
 
 // ---------- The site guide: every other site ----------

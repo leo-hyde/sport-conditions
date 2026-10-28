@@ -6,6 +6,12 @@ the old one "Replaced by <date>". (I moved these here from docs/STATUS.md on
 23 Oct 2026. The earlier entries give the reason, but not the other options
 we turned down.)
 
+## 28 Oct 2026: Green means good; design review fixes chosen by Claude
+- **What:** Leo asked for every finding in docs/design-review-2026-10-28.md to be fixed without asking him. Claude chose: (1) buttons, selected pills, the card edge and the map marker are near-black (near-white in dark), so green is only "good" and links; (2) OK cells in the Overview "By day" table use a softer yellow (`--ok-soft`), with ratings and default ranges unchanged; (3) phones get 44px taps, dense rows at least 24px (WCAG 2.2's minimum), and "By hour" cells stay dense; (4) Sync, Feedback and Start again fold away in Settings; (5) map names that would overlap are hidden, the wind flow is fainter (it stays on by default), and the map switches are remembered; (6) latitude and longitude stay as boxes, with labels and a hint.
+- **Why:** each is the smallest change that fixes the finding without changing how hours are rated. Details and the deeper check: specs/design-fixes-2026-10-28.md.
+- **Rejected:** a different green for "good" (it's the rating everyone reads first); narrowing the default OK wave range to make the Overview less yellow (a rating rule, so Leo's call); grouping map pins into clusters (would hide the ratings); hiding latitude and longitude in a fold (the browser can't point at a missing value inside a closed fold); the decimal keyboard for latitude and longitude (iPhones' has no minus sign, and UK longitudes are negative).
+- **Replaces** the Mint entry's "the accent and good are the same green" trade-off.
+
 ## 28 Oct 2026: Keep Open-Meteo's default grid square for wind
 - **What:** the app keeps asking Open-Meteo for its default ("land") grid square at each site.
 - **Why:** issue #12 (Met Office lower than Windy at Fistral). Same model as Windy's UKV 2 km; the app reads 1–2 knots lower at coastal sites because Windy appears to blend nearby squares. The default square is chosen at a similar height to the site, which suits hill sites. Evidence: specs/forecast-validation.md.

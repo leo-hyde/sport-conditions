@@ -6,7 +6,11 @@ function renderOverview() {
   });
 
   const box = document.getElementById("overview");
+  const headline = document.getElementById("next-good");
+  // The colour key only shows when there's something to explain.
+  document.querySelector("#view-overview .rating-key").hidden = sportSites().length === 0;
   if (sportSites().length === 0) {
+    headline.innerHTML = "";
     box.innerHTML = '<p class="muted">No sites yet. Add one in the Sites tab, or pick from the map.</p>';
     return;
   }
@@ -14,11 +18,18 @@ function renderOverview() {
     box.innerHTML = '<p class="muted">Loading forecast…</p>';
     return;
   }
+  // No forecast at all is a problem to fix, not a week of bad weather.
+  if (!sportSites().some(site => (state.forecasts[site.id] || []).length > 0)) {
+    headline.innerHTML = `<div class="next-good none"><strong>No forecasts loaded</strong>
+      <span>The forecast service didn't answer. Check your connection, then tap ↻ to try again.</span></div>`;
+    box.innerHTML = '<p class="muted">No forecast to show yet.</p>';
+    return;
+  }
   const layouts = { days: overviewByDay, hours: overviewByHour };
   document.getElementById("key-notes").textContent = state.layout === "hours"
     ? "Grey = already over. Tap a site for its hours."
     : "– = none, Over = already past. Tap a site for its hours.";
-  document.getElementById("next-good").innerHTML = nextGoodSession();
+  headline.innerHTML = nextGoodSession();
   box.innerHTML = (layouts[state.layout] || overviewByDay)();
 }
 
@@ -42,7 +53,9 @@ function nextGoodSession() {
   }
   if (sessions.length === 0) {
     return `<div class="next-good none"><strong>Nothing ${state.sport === "surfing" ? "surfable" : "flyable"} in the next 7 days</strong>
-      <span class="muted">at your sites. Check the map for other sites nearby.</span></div>`;
+      <span class="muted">${state.failedSites.length > 0
+        ? `at the sites that loaded (some didn't: tap ↻ to try again).`
+        : "at your sites. Check the map for other sites nearby."}</span></div>`;
   }
   // The earliest session with good hours; if there are none, the earliest OK one.
   const pick = list => list.sort((a, b) => a.hours[0].key.localeCompare(b.hours[0].key))[0];
@@ -128,7 +141,7 @@ function overviewByDay() {
   // 7 days don't fit across a phone, so the table scrolls sideways
   // with the site names staying put.
   return `<div class="table-scroll"><table class="by-day">
-    <thead><tr><th></th>${dates.map(date =>
+    <thead><tr><th><span class="visually-hidden">Site</span></th>${dates.map(date =>
       `<th>${dayLabel(date)}</th>`).join("")}</tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;

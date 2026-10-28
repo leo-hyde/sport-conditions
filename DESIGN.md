@@ -5,6 +5,10 @@ feature. A design change goes in here first, then in the code.
 
 Before designing a screen, read the playbook's `reference/design-method.md`.
 
+**Green means good.** Since 28 Oct 2026 green is used only for the "good"
+rating and green text (links). Buttons, selected pills and markers are
+near-black (near-white in dark mode), so a button never looks like a rating.
+
 **Style:** Mint (applied 28 Oct 2026; a candidate from the playbook's style library, inspired by Supabase's look via awesome-design-md, MIT; not affiliated). White and near-black with one emerald green. Font is still the device's own (Mint's Figtree not added: it would need Google Fonts or self-hosting).
 
 ## Inspiration
@@ -43,10 +47,11 @@ defined in `:root` in style.css.
 | `--text` | #171717 | #ededed | main text |
 | `--muted` | #5c5c5c | #9a9a9a | less important text |
 | `--border` | #dfdfdf | #2e2e2e | dividing lines |
-| `--accent` | #3ecf8e | #3ecf8e | buttons, selected pills, the card edge. Too pale for text on white |
+| `--accent` | #171717 | #ededed | buttons, selected pills, map time marker, 🎙 button (with `--accent-text` on top). Not green: green means good |
 | `--link` | #1a7f56 | #3ecf8e | green text: links, the chosen tab, chart lines |
-| `--good` | #3ecf8e | #3ecf8e | 🟢 good (same green as `--accent`) |
+| `--good` | #3ecf8e | #3ecf8e | 🟢 good |
 | `--ok` | #ffdb13 | #ffdb13 | 🟡 OK |
+| `--ok-soft` | #fff3a8 | #4d4410 | OK cells in the Overview "By day" table, so good days stand out first (dark text `--on-ok-soft` #ffe86b) |
 | `--no` | #ededed | #333333 | no: a calm grey, so good and OK hours stand out |
 
 - **Font:** the device's own font (SF Pro on Apple). Numbers use
@@ -55,6 +60,14 @@ defined in `:root` in style.css.
 - **Spacing:** multiples of 4px.
 - **Corners:** rounded by 8px for cards and dialogs, 6px for hour blocks.
 - **Shadows:** soft and subtle, in the light theme only.
+- **Tap sizes:** at least 44px tall on phones and touch screens (`.btn.small`
+  and the dropdowns too). Dense rows may go down to 24px, WCAG's minimum: the
+  tide line (28px), the Surfline tag (28px), the map timeline's day names and
+  live-wind tags (24px). The Overview "By hour" cells stay small by design:
+  tap the site name for its big hour blocks. Checkboxes sit in a 44px row
+  that you can tap anywhere.
+- **Focus ring** (keyboard): 2px `--link` outline, 2px away.
+- **Smallest text:** 12px at full `--muted` (no faded text).
 
 ## Components (the parts of the screen)
 - **Header:** the app name, "Updated 14:05", and refresh and settings buttons.
@@ -62,13 +75,18 @@ defined in `:root` in style.css.
   at the top as you scroll.
 - **Hour block:** a rounded tile in the rating colour. It shows the hour, a
   wind arrow and the speed. Hours already over are the calm "no" grey, never a faded good or OK.
-- **Cards:** one per site, on `--surface`, with the name and an edit button.
+- **Cards:** one per site, on `--surface`, with the name and an edit button,
+  and a 4px `--muted` left edge.
 - **Dialogs** (pop-up panels): in the middle of the screen on desktop. On
-  phones they slide up from the bottom (a "bottom sheet").
+  phones they slide up from the bottom (a "bottom sheet"). Their buttons
+  (Close, or Cancel and Save) stay stuck to the bottom while you scroll. Hour
+  details also has a ✕ at the top, which the keyboard lands on first.
 - **Map pins:** round, in the rating colour, with the wind arrow and speed
-  inside and the site name underneath.
+  inside and the site name underneath. Where names would overlap, the less
+  good site's name is hidden until you zoom in; good pins sit on top.
 - **Compass picker:** a ring of 16 segments. Tap one to cycle it through
-  no → OK → good.
+  no → OK → good. With a keyboard: Tab to the ring, arrow keys to go round
+  it, Enter or Space to change one (a thick outline shows which).
 - **Overview layouts:** pill buttons to switch (By day · By hour · Best times).
   - "By day" uses cells coloured by rating. "–" means no good or OK hours,
     "Over" means the day has finished, "No data" means no forecast arrived.
@@ -87,11 +105,14 @@ defined in `:root` in style.css.
     the chosen time. Tapping an hour or a day jumps there.
   - Guide sites are small grey dots. Pill buttons switch to Windy's own
     animated wind map.
+  - The wind-flow streaks are faint and thin (55% opacity), so pins stand
+    out. The three map switches remember your choice. The map key is top
+    right (the map credits fill the bottom on phones).
 - **Mini compass:** a small ring of 16 wedges with "N" in the middle, next
   to each site's name.
 - **Sport and forecast menus:** pill-shaped drop-down menus under the header.
   The sport shows its emoji (🪁 Parakiting).
-- **Wind history chart:** one mph scale. Wind is a 2px `--accent` line. Gusts
+- **Wind history chart:** one mph scale. Wind is a 2px `--link` line. Gusts
   are orange dots with a ring the colour of the card. Faint bands behind show
   the good and OK ranges. Direction arrows run underneath. A reading above the
   chart follows your finger. There's always a table version too.
@@ -118,11 +139,16 @@ defined in `:root` in style.css.
 
 - **Surfing:** the same hour blocks, pins and Overview, but showing **wave
   height in ft** instead of wind speed (the arrow shows the swell direction).
-  - Site cards add a blue "Surfline ↗" tag.
+  - Site cards add a green "Surfline ↗" link tag.
   - The hour panel's tiles are Waves (with Surfline-style words: "waist to
-    chest"), Period, Swell from, and Wind (marked "offshore").
+    chest", "over head height"), Period, Waves from, and Wind (marked
+    "offshore").
   - The site form adds an **offshore wind compass** (wedges on or off) and a
-    box for the Surfline link. Its main compass is called "Swell directions".
+    box for the Surfline link. Its main compass is called "Swell directions
+    (where the waves come from)".
+- **Settings:** grouped sections. Sync, Feedback and Start again fold away
+  ("Show ▾"). Number boxes ask phones for the number keyboard (decimal where
+  halves are allowed).
 - **Tide rule** (site form, any sport): a drop-down menu ("Not near low
   water", "Only near high water"…) and "within [2] h". On cards it shows a
   short tag ("Avoid low ±2h").
@@ -153,6 +179,14 @@ one hand, and whether detail stays hidden until you ask for it.
 | Settings was one long list, with Save at the very bottom | Settings **in groups**; Save and Cancel always visible at the bottom |
 | Phone dialogs didn't look like you could move them | Bottom sheets with a **grab handle**; they scroll inside |
 | No sign that it was refreshing | The ↻ button **spins** while loading (it stays still if "reduce motion" is on) |
+
+## Design review (28 October 2026)
+
+Findings in docs/design-review-2026-10-28.md, a deeper check and the fixes in
+specs/design-fixes-2026-10-28.md: faded and 10px text fixed, green means
+good, softer OK cells on the Overview, sticky dialog buttons and a ✕, 44px
+taps, a keyboard-usable compass, plainer words, a shorter Settings,
+uncluttered map names, and an honest message when forecasts fail to load.
 
 ## References
 - Apple Human Interface Guidelines (Apple's design advice): button sizes,

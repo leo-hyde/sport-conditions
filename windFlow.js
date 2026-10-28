@@ -131,9 +131,9 @@ function drawWindFlow() {
       displayValues: false,
       maxVelocity: 15,  // m/s; anything faster gets the last colour
       velocityScale: 0.008,
-      lineWidth: 2,
-      particleMultiplier: 1 / 400,
-      opacity: 0.9,
+      lineWidth: 1.5,
+      particleMultiplier: 1 / 800,  // fewer, fainter streaks, so the site pins stand out (review 28 Oct)
+      opacity: 0.55,
       // Calm blue, through green and amber, to strong red.
       colorScale: ["#1e40af", "#2563eb", "#0891b2", "#059669", "#65a30d", "#ca8a04", "#ea580c", "#dc2626", "#9f1239"],
     }).addTo(map);

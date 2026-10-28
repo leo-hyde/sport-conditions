@@ -122,7 +122,7 @@ Rules about the **site** (directions, tide rule) live on the site.
 
 | What | Where | Who can see it |
 |---|---|---|
-| Your sites, settings, chosen tab | Browser storage on each device | Only that browser |
+| Your sites, settings, chosen tab, the map's three switches | Browser storage on each device | Only that browser |
 | Saved forecasts (30 min) | The browser's "Cache Storage" | Only that browser |
 | Synced sites and settings | Cloudflare KV, under a long random code | Anyone with the code |
 | Feedback notes | GitHub Issues (public project) | **Everyone**. Notes include where you were in the app, the time, the screen size and the browser's name; nothing else about you |
@@ -174,7 +174,9 @@ Rules about the **site** (directions, tide rule) live on the site.
   general knowledge (marked in `data/surf-spots.csv`). Wave heights are
   open-sea computer forecasts, not the height of breaking waves.
 - **Map pins overlap** where spots are close together (Newquay's town beaches)
-  until you zoom in.
+  until you zoom in. Since 28 Oct, names that would overlap are hidden
+  (`declutterLabels` in map.js) and good pins sit on top, but the pins
+  themselves still pile up.
 - **All script files share one global scope.** Two files using the same name
   would clash (see the playbook's gotchas).
 - `app.js` is the biggest file and does several jobs. It could be split up.
