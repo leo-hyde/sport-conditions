@@ -41,12 +41,12 @@ defined in `:root` in style.css.
 | `--surface` | #ffffff | #171b22 | cards, dialogs |
 | `--surface-2` | #f4f6f9 | #202631 | input boxes, inner panels |
 | `--text` | #111827 | #e8ecf2 | main text |
-| `--muted` | #6b7280 | #98a2b3 | less important text |
+| `--muted` | #5b6472 | #98a2b3 | less important text |
 | `--border` | #e3e7ee | #2a313c | dividing lines |
 | `--accent` | #2563eb | #5b8cff | buttons, the chosen tab, links |
 | `--good` | #22c55e | #2fd36b | 🟢 good |
 | `--ok` | #fbbf24 | #f5c04a | 🟡 OK |
-| `--no` | #eceff3 | #222833 | no: a calm grey, so good and OK hours stand out |
+| `--no` | #eceff3 | #2d3644 | no: a calm grey, so good and OK hours stand out |
 
 - **Font:** the device's own font (SF Pro on Apple). Numbers use
   `tabular-nums` (every digit the same width) so they line up.
@@ -60,7 +60,7 @@ defined in `:root` in style.css.
 - **Tabs:** Overview · Sites · Map. A row of pill-shaped buttons that stays
   at the top as you scroll.
 - **Hour block:** a rounded tile in the rating colour. It shows the hour, a
-  wind arrow and the speed. Past hours are faded to 35%.
+  wind arrow and the speed. Hours already over are the calm "no" grey, never a faded good or OK.
 - **Cards:** one per site, on `--surface`, with the name and an edit button.
 - **Dialogs** (pop-up panels): in the middle of the screen on desktop. On
   phones they slide up from the bottom (a "bottom sheet").
@@ -69,7 +69,9 @@ defined in `:root` in style.css.
 - **Compass picker:** a ring of 16 segments. Tap one to cycle it through
   no → OK → good.
 - **Overview layouts:** pill buttons to switch (By day · By hour · Best times).
-  - "By day" uses cells coloured by rating.
+  - "By day" uses cells coloured by rating. "–" means no good or OK hours,
+    "Over" means the day has finished, "No data" means no forecast arrived.
+    The key under the headline says so. Words, not tide abbreviations: "High 05:56", "Big tides".
   - "By hour" uses small hour blocks. Only good and OK hours show the wind
     speed; "No" blocks are blank. Above them is a tinted **time strip**
     reading "8h 9h 10h…" (every other hour on phones). So you can't mix up

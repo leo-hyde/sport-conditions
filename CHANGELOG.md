@@ -10,11 +10,23 @@ has every change. Newest first.
 - **Hide the feedback buttons:** a small › tab folds the mic, pencil and notes
   buttons out of the way; ‹ brings them back. It remembers your choice.
   (Feedback #11.)
-- **Design review fixes (part 1):** the Sport and Forecast dropdowns no longer
-  make iPhones zoom in and now have names for screen readers; the refresh and
-  settings buttons and the By day / By hour switch are bigger to tap; the
-  "updated" line is easier to read in light mode; the first tab's heading now
-  says "Overview". (Issue #13, items 1, 2, 3 and 5.)
+- **Easier to tap on a phone:** the refresh and settings buttons, "By day /
+  By hour", site names and stars are now all at least 44 pixels, the size a
+  thumb can hit reliably. (Design review, issue #13.)
+- **The two dropdowns no longer make iPhones zoom in** when you tap them, and
+  screen readers now announce them ("Sport", "Forecast model").
+- **Easier to read:** the "updated" line and other grey text are a little
+  darker. The Overview heading now says "Overview", like its tab.
+- **Plainer words:** tides now read "High 05:56 · Low 12:22 · Big tides"
+  instead of "HW", "LW" and "Springs", and "Tide rising · high at 18:20".
+  A line on My sites explains the small wind dial. The top line just says
+  "Updated 17:27", and each site card says whether its numbers are mph or ft.
+- **Clearer table marks:** hours that have already passed are grey instead of
+  faded yellow or green. In the Overview table, "–" means no good hours,
+  "Over" means the day has finished and "No data" means no forecast arrived;
+  the key explains this. In dark mode the "No" cells show up better.
+- **The Overview table shows a soft shadow at the edge** while there are
+  more days to scroll to.
 
 ## 26 October 2026
 - **"Show where I am" on the map:** tap ◎ under the + and − buttons. The map

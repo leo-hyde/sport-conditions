@@ -15,6 +15,9 @@ function renderOverview() {
     return;
   }
   const layouts = { days: overviewByDay, hours: overviewByHour };
+  document.getElementById("key-notes").textContent = state.layout === "hours"
+    ? "Grey = already over. Tap a site for its hours."
+    : "– = none, Over = already past. Tap a site for its hours.";
   document.getElementById("next-good").innerHTML = nextGoodSession();
   box.innerHTML = (layouts[state.layout] || overviewByDay)();
 }
@@ -103,12 +106,16 @@ function overviewByDay() {
 
   const rows = sites.map(({ site, days }) => {
     const cells = dates.map(date => {
-      const hours = (days[date] || []).filter(hour => !hour.past);
+      const allHours = days[date] || [];
+      const hours = allHours.filter(hour => !hour.past);
       const flyable = hours.filter(hour => hour.rating !== "no");
       const good = count(hours, "good");
       const ok = count(hours, "ok");
       const best = good > 0 ? "good" : ok > 0 ? "ok" : "no";
-      const text = [good && `${good}h good`, ok && `${ok}h OK`].filter(Boolean).join("<br>") || "–";
+      // "–" means no good or OK hours; a missing day or one that's over says so.
+      const empty = allHours.length === 0 ? '<span class="cell-note">No data</span>'
+        : hours.length === 0 ? '<span class="cell-note">Over</span>' : "–";
+      const text = [good && `${good}h good`, ok && `${ok}h OK`].filter(Boolean).join("<br>") || empty;
       const when = flyable.length > 0 ? `<small>${shortSpan(flyable)}h</small>` : "";
       return `<td class="cell ${best}" data-goto-site="${site.id}">${text}${when}</td>`;
     }).join("");

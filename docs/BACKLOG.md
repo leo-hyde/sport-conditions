@@ -19,7 +19,6 @@ in CHANGELOG.md) · not doing (with the reason).
 | Check the Newquay surf spots' locations, directions and tide rules | Claude, 23 Oct | discuss | They came from Claude's general knowledge. Check the tide rules for Little Fistral and Lusty Glaze especially |
 | Map: group nearby pins when zoomed out (clusters) | Leo, #9 | discuss | Not in SPEC.md. Would add a CDN library (Leaflet.markercluster); also replaces the older "Surf map: pins overlap" row below |
 | Met Office forecast reads lower than Windy for the same hour (Fistral) | Leo, #12 | discuss | Needs a check against live data first: may be the model (Met Office vs Windy's default), gust vs mean wind, or height of the reading. Not a bug until compared |
-| Design review items 4, 6, 7, 8, 9 (jargon, past hours grey, "–" meaning, compact site cards, scroll hint) | Claude, #13 | discuss | Items 4/6/7 change what people see; 8 needs a spec. Small tap targets for stars and site names also still to do |
 | Surf map: pins overlap around Newquay | Claude, 23 Oct | later | Fine once you zoom in |
 | Tides on the map, done better | Leo, 23 Oct | later | Tide labels on pins were too crowded, so I removed them. Arrows for tidal currents (like SailGrib WR) need a source of data |
 | Send feedback straight to GitHub (Worker secrets) | Leo, 23 Oct | later | Built. Leo chose not to set up the secrets for now |
@@ -32,7 +31,6 @@ in CHANGELOG.md) · not doing (with the reason).
 |---|---|---|---|
 | Voice note text scrolls as you speak | Leo, #10 | 28 Oct | |
 | Fold the feedback buttons away | Leo, #11 | 28 Oct | › tab; dragging them was left out |
-| Design review items 1, 2 (buttons), 3, 5 | Claude, #13 | 28 Oct | Rest listed above |
 | Map: a button to show where I am | Leo, #8 | 26 Oct | ◎ under the zoom buttons |
 | Voice notes: a pause button | Leo, #5 | 26 Oct | The beeping is still in "To do" |
 | Surfing, starting with the Newquay spots, linked to Surfline | Leo, #3 + 23 Oct | 23 Oct | SPEC.md version 1.3 |

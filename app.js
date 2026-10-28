@@ -105,7 +105,7 @@ function setStatus(text) {
 function statusText() {
   if (!state.updatedAt) return "Loading forecast…";
   const time = state.updatedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  let text = `${currentSport().icon} ${currentSport().name} · ${unit().label} · updated ${time}`;
+  let text = `Updated ${time}`;
   if (state.failedSites.length > 0) text += ` · couldn't load ${state.failedSites.join(", ")}`;
   return text;
 }
@@ -157,12 +157,12 @@ function dayLabel(date) {
   return new Date(date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric" });
 }
 
-// "HW 02:10 14:31 · LW 08:22 20:40", for one day's tides.
+// "High 02:10 14:31 · Low 08:22 20:40", for one day's tides.
 function tideSummary(tides, date) {
   const turns = tides.turns.filter(turn => turn.date === date);
   const times = type => turns.filter(turn => turn.type === type).map(turn => formatHours(turn.hours)).join(" ");
-  return [turns.some(t => t.type === "high") && `HW ${times("high")}`,
-          turns.some(t => t.type === "low") && `LW ${times("low")}`].filter(Boolean).join(" · ");
+  return [turns.some(t => t.type === "high") && `High ${times("high")}`,
+          turns.some(t => t.type === "low") && `Low ${times("low")}`].filter(Boolean).join(" · ");
 }
 
 // ---------- Small HTML helpers ----------
@@ -308,7 +308,7 @@ function renderSiteCards() {
                 🌊 ${tideSummary(tides, date)} · ${tideRange(date)} <span class="more">Tides ›</span></button>`
             : "";
           return `<div class="day">
-            <div class="day-label">${dayLabel(date)}<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)}</small></div>
+            <div class="day-label">${dayLabel(date)}<small>☀ ${formatHours(sun.sunrise)}–${formatHours(sun.sunset)} · ${site.sport === "surfing" ? "waves in ft" : `wind in ${unit().label}`}</small></div>
             <div class="day-main">
               <div class="hours">${hours.map(hour => hourBlock(site, hour)).join("")}</div>
               ${tideLine}
@@ -316,7 +316,7 @@ function renderSiteCards() {
           </div>`;
         }).join("");
 
-    // Right now, for beach sites: e.g. "🌊 Rising · HW 17:10".
+    // Right now, for beach sites: e.g. "🌊 Tide rising · high at 17:10".
     const tideTag = tides && tideNow(tides) ? `🌊 ${tideNow(tides)}` : "";
     const tags = [site.custom && "Added by you", tideTag, tideRuleTag(site.tideRule)].filter(Boolean)
       .map(tag => `<span class="tag">${tag}</span>`).join("")

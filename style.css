@@ -4,7 +4,7 @@
   --surface: #ffffff;
   --surface-2: #f4f6f9;
   --text: #111827;
-  --muted: #596273;
+  --muted: #5b6472;  /* 5:1 on the page background (the old grey was 4.2:1) */
   --border: #e3e7ee;
   --accent: #2563eb;
   --accent-text: #ffffff;
@@ -33,7 +33,7 @@
     --accent-text: #0b1020;
     --good: #2fd36b;
     --ok: #f5c04a;
-    --no: #222833;
+    --no: #2d3644;  /* lifted so "no" cells stand out from the card (#171b22) */
     --on-no: #a3acb9;
     --danger: #f87171;
     --shadow: none;
@@ -123,7 +123,7 @@ p { margin: 0; }
 }
 
 .segmented button {
-  min-height: 38px;
+  min-height: 34px;
   padding: 0 14px;
   border: none;
   border-radius: 999px;
@@ -264,7 +264,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; width: 100%; 
 .good { background: var(--good); color: var(--on-good); }
 .ok   { background: var(--ok);   color: var(--on-ok); }
 .no   { background: var(--no);   color: var(--on-no); }
-.past { opacity: 0.35; }
+.hour.past { background: var(--no); color: var(--on-no); }  /* over: calm grey, never a faded good or OK */
+.cell-note { font-size: 12px; font-weight: 500; }
 .hour:hover { filter: brightness(0.95); }
 
 /* ---------- Dialogs ---------- */
@@ -500,7 +501,7 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
   background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2398a2b3'/%3E%3C/svg%3E") no-repeat right 12px center;
   color: var(--text);
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;  /* under 16px makes iPhones zoom in on tap */
   font-weight: 600;
   appearance: none;
   cursor: pointer;
@@ -524,7 +525,16 @@ dialog::backdrop { background: rgba(5, 8, 15, 0.5); }
 .tide-detail { font-size: 14px; color: var(--muted); }
 
 .by-day th small { display: block; font-weight: 500; font-size: 10px; }
-.table-scroll { overflow-x: auto; margin: -4px; }
+/* Soft edges show there is more to scroll to (they fade as you reach the end) */
+.table-scroll {
+  overflow-x: auto;
+  margin: -4px;
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left / 24px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 30%, transparent) right / 24px 100% no-repeat local,
+    linear-gradient(to right, rgba(0, 0, 0, 0.14), transparent) left / 10px 100% no-repeat scroll,
+    linear-gradient(to left, rgba(0, 0, 0, 0.14), transparent) right / 10px 100% no-repeat scroll;
+}
 .by-day td.site-name { position: sticky; left: 0; background: var(--surface); z-index: 1; }
 .by-day td.cell { min-width: 84px; width: auto; }
 
@@ -712,8 +722,8 @@ details .compare { margin-top: 8px; }
 /* Removing sites: the star and the undo message */
 .card-actions { display: flex; align-items: center; gap: 6px; }
 .star {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   border: none;
   border-radius: 50%;
@@ -725,7 +735,8 @@ details .compare { margin-top: 8px; }
 }
 .star:hover { background: var(--surface-2); }
 .name-cell { display: flex; align-items: center; gap: 2px; min-width: 0; }
-.name-cell .star { width: 28px; height: 28px; font-size: 16px; }
+/* 44px to tap, but the extra space overlaps its neighbours so the row stays slim */
+.name-cell .star { width: 44px; height: 44px; margin: -10px; font-size: 16px; }
 .name-cell .site-link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .details-site-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -792,11 +803,11 @@ details .compare { margin-top: 8px; }
   .topbar { padding: 12px 0 8px; }
   h1 { font-size: 20px; }
   .topbar #status { font-size: 12px; }
-  .icon-btn { width: 44px; min-height: 44px; font-size: 18px; }
+  .icon-btn { font-size: 18px; }
 
   /* Pickers: two equal halves, no details text */
   .model-bar label { display: none; }
-  .model-bar .pill-select { flex: 1; min-width: 0; font-size: 16px; }  /* 16px stops iPhones zooming in */
+  .model-bar .pill-select { flex: 1; min-width: 0; }
   .model-detail { display: none; }
 
   /* Tabs become an app-style bar fixed to the bottom of the screen */
@@ -832,6 +843,8 @@ details .compare { margin-top: 8px; }
   .day-label { width: auto; display: flex; gap: 8px; align-items: baseline; font-weight: 600; color: var(--text); }
   .day-label small { display: inline; font-weight: 400; color: var(--muted); }
   .hour { padding: 5px 0; font-size: 12px; }
+  .segmented button { min-height: 44px; }
+  .site-link { min-height: 44px; display: inline-flex; align-items: center; }
 
   /* Overview */
   .view-head h2 { font-size: 18px; }
@@ -1001,7 +1014,7 @@ dialog { overflow: auto; overscroll-behavior: contain; }
   .next-good strong { font-size: 16px; }
   .by-day td.cell { min-width: 64px; padding: 6px; font-size: 12px; }
   .by-day td.site-name { max-width: 96px; font-size: 13px; }
-  .name-cell .star { width: 24px; height: 24px; font-size: 14px; }
+  .name-cell .star { font-size: 14px; }
   .sticky-actions { margin: 0 -20px -20px; }
 }
 
