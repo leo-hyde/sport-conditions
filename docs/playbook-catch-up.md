@@ -28,3 +28,7 @@ what changed. Session start stops asking about an id once it's listed here.
   cost notes instead of coaching/message counting, and mention the push-to-main
   docs check. `grep -rn COACH CLAUDE.md docs` finds nothing and
   `.claude/settings.json` has the `push-check` hook.
+- **2026-10-27-design-method** (28 Oct 2026): DESIGN.md now points to the
+  playbook's design method and has the line "Style: own (from before the
+  style library)". No restyling done; the playbook's style library and
+  design review are offered to Leo as a separate job.
