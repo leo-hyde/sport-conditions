@@ -55,7 +55,8 @@ a dial, a tide tag, today, tomorrow, a tide line each, "Show all 7 days" and a
 - The live site after pushing.
 
 ## Risks and open questions
-- **Decided (Leo, 28 Oct 2026): today only.** The compact card shows today
+- **Replaced later on 28 Oct 2026: Leo chose today AND tomorrow instead, with one "Show all 7 days" button that opens the later days on every card (see docs/decisions.md), and a blue edge plus more space so each site reads as separate. The text below and Progress describe the first, today-only build.**
+- ~~Decided (Leo, 28 Oct 2026): today only.~~ The compact card shows today
   only; tomorrow loses its place on the card, but the Overview "By day" table
   still shows tomorrow for every site. **Approved, ready to build.**
 - "Show all 7 days" is the existing wording. If Leo uses it by habit, the new

@@ -6,6 +6,11 @@ the old one "Replaced by <date>". (I moved these here from docs/STATUS.md on
 23 Oct 2026. The earlier entries give the reason, but not the other options
 we turned down.)
 
+## 28 Oct 2026: Site cards show today and tomorrow; one button opens all 7 days on every card
+- **Why:** Leo tried today-only cards (earlier the same day) and preferred today and tomorrow. Opening the later days opens them on **all** sites at once, so sites stay comparable. Each site card has a blue left edge and 24px of space under it so it is clear they are different places.
+- **Rejected:** today-only cards (built and replaced the same day); a per-card open/close.
+- **Replaces** the "today only" decision in `specs/compact-site-cards.md`.
+
 ## 27 Oct 2026: Trial of the `opusplan` model setting for one week
 - **Why:** `opusplan` uses the strongest model for planning and a cheaper one for building, which may cut credits. Leo agreed to try it in this project (the playbook's canary). Set as `"model": "opusplan"` in `.claude/settings.json`. The playbook's monthly review compares it with before; ends about 3 Nov 2026, when we keep or remove it. Rejected: switching every project at once, before we know it helps.
 
