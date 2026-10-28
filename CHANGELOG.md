@@ -5,6 +5,7 @@ so there are no version numbers. Git (the record of every saved change) also
 has every change. Newest first.
 
 ## 28 October 2026
+- **New look: Mint.** White and near-black with one fresh green, in light and dark. Buttons and the selected pill are green; green text is a darker green so it can be read. Corners are a little tighter. The wind rating colours are now Mint's green and yellow.
 - **Voice notes scroll:** the words you speak now scroll up as you go, so you
   always see the newest. (Feedback #10.)
 - **Hide the feedback buttons:** a small › tab folds the mic, pencil and notes

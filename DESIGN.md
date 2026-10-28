@@ -5,7 +5,7 @@ feature. A design change goes in here first, then in the code.
 
 Before designing a screen, read the playbook's `reference/design-method.md`.
 
-**Style:** own (from before the style library)
+**Style:** Mint (applied 28 Oct 2026; a candidate from the playbook's style library, inspired by Supabase's look via awesome-design-md, MIT; not affiliated). White and near-black with one emerald green. Font is still the device's own (Mint's Figtree not added: it would need Google Fonts or self-hosting).
 
 ## Inspiration
 - **Windy** (a popular weather map site): modern, full of data but easy to
@@ -37,22 +37,23 @@ defined in `:root` in style.css.
 
 | Token | Light | Dark | Used for |
 |---|---|---|---|
-| `--bg` | #eef1f5 | #0e1116 | page background |
-| `--surface` | #ffffff | #171b22 | cards, dialogs |
-| `--surface-2` | #f4f6f9 | #202631 | input boxes, inner panels |
-| `--text` | #111827 | #e8ecf2 | main text |
-| `--muted` | #5b6472 | #98a2b3 | less important text |
-| `--border` | #e3e7ee | #2a313c | dividing lines |
-| `--accent` | #2563eb | #5b8cff | buttons, the chosen tab, links |
-| `--good` | #22c55e | #2fd36b | 🟢 good |
-| `--ok` | #fbbf24 | #f5c04a | 🟡 OK |
-| `--no` | #eceff3 | #2d3644 | no: a calm grey, so good and OK hours stand out |
+| `--bg` | #fafafa | #1c1c1c | page background |
+| `--surface` | #ffffff | #202020 | cards, dialogs |
+| `--surface-2` | #f6f6f6 | #2a2a2a | input boxes, inner panels |
+| `--text` | #171717 | #ededed | main text |
+| `--muted` | #5c5c5c | #9a9a9a | less important text |
+| `--border` | #dfdfdf | #2e2e2e | dividing lines |
+| `--accent` | #3ecf8e | #3ecf8e | buttons, selected pills, the card edge. Too pale for text on white |
+| `--link` | #1a7f56 | #3ecf8e | green text: links, the chosen tab, chart lines |
+| `--good` | #3ecf8e | #3ecf8e | 🟢 good (same green as `--accent`) |
+| `--ok` | #ffdb13 | #ffdb13 | 🟡 OK |
+| `--no` | #ededed | #333333 | no: a calm grey, so good and OK hours stand out |
 
 - **Font:** the device's own font (SF Pro on Apple). Numbers use
   `tabular-nums` (every digit the same width) so they line up.
 - **Text sizes:** 12 / 14 / 16 / 20 / 26px.
 - **Spacing:** multiples of 4px.
-- **Corners:** rounded by 14px for cards and dialogs, 6px for hour blocks.
+- **Corners:** rounded by 8px for cards and dialogs, 6px for hour blocks.
 - **Shadows:** soft and subtle, in the light theme only.
 
 ## Components (the parts of the screen)

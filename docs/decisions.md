@@ -6,6 +6,11 @@ the old one "Replaced by <date>". (I moved these here from docs/STATUS.md on
 23 Oct 2026. The earlier entries give the reason, but not the other options
 we turned down.)
 
+## 28 Oct 2026: App restyled with the Mint style
+- **Why:** Leo asked for the playbook's Mint style. Applied by hand: Mint isn't in the library proper (a candidate, no tokens file), and this app has extra tokens (`--good`, `--ok`, `--no`).
+- **Known trade-offs:** the accent (buttons) and the "good" rating are the same green, so a green button can be mistaken for "good"; a new `--link` token holds the darker green for text (the accent is 1.9:1 on white). Mint's Figtree font was not added (Google Fonts would tell Google each visitor's address on a public app). Light `--surface-2` is #f6f6f6, not Mint's #fafafa, so the selected tab passes 4.5:1.
+- **Rejected:** keeping the blue accent with Mint's neutrals.
+
 ## 28 Oct 2026: Site cards show today and tomorrow; one button opens all 7 days on every card
 - **Why:** Leo tried today-only cards (earlier the same day) and preferred today and tomorrow. Opening the later days opens them on **all** sites at once, so sites stay comparable. Each site card has a blue left edge and 24px of space under it so it is clear they are different places.
 - **Rejected:** today-only cards (built and replaced the same day); a per-card open/close.
