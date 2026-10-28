@@ -146,7 +146,7 @@ one hand, and whether detail stays hidden until you ask for it.
 | No headline answer: you had to scan a grid to find when to go | A **"Next good session"** card at the top of the Overview (tap it to go to that site) |
 | Red "No" cells took over, so good and OK didn't stand out; "No" text was too faint to read easily | **"No" is now a calm grey** with darker text (contrast about 5:1) |
 | No colour key on the Overview | A **Good / OK / No key** under the headline |
-| Site cards showed 7 days, so only one site fitted on a screen | Cards show **today and tomorrow**, with "Show all 7 days" (and a hint like "3h good later") |
+| Site cards showed 7 days, so only one site fitted on a screen | Cards show **today only** (28 Oct, design review), with "Show tomorrow and later" (and a hint like "3h good later"); the Overview "By day" table still shows tomorrow for every site |
 | Phone Overview: names cut off, tide labels on every day, ":00" wasting space | Names wrap onto two lines; no tide labels on the Overview; short times ("8–11h") |
 | Live airport wind looked like site pins | **Dark square LIVE tags** with a pointer, and a **map key** |
 | Settings was one long list, with Save at the very bottom | Settings **in groups**; Save and Cancel always visible at the bottom |

@@ -10,6 +10,10 @@ has every change. Newest first.
 - **Hide the feedback buttons:** a small › tab folds the mic, pencil and notes
   buttons out of the way; ‹ brings them back. It remembers your choice.
   (Feedback #11.)
+- **Shorter site cards (My sites):** each card now shows only today, so you
+  can see more sites at once. Tap "Show tomorrow and later" for the rest of the
+  week; the button still says how many good hours are coming. (Design review,
+  issue #13.)
 - **Easier to tap on a phone:** the refresh and settings buttons, "By day /
   By hour", site names and stars are now all at least 44 pixels, the size a
   thumb can hit reliably. (Design review, issue #13.)

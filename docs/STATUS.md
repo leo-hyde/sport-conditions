@@ -6,9 +6,9 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 | | |
 |---|---|
-| Last session | Mac, 28 Oct 2026 (issues #10, #11 built; #13 design review steps 1 and 2 landed) |
+| Last session | Mac, 28 Oct 2026 (issue #13 design review finished: all three steps built) |
 | Ended cleanly? | Yes, all pushed to `main` |
-| Work in progress | Open to discuss: #12, #9, #7, #6, #4 (docs/BACKLOG.md). Issue #13: steps 1 and 2 done; step 3 (compact site cards) has an approved spec (today-only cards), ready to build in a fresh session: specs/compact-site-cards.md |
+| Work in progress | Open to discuss: #12, #9, #7, #6, #4 (docs/BACKLOG.md). Issue #13 done (compact cards built, not yet seen by Leo on his phone) |
 | Next step | SPEC.md "What's next", step 1: Leo tries Surfing on the live site |
 | Check first | Playbook trial: `opusplan` model set in `.claude/settings.json` on 27 Oct, review about 3 Nov (docs/decisions.md). Leo to delete the old `session-lock` branch on GitHub. Feedback 26 Oct: #8 (map location) and #5 (voice pause) built and closed. Still to discuss (docs/BACKLOG.md): #4 overview across sports, #5 beeping, #6 and #7 surf spot detail. Leo to try both new buttons on his phone |
 | Note | Read docs/ARCHITECTURE.md to understand how the app is built |
@@ -25,8 +25,7 @@ The current state, shared between Leo's phone and computer sessions. **Every Cla
 
 See SPEC.md "What's next": step 1 (Leo checks Surfing), then step 2
 (automated rating tests, spec first).
-Step 3 (design review, issue #13): build the approved
-`specs/compact-site-cards.md` (today-only cards) in a fresh session.
+Issue #13 design review is finished; Leo to look at My sites on his phone.
 
 ## Open questions
 

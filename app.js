@@ -275,8 +275,8 @@ function showView(view) {
   render();
 }
 
-// Cards show today and tomorrow; tapping "Show all 7 days" opens the rest.
-const SHOWN_DAYS = 2;
+// Cards show only today; tapping "Show tomorrow and later" opens the rest.
+const SHOWN_DAYS = 1;
 const expandedSites = new Set();  // ids of cards showing all days
 
 // One card per site, with one strip of hour blocks per day.
@@ -291,11 +291,11 @@ function renderSiteCards() {
     const allDays = Object.entries(siteDays(site));
     const expanded = expandedSites.has(site.id);
     const days = expanded ? allDays : allDays.slice(0, SHOWN_DAYS);
-    // A hint of what's hidden: how many good hours the later days have.
+    // A hint of what's hidden: how many good hours tomorrow and later have.
     const laterGood = allDays.slice(SHOWN_DAYS).flatMap(([, hours]) => hours).filter(hour => hour.rating === "good").length;
     const toggle = allDays.length > SHOWN_DAYS
       ? `<button class="show-more" data-expand-site="${site.id}" aria-expanded="${expanded}">
-          ${expanded ? "Show fewer days ▴" : `Show all ${allDays.length} days ▾`}
+          ${expanded ? "Show today only ▴" : "Show tomorrow and later ▾"}
           ${!expanded && laterGood ? `<span class="badge good">${laterGood}h good later</span>` : ""}
         </button>`
       : "";

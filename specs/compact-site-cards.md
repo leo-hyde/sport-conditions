@@ -45,8 +45,9 @@ a dial, a tide tag, today, tomorrow, a tide line each, "Show all 7 days" and a
 - Changing the ratings or what makes an hour good.
 
 ## How we'll check it's done
-- Check at 375px, light and dark: at least **three** cards are visible on
-  the first screen of My sites (today: about two). Measure with `--eval`
+- Check at 375px, light and dark: more of My sites fits on the first screen
+  (aim: three cards; the 44px button and dial hint made that hard, see
+  Progress). Measure with `--eval`
   (card heights) before looking at screenshots.
 - The button says what it opens, is at least 44px tall, and opens and closes a
   card; the choice survives a refresh of the data.
@@ -61,3 +62,12 @@ a dial, a tide tag, today, tomorrow, a tide line each, "Show all 7 days" and a
   name ("Show tomorrow and later") is a small change to get used to.
 - Best built in a fresh session on a stronger model, because it changes what
   the main screen shows.
+
+## Progress
+- **Built 28 Oct 2026** (today-only, button "Show tomorrow and later", dial
+  hint cut to one line). Measured at 375px in the browser, parakiting: cards
+  are 233 / 247 / 206px tall, so **two cards fit fully and the third shows its
+  name** (before: one card plus a bit). Three full cards did not fit: the
+  top of the page takes about 180px and the 44px button was kept for thumbs.
+  Surfing cards are taller (270px: tags and a Surfline link). Not checked in
+  light mode or at desktop width.
