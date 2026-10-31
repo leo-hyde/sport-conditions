@@ -27,8 +27,8 @@ The user is not a developer: if they can't follow it, it hasn't been said.
 - **Ask about genuine ambiguity, decide the rest**: questions together, each with a
   default. Spot contradictions.
 - **Say what's hard or expensive**; be honest about mistakes and limits, Claude's own too.
-- **Never let a model guess facts** (dates, prices, API fields, web addresses):
-  take them from data, documentation or a real test, or mark them unverified.
+- **Never guess facts or effort** (dates, prices, API fields, web addresses, build
+  time): use data, docs, a real test or past work's git log, or mark it unverified.
 - **Found something outside the task?** Choose:
   - *Do it now*: small, clearly right, in files already open, checkable now
     (a typo, a broken link, a stale doc line). Its own commit; mention it.
@@ -141,9 +141,10 @@ first (CLAUDE.md, docs/STATUS.md), what's out of scope, how to check it's done,
 and the model. Detail: playbook `reference/efficient-sessions.md`.
 
 ## Ideas for the playbook
-- **Learned something general** (a habit, gotcha, tool or rule)? File an issue
-  on the playbook repo, label `idea`: what happened in general terms (it's
-  public), the rule it suggests, the evidence. Don't edit the playbook unless
-  the user asks. Cloud: attach the playbook repo, or give the user the text.
-- **A playbook script breaks a session?** Stop, tell the user, offer a fix in
-  a playbook session straight away. Project-only lessons go in CLAUDE.md or docs.
+- **Learned something general**? File a playbook issue (label `idea`): what
+  happened in general terms (it's public), the rule, the evidence. Don't edit
+  the playbook unless asked (cloud: attach it, or give the user the text).
+- **Research to a document** (a question into a spec, decision note, report):
+  follow the playbook's `reference/research-to-doc.md` (on its `main` branch)
+  and, at the end, update it there with what the job taught (general terms).
+- **A playbook script breaks a session?** Stop, tell the user, offer a fix. Project lessons: CLAUDE.md.

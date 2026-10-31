@@ -5,7 +5,8 @@
 # This script makes sure each session starts up to date, sees other unfinished
 # work, and doesn't end with work that only it can see.
 #
-#   scripts/session.sh start          a session opens: pull main, list other unfinished work, issues, handover
+#   scripts/session.sh start          a session opens: pull main, list other unfinished work, issues,
+#                                     people's edits and notes to Claude in the docs, handover
 #   scripts/session.sh busy           the user sends a message: note when the context has grown costly
 #   scripts/session.sh check          Claude finishes a reply: cloud blocks on work not on GitHub; the Mac
 #                                     shows the user a reminder
@@ -203,6 +204,35 @@ list_issues() {
   fi
 }
 
+# Edits a person made to the documents (for example on github.com) that Claude hasn't
+# worked in yet, and "> To Claude" notes left in them. Claude's commits end with a
+# "Co-Authored-By: Claude" line, so a commit without one, in the last 30 days, is a
+# person's (the sync's "Playbook: " commits aren't). Claude's next commit to a file
+# marks it worked in. Prints nothing when there's nothing to do.
+doc_edits() {
+  local ref=origin/main f c pending notes n=0
+  git rev-parse -q --verify "$ref" >/dev/null || ref=HEAD
+  for f in $(git log "$ref" --no-merges --since=30.days -n 60 --name-only --format= -- '*.md' \
+             ':(exclude).claude/' | sort -u); do
+    git cat-file -e "$ref:$f" 2>/dev/null || continue
+    pending=""
+    for c in $(git log "$ref" --no-merges --since=30.days --format=%H -- "$f"); do
+      git log -1 --format=%B "$c" | grep -qi '^Co-Authored-By: Claude' && break
+      git log -1 --format=%s "$c" | grep -q '^Playbook: ' && continue
+      pending="$pending $c"
+    done
+    [ -z "$pending" ] && continue
+    n=$((n + 1)); [ $n -gt 5 ] && { echo "  (and more)"; break; }
+    [ $n = 1 ] && echo "HUMAN EDITS not yet worked in (tell the user; see each with the git diff shown):"
+    set -- $pending   # newest first
+    c=$(eval echo "\${$#}")
+    echo "  $f: $# commit(s), last by $(git log -1 --format=%an "$1"). git diff $(git rev-parse --short "$c")~1 $ref -- $f"
+  done
+  notes=$(git grep -n '^> To Claude' "$ref" -- '*.md' 2>/dev/null | sed "s|^$ref:||" | head -5)
+  [ -n "$notes" ] && { echo "NOTES TO CLAUDE in the documents (tell the user, then act on them):"; echo "$notes" | sed 's/^/  /'; }
+  return 0
+}
+
 # ---------- Commands ----------
 
 cmd_start() {
@@ -229,6 +259,7 @@ cmd_start() {
     fi
   done
   list_issues
+  doc_edits
   echo
   echo "--- Handover from docs/STATUS.md ---"
   sed -n '/^## Handover/,/^## Where we are/p' docs/STATUS.md | sed '$d'

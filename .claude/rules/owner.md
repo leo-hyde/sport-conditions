@@ -14,6 +14,7 @@ user" and reads the details from here.
 - Wants direct critique, explicit confidence levels, and a clear line
   between what's verified and what's assumed.
 - UK English.
+- Research-to-doc method (any project): https://github.com/leo-hyde/claude-playbook/blob/main/reference/research-to-doc.md
 - Works from a phone (Claude Code cloud sessions) and a Mac, often with
   several sessions at once.
 
