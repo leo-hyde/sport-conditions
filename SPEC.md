@@ -304,6 +304,7 @@ The steps we've agreed, in order. docs/STATUS.md points at these numbers.
 | 4 | **Fixes from the 28 Oct design review:** all 11 findings plus a deeper check (failed forecasts no longer look like bad weather, focus rings, map labels, "green means good") (`specs/design-fixes-2026-10-28.md`) | Done 28 Oct |
 | 5 | **Overview across all sports** (issue #4): which sport, where, on which day. Spec first in a fresh session: `specs/all-sports-overview.md` | Not started |
 | 6 | **Design rules built in, and feedback buttons that don't cover the screen:** DESIGN.md "Rules every screen must pass", checked by `tools/ux-check.js` before every visual push (CLAUDE.md); 🎙 ✎ docked in the tab bar on phones | Done 28 Oct |
+| 7 | **Kitesurfing, the third sport** (wind, gusts, thunderstorms, tide, waves, bans): spec drafted, waiting for Leo's decisions (`specs/kitesurfing.md`) | Spec written 31 Oct |
 
 Open feedback issues are sorted when Leo says "check feedback";
 anything agreed from them is added here.
@@ -329,7 +330,7 @@ we build it. (Status notes added 26 Oct 2026.)
   (how good it is for flying cross-country).
 - **E. More sports:** kitesurfing (wind and tide) and surfing (swell, from
   Open-Meteo's marine forecast), with a sport menu. *Sport menu and surfing:
-  done (version 1.3). Kitesurfing: not done.*
+  done (version 1.3). Kitesurfing: spec written 31 Oct, "What's next" step 7.*
 - **F. Map extras:** tap the map to place a new site; a wind layer like
   Windy's. *Done (version 1.1).*
 - **G. Alerts:** for example "tell me when Fistral is 🟢 for 3 hours or more
